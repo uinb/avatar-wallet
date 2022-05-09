@@ -1,0 +1,41 @@
+{
+  "name": "Avatar Wallet",
+  "manifest_version": 2,
+  "version": "1.0",
+  "description": "Avatar Wallet",
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-64.png",
+    "128": "images/icon-128.png"
+  },
+  "background": {
+    "scripts": [
+      "static/js/background.js"
+    ],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_icon": "images/icon-16.png",
+    "default_title": "Avatar Wallet",
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "css":["static/css/content.css"],
+      "js": [
+        "static/js/content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "declarativeContent",
+    "storage",
+    "notifications"
+  ],
+  "web_accessible_resources": ["insert.js"]
+}
