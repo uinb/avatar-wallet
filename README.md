@@ -14,3 +14,8 @@ You will also see any lint errors in the console.
 
 ### `npm run build`
 
+- Go to chrome://extensions
+- Enable 'Developer Mode' (top right corner of window)
+- Click "Load Unpacked" and select the token-keeper/dev/chrome directory
+
+

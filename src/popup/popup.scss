@@ -1,9 +1,8 @@
 body {
     width: 360px !important;
     height: 600px !important;
-    color: #fff;
     overflow: hidden;
-    margin: 0 !important;
+    margin: 0 auto !important;
 }
 
 div{
@@ -28,6 +27,49 @@ div{
     
 ::-webkit-scrollbar {display:none}
 
-.container{
-    padding: 8px 16px;
+a{
+    color: inherit;
+}
+
+.logo{
+    margin-bottom: 3rem;
+    .name{
+        font-size: 28px;
+        line-height: 1.875rem;
+        margin-top: 1.5rem;
+        font-weight: bold
+    }
+}
+
+.mt2{
+    margin-top: 16px;
+}
+.mt1{
+    margin-top: 8px;
+}
+
+.p1{
+    padding: 8px;
+}
+.px1{
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.px2{
+    padding-left: 16px;
+    padding-right: 16px;
+}
+.py1{
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+.py2{
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+.ml1{
+    margin-left: 8px !important;
+}
+.mr1{
+    margin-right: 8px !important;
 }

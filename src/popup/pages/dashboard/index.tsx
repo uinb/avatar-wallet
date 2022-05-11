@@ -1,12 +1,16 @@
 import React from 'react';
-import Button from '@material-ui/core/Button'
+import Grid from '@material-ui/core/Grid';
+import {DashboardHeader} from '../../components/header';
 
 
 const Dashboard = () => {
     return (
-        <div> 
-            <Button fullWidth color="secondary" variant='contained'>Dashboard</Button>
-        </div>
+        <Grid className="px2"> 
+            <DashboardHeader />
+            <Grid>
+
+            </Grid>
+        </Grid>
     )
 }
 
