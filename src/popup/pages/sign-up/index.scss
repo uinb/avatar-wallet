@@ -1,9 +1,8 @@
 
 
 .content{
-    height: calc(100vh);
+    height: 100vh;
     padding-top: 48px;
-    display: flex !important;
-    justify-content: space-between;
-    flex-direction: column;
+    display: flex;
+    justify-content: space-around;
 }

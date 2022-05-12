@@ -42,30 +42,40 @@ a{
 }
 
 .mt2{
-    margin-top: 16px;
+    margin-top: 16px !important;
+}
+.tl{
+    text-align:left !important;
 }
 .mt1{
-    margin-top: 8px;
+    margin-top: 8px !important;
+}
+.mt3{
+    margin-top: 24px !important;
+}
+
+.mt4{
+    margin-top: 32px !important;
 }
 
 .p1{
-    padding: 8px;
+    padding: 8px !important;
 }
 .px1{
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
 }
 .px2{
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
 }
 .py1{
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
 }
 .py2{
-    padding-top: 16px;
-    padding-bottom: 16px;
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
 }
 .ml1{
     margin-left: 8px !important;

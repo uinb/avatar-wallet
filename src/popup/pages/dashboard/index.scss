@@ -1,0 +1,36 @@
+.dashboard-content{
+    display: flex;
+    justify-content: space-between;
+    height: 100vh;
+    padding-top: 56px;
+    flex-wrap: nowrap;
+    .chainList{
+        .chainItem{
+            position: relative;
+            display: flex;
+            flex-shrink: 1;
+            margin: 16px 0;
+            align-items: center;
+            .activeBar{
+                display: block;
+                width: 4px;
+                height: 18px;
+                position: absolute;
+                left: 0px;
+            }
+            .icon{
+                width: 32px;
+                height: 32px;
+                display:flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                margin: 0 12px;
+            }
+        }
+    }
+    .chainContent{
+        height: 100%;
+        width: calc(100% - 56px);
+    }
+}

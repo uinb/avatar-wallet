@@ -29,11 +29,19 @@ const SignUp = () => {
                     <Typography variant="caption" color="textSecondary" gutterBottom>The password is used to protect your Enigma seed phrase(s) so that other Chrome extensions can't access them.</Typography>
                     <Box className="mt2">
                         <InputLabel>New Password</InputLabel>
-                        <Input fullWidth className="mt2" endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small"  onClick={() => setPwdVisible(false)}/> : <Visibility color="action"  fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
+                        <Input 
+                            fullWidth 
+                            className="mt2" 
+                            type={pwdVisible ? "text" : "password" }
+                            endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small"  onClick={() => setPwdVisible(false)}/> : <Visibility color="action"  fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
                     </Box>
                     <Box className="mt2">
                         <InputLabel>Confirm New Password</InputLabel>
-                        <Input fullWidth className="mt2" endAdornment={pwdVisible ? <VisibilityOff color="action"  fontSize="small" onClick={() => setPwdVisible(false)}/> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
+                        <Input 
+                            fullWidth 
+                            type={pwdVisible ? "text" : "password" }
+                            className="mt2" 
+                            endAdornment={pwdVisible ? <VisibilityOff color="action"  fontSize="small" onClick={() => setPwdVisible(false)}/> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
                     </Box>
                 </Box>
                 <Button fullWidth color="primary" variant='contained' size="large" component={Link} to="/dashboard" disabled={false} className="mt2" onClick={handleSignUp}>Sign up</Button><br/><br/>

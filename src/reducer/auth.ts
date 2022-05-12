@@ -4,11 +4,13 @@ import { RootState } from '../app/store';
 interface AuthProps {
   loading: boolean,
   password: string,
+  expiredTime: number,
 }
 
 const initialState: AuthProps = {
   loading: false,
   password: '',
+  expiredTime: 0
 }
 
 
@@ -18,6 +20,7 @@ export const auth = createSlice({
   reducers: {
     setUserPwd(state, {payload = ''}){
       state.password  = payload;
+      state.expiredTime = Date.now();
     },
   },
   extraReducers: (builder) => {

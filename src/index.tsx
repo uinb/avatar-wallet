@@ -61,6 +61,7 @@ const theme:ThemeOptions  = createTheme({
     MuiButton:{
       root:{
         textTransform: 'capitalize',
+        fontSize: '0.75rem'
       },
 
       contained:{
@@ -68,7 +69,6 @@ const theme:ThemeOptions  = createTheme({
         color: "#2F64F9",
         boxShadow: '0 0 0'
       },
-
       containedPrimary:{
         background:  'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%) !important',
       },
