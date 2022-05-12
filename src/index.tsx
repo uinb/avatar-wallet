@@ -1,14 +1,14 @@
 import React, {Fragment} from 'react';
 import ReactDOM from 'react-dom/client';
 import Popup from './popup';
-import {createTheme, ThemeProvider, alpha} from '@material-ui/core';
+import {createTheme, ThemeProvider, alpha, ThemeOptions} from '@material-ui/core';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import { persistStore } from "reduxjs-toolkit-persist";
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-const theme  = createTheme({
+const theme:ThemeOptions  = createTheme({
   palette:{
     primary:{
       main: '#2F64F9'
@@ -20,15 +20,26 @@ const theme  = createTheme({
       default: '#FFFFFF',
       paper: "#F9F9F9"
     },
+    text:{
+      primary: '#282828',
+      secondary: '#666666',
+    },
     action:{
       disabled: '#fff',
       disabledBackground: alpha('#2F64F9', 0.2)
     }
   },
   overrides:{
+    MuiTypography:{
+      caption:{
+        fontSize: '0.75rem',
+        lineHeight: 1.5
+      }
+    },
     MuiInput:{
       root: {
         background: "#F5F5F5",
+        padding: '8px',
         "&:after":{
           border: 0
         },
@@ -51,9 +62,16 @@ const theme  = createTheme({
       root:{
         textTransform: 'capitalize',
       },
+
+      contained:{
+        backgroundColor: '#fff',
+        color: "#2F64F9",
+        boxShadow: '0 0 0'
+      },
+
       containedPrimary:{
-        background:  'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%)',
-      }
+        background:  'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%) !important',
+      },
     }
   }
 })
