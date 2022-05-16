@@ -47,6 +47,12 @@ const theme:ThemeOptions  = createTheme({
         padding: `8px 16px`
       }
     },
+    MuiCard:{
+      root:{
+        background: '#F9F9F9',
+        boxShadow: '0 0 0'
+      }
+    },
     MuiInput:{
       root: {
         background: "#F5F5F5",
