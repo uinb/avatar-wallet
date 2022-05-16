@@ -36,6 +36,17 @@ const theme:ThemeOptions  = createTheme({
         lineHeight: 1.5
       }
     },
+    MuiMenu:{
+      paper:{
+        borderRadius: 16,
+      }
+    },
+    MuiMenuItem:{
+      root: {
+        minHeight: 'auto',
+        padding: `8px 16px`
+      }
+    },
     MuiInput:{
       root: {
         background: "#F5F5F5",

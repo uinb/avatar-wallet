@@ -31,7 +31,7 @@ const Dashboard = (props:any) => {
                     })}
                 </Grid>
                 <Grid className="chainContent">
-                    <NearCore networkId="testnet"/>
+                    <NearCore networkId="testnet" config={chains.near}/>
                 </Grid>
             </Grid>
         </Grid>
