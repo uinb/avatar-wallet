@@ -22,7 +22,7 @@ const SignUp = () => {
     }
     return (
         <Grid container direction="column" >
-            <HeaderWithBack />
+            <HeaderWithBack back="/welcome"/>
             <Container className="content">
                 <Box>
                     <Typography variant="h5" gutterBottom>Set Password</Typography>
