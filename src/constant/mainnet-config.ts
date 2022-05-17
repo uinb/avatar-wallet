@@ -6,5 +6,5 @@ export default {
         helperUrl: "https://helper.mainnet.near.org",
         explorerUrl: "https://explorer.mainnet.near.org",
         headers: {},
-    }      
+    },
 }

@@ -1,9 +1,9 @@
-import  React, {useState, useEffect} from 'react';
+import  React, {useState, useEffect, useCallback} from 'react';
 import  Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import {initNear} from '../../../../api';
-import axios from 'axios';
-import {KeyPair, utils} from 'near-api-js';
+import {Near} from '../../../../api';
+import {utils} from 'near-api-js';
+import {Link} from 'react-router-dom';
 import Paper from '@material-ui/core/Paper';
 import {Typography, withTheme} from '@material-ui/core';
 import MoreVert from '@material-ui/icons/MoreVert';
@@ -13,8 +13,6 @@ import Box from '@material-ui/core/Box';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import Card from '@material-ui/core/Card';
-import ImageIcon from '@material-ui/icons/Image';
-import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
@@ -23,57 +21,36 @@ import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-
-const {parseSeedPhrase} = require('near-seed-phrase')
-
-
-const NearCore = (props: any) => {
-    const {networkId, config, theme} = props;
-    const [near, setNear] = useState(null) as any;
-    const [operateEnable, setOperateEnable] = useState(false);
+const NearCoreComponent = (props: any) => {
+    const {config, theme} = props;
     const [anchorEl, setAnchorEl] = useState(null)
     const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
     const [activeAccount, setActiveAccount] = useState('');
     const [balances, setBalances] = useState({}) as any;
-    useEffect(() => {
-        if(near){
-            return ;
-        }
-        (async () => {
-            const connectedNear = await initNear(networkId);
-            setNear(connectedNear);
-            setOperateEnable(true)
-        })()
-    })
-
-    const refreshAccountList = async () => {
-        const {keyStore} = near.config;
-        const accounts = await keyStore.getAccounts(networkId);
+    const refreshAccountList = useCallback(async () => {
+        const accounts = await Near.getAccounts();
         setAccounts(accounts);
         setActiveAccount(accounts[0]);
-    }
+    },[])
 
-
-    useEffect(() => {
-        if(!near){
-            return;
-        }
-        refreshAccountList();
-    },[near])
-
-    const handleImportAccount = async () => {
-        if(!operateEnable){
+    const fetchBalances = useCallback(async () => {
+        if(!activeAccount){
             return ;
         }
-        const { helperUrl, keyStore } = near.config;
-        const {secretKey, publicKey} = parseSeedPhrase('erode donkey glow total cricket fancy mind time wrestle emerge rebuild brave');
-        const {data} = await axios.get(`${helperUrl}/publicKey/${publicKey}/accounts`);
-        const PRIVATE_KEY = secretKey.split("ed25519:")[1];
-        const keyPair = KeyPair.fromString(PRIVATE_KEY);
-        await keyStore.setKey("testnet", data[0], keyPair);
+        const account = await Near.account(activeAccount);
+        const balances = await account.getAccountBalance();
+        setBalances(balances);
+    },[activeAccount])
+
+    useEffect(() => {
+        fetchBalances();
+    },[fetchBalances])
+
+    useEffect(() => {
         refreshAccountList();
-    }
+    },[refreshAccountList])
+
 
     const handleCreateAccount = () => {
 
@@ -88,7 +65,15 @@ const NearCore = (props: any) => {
         const {items = [], handleItemClick} = props as {items: Array<any>, handleItemClick: any};
         return (
             items.map((item:any, index:number) => (
-                <MenuItem key={index} onClick={() => handleItemClick(item.value)}>{item.label}</MenuItem> 
+                item.link ? (
+                    <MenuItem 
+                        key={index} 
+                        component={Link}
+                        to={item.link}
+                    >{item.label}</MenuItem> 
+                ) : (
+                    <MenuItem key={index} onClick={() => handleItemClick(item.value)}>{item.label}</MenuItem> 
+                )
             ))
         )
     }
@@ -99,16 +84,13 @@ const NearCore = (props: any) => {
 
     const operations = [
         {
-            label:'Reanme',
-            value: 'rename'
-        },
-        {
             label:'Create Account',
             value: 'createAccount'
         },
         {
             label:'Import Account',
-            value: 'importAccount'
+            value: 'importAccount',
+            link:'/import-account/near'
         },
         {
             label:'Export Account',
@@ -126,31 +108,18 @@ const NearCore = (props: any) => {
 
     const handleOperateClick = async (type:string) => {
         if(type === 'forgetAccount'){
-            const {keyStore} = near.config;
-            await keyStore.removeKey(networkId, activeAccount);
-            refreshAccountList();
+            await Near.forgetAccount(activeAccount);
         }
+        refreshAccountList();
         setOperationAnchorEl(null);
     }
-
-    const fetchBalances = async () => {
-        const account = await near.account(activeAccount);
-        const balances = await account.getAccountBalance();
-        setBalances(balances);
-    }
-
-    useEffect(() => {
-        if(!activeAccount || !near){
-            return ;
-        }
-        fetchBalances();
-    },[activeAccount, near])
+    
 
     return (
         <Grid component="div" className="px1 mt1">
             {accounts.length ? (
                 <>
-                    <Paper className="p1" style={{background: config.primary, color: theme.palette.primary.contrastText}}>
+                    <Paper style={{padding: theme.spacing(2),background: config.primary, color: theme.palette.primary.contrastText}}>
                         <Grid container justifyContent='space-between'>
                             <Box>
                                 <Grid container onClick={handleChangeAccount}>
@@ -192,7 +161,6 @@ const NearCore = (props: any) => {
                             <Tab label="Assets" value="assets"/>
                             <Tab label="NFTs" value="nfts"/>
                         </Tabs>
-                        <Typography component="div"></Typography>
                         <Grid className="assetsList mt2">
                             <Card>
                                 <ListItem>
@@ -201,7 +169,7 @@ const NearCore = (props: any) => {
                                             <img src={chains.near.logo} alt=""/>
                                         </Avatar>
                                     </ListItemAvatar>
-                                    <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='折合cny' />
+                                    <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='折合USD' />
                                 </ListItem>
                             </Card>
                         </Grid>
@@ -210,7 +178,7 @@ const NearCore = (props: any) => {
                 
             ) : (
                 <Grid container justifyContent='space-between'>
-                    <Button color="primary" variant="contained" onClick={handleImportAccount}>Import Account</Button>
+                    <Button color="primary" variant="contained" component={Link} to={`/import-account/near`}>Import Account</Button>
                     <Button color="primary" variant="outlined" onClick={handleCreateAccount}>Create Account</Button>
                 </Grid>
             )}
@@ -220,4 +188,4 @@ const NearCore = (props: any) => {
 }
 
 
-export default withTheme(NearCore);
+export default withTheme(NearCoreComponent);

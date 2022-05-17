@@ -53,6 +53,11 @@ const theme:ThemeOptions  = createTheme({
         boxShadow: '0 0 0'
       }
     },
+    MuiPaper:{
+      rounded:{
+        borderRadius: 12,
+      }
+    },
     MuiInput:{
       root: {
         background: "#F5F5F5",

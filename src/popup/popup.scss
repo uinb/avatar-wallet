@@ -83,3 +83,19 @@ a{
 .mr1{
     margin-right: 8px !important;
 }
+
+.container{
+    height: 100vh;
+    padding-top: 48px;
+    padding: 48px 16px 0;
+}
+
+textarea{
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    border-color: transparent;
+    padding: 16px;
+    box-sizing: border-box;
+    margin: 16px 0;
+    resize: none;
+}
