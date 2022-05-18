@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import { useState } from 'react';
 import Button from '@material-ui/core/Button';
-import {Link} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Input from '@material-ui/core/Input';
-import {HeaderWithBack} from '../../components/header';
+import { HeaderWithBack } from '../../components/header';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import './index.scss';
@@ -12,42 +12,58 @@ import Box from '@material-ui/core/Box';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
 import { useAppDispatch } from '../../../app/hooks';
-import {setUserPwd} from '../../../reducer/auth';
+import { setUserPwd } from '../../../reducer/auth';
+import { password } from '../../../utils/validate';
 
 const SignUp = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
     const dispatch = useAppDispatch();
-    const [pwd, setPwd] = useState('');
+    const [pwd, setPwd] = useState<string>('');
+    const [confirmPwd, setConfirmPwd] = useState<string>('');
+    const [inputError, setInputError] = useState({ passowrd: '', confirmPassword: '' });
+    const navigate = useNavigate()
+
     const handleSignUp = () => {
-        dispatch(setUserPwd(pwd))
+        if (!password(pwd)) {
+            setInputError({ ...inputError, passowrd: 'Password at least 8 characters, including numbers and letters !!' })
+        } else if (pwd !== confirmPwd) {
+            setInputError({ passowrd: '', confirmPassword: 'Inconsistent password entered twice !!' })
+        } else {
+            dispatch(setUserPwd(pwd))
+            navigate('/dashboard')
+        }
     }
+
     return (
         <Grid container direction="column" >
-            <HeaderWithBack back="/welcome"/>
+            <HeaderWithBack back="/welcome" />
             <Container className="content">
                 <Box>
                     <Typography variant="h5" gutterBottom>Set Password</Typography>
                     <Typography variant="caption" color="textSecondary" gutterBottom>The password is used to protect your Enigma seed phrase(s) so that other Chrome extensions can't access them.</Typography>
                     <Box className="mt2">
                         <InputLabel>New Password</InputLabel>
-                        <Input 
-                            fullWidth 
+                        <Input
+                            fullWidth
                             className="mt2"
-                            onChange={(e) => {setPwd(e.target.value)}} 
-                            type={pwdVisible ? "text" : "password" }
-                            endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small"  onClick={() => setPwdVisible(false)}/> : <Visibility color="action"  fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
+                            onChange={(e) => { setPwd(e.target.value) }}
+                            type={pwdVisible ? "text" : "password"}
+                            endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small" onClick={() => setPwdVisible(false)} /> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)} />} />
+                        {inputError.passowrd && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError.passowrd}</Typography>}
                     </Box>
                     <Box className="mt2">
                         <InputLabel>Confirm New Password</InputLabel>
-                        <Input 
-                            fullWidth 
-                            type={pwdVisible ? "text" : "password" }
-                            className="mt2" 
-                            endAdornment={pwdVisible ? <VisibilityOff color="action"  fontSize="small" onClick={() => setPwdVisible(false)}/> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
+                        <Input
+                            fullWidth
+                            type={pwdVisible ? "text" : "password"}
+                            onChange={(e) => { setConfirmPwd(e.target.value) }}
+                            className="mt2"
+                            endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small" onClick={() => setPwdVisible(false)} /> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)} />} />
+                        {inputError.confirmPassword && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError.confirmPassword}</Typography>}
                     </Box>
                 </Box>
-                <Button fullWidth color="primary" variant='contained' size="large" component={Link} to="/dashboard" disabled={false} className="mt2" onClick={handleSignUp}>Sign up</Button><br/><br/>
-            </Container> 
+                <Button fullWidth color="primary" variant='contained' size="large" disabled={false} className="mt2" onClick={handleSignUp}>Sign up</Button><br /><br />
+            </Container>
         </Grid>
     )
 }
