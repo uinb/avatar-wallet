@@ -6,6 +6,7 @@ import {HashRouter, Route, Routes} from 'react-router-dom';
 import Dashboard from './pages/dashboard';
 import Grid from '@material-ui/core/Grid';
 import Welcome from './pages/welcome';
+import ImportAccount from './pages/import-account';
 
 const Popup = () => {
    
@@ -18,6 +19,7 @@ const Popup = () => {
                     <Route path="/sign-up" element={<SignUp />} />
                     <Route path="/sign-in" element={<SignIn />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/import-account/:chain" element={<ImportAccount />} />
                 </Routes>
             </HashRouter>
         </Grid>

@@ -17,12 +17,13 @@ import {setUserPwd} from '../../../reducer/auth';
 const SignUp = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
     const dispatch = useAppDispatch();
+    const [pwd, setPwd] = useState('');
     const handleSignUp = () => {
-        dispatch(setUserPwd('wulin1234'))
+        dispatch(setUserPwd(pwd))
     }
     return (
         <Grid container direction="column" >
-            <HeaderWithBack />
+            <HeaderWithBack back="/welcome"/>
             <Container className="content">
                 <Box>
                     <Typography variant="h5" gutterBottom>Set Password</Typography>
@@ -31,7 +32,8 @@ const SignUp = () => {
                         <InputLabel>New Password</InputLabel>
                         <Input 
                             fullWidth 
-                            className="mt2" 
+                            className="mt2"
+                            onChange={(e) => {setPwd(e.target.value)}} 
                             type={pwdVisible ? "text" : "password" }
                             endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small"  onClick={() => setPwdVisible(false)}/> : <Visibility color="action"  fontSize="small" onClick={() => setPwdVisible(true)}/>}/>
                     </Box>

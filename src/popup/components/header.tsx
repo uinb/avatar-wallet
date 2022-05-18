@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import AppBar from '@material-ui/core/AppBar';
 import { makeStyles } from '@material-ui/core';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import dashboardLogo from '../../img/dashboard-logo.svg';
 import cn from 'classnames';
 import IconButton from '@material-ui/core/IconButton';
@@ -50,13 +50,13 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-export const HeaderWithBack  = () => {
+export const HeaderWithBack  = (props:any) => {
     const classes = useStyles();
+    const {back = '/' } = props;
+    const navigator = useNavigate();
     return (
         <AppBar className={classes.root}>
-            <Link to="/welcome">
-                <ArrowBack color="inherit"/>
-            </Link>
+            <ArrowBack color="inherit" onClick={() => navigator(back)}/>
         </AppBar>
     )
 }

@@ -36,6 +36,28 @@ const theme:ThemeOptions  = createTheme({
         lineHeight: 1.5
       }
     },
+    MuiMenu:{
+      paper:{
+        borderRadius: 16,
+      }
+    },
+    MuiMenuItem:{
+      root: {
+        minHeight: 'auto',
+        padding: `8px 16px`
+      }
+    },
+    MuiCard:{
+      root:{
+        background: '#F9F9F9',
+        boxShadow: '0 0 0'
+      }
+    },
+    MuiPaper:{
+      rounded:{
+        borderRadius: 12,
+      }
+    },
     MuiInput:{
       root: {
         background: "#F5F5F5",

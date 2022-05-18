@@ -5,7 +5,9 @@ import './index.scss';
 import chains from '../../../constant/chains';
 import { Typography } from '@material-ui/core';
 import { withTheme } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
+import NearCore from './near';
+import { useAppSelector } from '../../../app/hooks';
+import { selectNetwork } from '../../../reducer/network';
 
 const Dashboard = (props:any) => {
     const {theme} = props;
@@ -13,28 +15,26 @@ const Dashboard = (props:any) => {
     const handleChangeChain = (chain:string) => {
         setActiveChain(chain)
     }
+    const networkId = useAppSelector(selectNetwork);
 
     return (
-        <Grid> 
+        <Grid>
             <DashboardHeader />
             <Grid className="dashboard-content">
                 <Grid className="chainList">
                     {Object.entries(chains).map(([key, item]: [string, any]) => {
                         return (
-                            <div className="chainItem">
+                            <div className="chainItem" key={key} >
                                 <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === key ? 'block' : 'none'}}></span>
-                                <Typography color="primary" variant='caption' className="icon" onClick={() => handleChangeChain(key)} key={key} style={{backgroundColor: activeChain === key ? item.background : theme.palette.background.paper}}>
-                                   <img src={activeChain === key ? item.logo : item.inactiveLogo} alt="" width="18"/>
+                                <Typography color="primary" variant='caption' className="icon" onClick={() => handleChangeChain(key)} style={{backgroundColor: activeChain === key ? item.background : theme.palette.background.paper}}>
+                                <img src={activeChain === key ? item.logo : item.inactiveLogo} alt="" width="18"/>
                                 </Typography>
                             </div>
                         )
                     })}
                 </Grid>
                 <Grid className="chainContent">
-                    <Grid container justifyContent='space-between' className="px1 mt1">
-                        <Button color="primary" variant="contained">Import Account</Button>
-                        <Button color="primary" variant="outlined">Create Account</Button>
-                    </Grid>
+                    <NearCore networkId={networkId} config={chains.near}/>
                 </Grid>
             </Grid>
         </Grid>
