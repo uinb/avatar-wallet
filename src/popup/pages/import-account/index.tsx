@@ -8,6 +8,7 @@ import { useAppSelector } from '../../../app/hooks';
 import { selectChain} from '../../../reducer/network';
 import {Near} from '../../../api';
 import { useNavigate } from 'react-router-dom';
+import Content from '../../components/layout-content';
 
 
 const ImportAccount = (props:any) => {
@@ -31,7 +32,7 @@ const ImportAccount = (props:any) => {
     return (
         <Grid>
             <HeaderWithBack back="/dashboard"/>
-            <Grid className="container">
+            <Content>
                 <div>
                     <Typography>Import Phrase</Typography>
                     <TextareaAutosize 
@@ -44,7 +45,7 @@ const ImportAccount = (props:any) => {
                     {errorText ? <Typography color="primary" variant="caption">{errorText}</Typography> : null }
                     <Button color="primary" className="mt3" size="large" variant="contained" fullWidth onClick={handleImport}>continue</Button>
                 </div>
-            </Grid>
+            </Content>
         </Grid>
     )
 }
