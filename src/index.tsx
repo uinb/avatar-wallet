@@ -89,10 +89,13 @@ const theme:ThemeOptions  = createTheme({
       contained:{
         backgroundColor: '#fff',
         color: "#2F64F9",
-        boxShadow: '0 0 0'
+        boxShadow: '0 0 0',
       },
       containedPrimary:{
-        background:  'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%) !important',
+        background: 'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%)',
+        '&.Mui-disabled':{
+          background: 'transparent'
+        }
       },
     }
   }
