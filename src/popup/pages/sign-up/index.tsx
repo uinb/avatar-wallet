@@ -4,7 +4,6 @@ import {Link} from 'react-router-dom';
 import Input from '@material-ui/core/Input';
 import {HeaderWithBack} from '../../components/header';
 import Grid from '@material-ui/core/Grid';
-import Container from '@material-ui/core/Container';
 import './index.scss';
 import Typography from '@material-ui/core/Typography';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -13,6 +12,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
 import { useAppDispatch } from '../../../app/hooks';
 import {setUserPwd} from '../../../reducer/auth';
+import Content from '../../components/layout-content';
 
 const SignUp = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
@@ -24,7 +24,7 @@ const SignUp = () => {
     return (
         <Grid container direction="column" >
             <HeaderWithBack back="/welcome"/>
-            <Container className="content">
+            <Content>
                 <Box>
                     <Typography variant="h5" gutterBottom>Set Password</Typography>
                     <Typography variant="caption" color="textSecondary" gutterBottom>The password is used to protect your Enigma seed phrase(s) so that other Chrome extensions can't access them.</Typography>
@@ -47,7 +47,7 @@ const SignUp = () => {
                     </Box>
                 </Box>
                 <Button fullWidth color="primary" variant='contained' size="large" component={Link} to="/dashboard" disabled={false} className="mt2" onClick={handleSignUp}>Sign up</Button><br/><br/>
-            </Container> 
+            </Content> 
         </Grid>
     )
 }
