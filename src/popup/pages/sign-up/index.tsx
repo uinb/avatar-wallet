@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import Input from '@material-ui/core/Input';
 import { HeaderWithBack } from '../../components/header';
 import Grid from '@material-ui/core/Grid';
-import Container from '@material-ui/core/Container';
 import './index.scss';
 import Typography from '@material-ui/core/Typography';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -14,6 +13,7 @@ import Visibility from '@material-ui/icons/Visibility';
 import { useAppDispatch } from '../../../app/hooks';
 import { setUserPwd } from '../../../reducer/auth';
 import { password } from '../../../utils/validate';
+import Content from '../../components/layout-content';
 
 const SignUp = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
@@ -34,9 +34,11 @@ const SignUp = () => {
         } else if (pwd !== confirmPwd && confirmPwd) {
             setInputError({ passowrd: '', confirmPassword: 'Inconsistent password entered twice !!' })
             setVerifyStatus(false)
-        } else {
+        } else if (confirmPwd) {
             setInputError({ passowrd: '', confirmPassword: '' })
             setVerifyStatus(true)
+        } else {
+            setInputError({ passowrd: '', confirmPassword: '' })
         }
     }
 
@@ -55,8 +57,8 @@ const SignUp = () => {
 
     return (
         <Grid container direction="column" >
-            <HeaderWithBack back="/welcome" />
-            <Container className="content">
+            <HeaderWithBack back="/welcome"/>
+            <Content>
                 <Box>
                     <Typography variant="h5" gutterBottom>Set Password</Typography>
                     <Typography variant="caption" color="textSecondary" gutterBottom>The password is used to protect your Enigma seed phrase(s) so that other Chrome extensions can't access them.</Typography>
@@ -81,8 +83,8 @@ const SignUp = () => {
                         {inputError.confirmPassword && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError.confirmPassword}</Typography>}
                     </Box>
                 </Box>
-                <Button fullWidth color="primary" variant='contained' size="large" disabled={ !verifyStatus } className="mt2" onClick={handleSignUp}>Sign up</Button><br /><br />
-            </Container>
+                <Button fullWidth color="primary" variant='contained' size="large" disabled={!verifyStatus} className="mt2" onClick={handleSignUp}>Sign up</Button><br/><br/>
+            </Content> 
         </Grid>
     )
 }
