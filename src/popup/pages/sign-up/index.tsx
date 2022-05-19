@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { useNavigate } from 'react-router-dom';
 import Input from '@material-ui/core/Input';
@@ -21,18 +21,37 @@ const SignUp = () => {
     const [pwd, setPwd] = useState<string>('');
     const [confirmPwd, setConfirmPwd] = useState<string>('');
     const [inputError, setInputError] = useState({ passowrd: '', confirmPassword: '' });
+    const [verifyStatus, setVerifyStatus] = useState(false);
     const navigate = useNavigate()
 
-    const handleSignUp = () => {
-        if (!password(pwd)) {
+    /**
+     * verify password
+     */
+    const verifyPwd = () => {
+        if (!password(pwd) && pwd) {
             setInputError({ ...inputError, passowrd: 'Password at least 8 characters, including numbers and letters !!' })
-        } else if (pwd !== confirmPwd) {
+            setVerifyStatus(false)
+        } else if (pwd !== confirmPwd && confirmPwd) {
             setInputError({ passowrd: '', confirmPassword: 'Inconsistent password entered twice !!' })
+            setVerifyStatus(false)
         } else {
-            dispatch(setUserPwd(pwd))
-            navigate('/dashboard')
+            setInputError({ passowrd: '', confirmPassword: '' })
+            setVerifyStatus(true)
         }
     }
+
+    useEffect(() => {
+        if (pwd || confirmPwd) {
+            verifyPwd()
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pwd, confirmPwd])
+
+    const handleSignUp = () => {
+        dispatch(setUserPwd(pwd))
+        navigate('/dashboard')
+    }
+    
 
     return (
         <Grid container direction="column" >
@@ -62,7 +81,7 @@ const SignUp = () => {
                         {inputError.confirmPassword && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError.confirmPassword}</Typography>}
                     </Box>
                 </Box>
-                <Button fullWidth color="primary" variant='contained' size="large" disabled={false} className="mt2" onClick={handleSignUp}>Sign up</Button><br /><br />
+                <Button fullWidth color="primary" variant='contained' size="large" disabled={ !verifyStatus } className="mt2" onClick={handleSignUp}>Sign up</Button><br /><br />
             </Container>
         </Grid>
     )
