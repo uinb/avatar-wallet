@@ -29,6 +29,8 @@ div{
 
 a{
     color: inherit;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .logo{
@@ -56,6 +58,9 @@ a{
 
 .mt4{
     margin-top: 32px !important;
+}
+.pt4{
+    padding-top: 32px;
 }
 
 .p1{

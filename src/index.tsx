@@ -33,7 +33,7 @@ const theme:ThemeOptions  = createTheme({
     MuiTypography:{
       caption:{
         fontSize: '0.75rem',
-        lineHeight: 1.5
+        lineHeight: 1
       }
     },
     MuiMenu:{
@@ -94,7 +94,7 @@ const theme:ThemeOptions  = createTheme({
       containedPrimary:{
         background: 'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%)',
         '&.Mui-disabled':{
-          background: 'transparent'
+          background: alpha('#2F64F9', 0.2)
         }
       },
     }

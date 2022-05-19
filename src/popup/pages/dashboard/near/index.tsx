@@ -20,6 +20,8 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import {formatLongAddress} from '../../../../utils';
+import FileCopy from '@material-ui/icons/FileCopy';
 
 const NearCoreComponent = (props: any) => {
     const {config, theme} = props;
@@ -34,13 +36,19 @@ const NearCoreComponent = (props: any) => {
         setActiveAccount(accounts[0]);
     },[])
 
+    console.log(Near);
+
     const fetchBalances = useCallback(async () => {
         if(!activeAccount){
             return ;
         }
-        const account = await Near.account(activeAccount);
-        const balances = await account.getAccountBalance();
-        setBalances(balances);
+        try{
+            const account = await Near.account(activeAccount);
+            const balances = await account.getAccountBalance();
+            setBalances(balances);
+        }catch(e){
+            setBalances({total: 0});
+        }
     },[activeAccount])
 
     useEffect(() => {
@@ -51,10 +59,6 @@ const NearCoreComponent = (props: any) => {
         refreshAccountList();
     },[refreshAccountList])
 
-
-    const handleCreateAccount = () => {
-
-    }
 
     const handleAccountItemClick = (account:string) => {
         setActiveAccount(account);
@@ -85,7 +89,8 @@ const NearCoreComponent = (props: any) => {
     const operations = [
         {
             label:'Create Account',
-            value: 'createAccount'
+            value: 'createAccount',
+            link:"/create-account/near"
         },
         {
             label:'Import Account',
@@ -123,14 +128,14 @@ const NearCoreComponent = (props: any) => {
                         <Grid container justifyContent='space-between'>
                             <Box>
                                 <Grid container onClick={handleChangeAccount}>
-                                    <Typography variant="body2" component="div">{activeAccount}</Typography> &nbsp;
+                                    <Typography variant="body2" component="div">{formatLongAddress(activeAccount)}</Typography> &nbsp;
                                     <ArrowDropDown fontSize="medium"/>
                                 </Grid>
                                 <CopyToClipboard 
                                     text={activeAccount}
                                     onCopy={() => {console.log('copied!')}}
                                 >
-                                    <Typography variant="caption">{activeAccount}</Typography>
+                                    <Typography variant="caption" color="textSecondary" className="mt2">{formatLongAddress(activeAccount)} <FileCopy color="inherit" fontSize="inherit"/></Typography>
                                 </CopyToClipboard>
                                 <Menu
                                     id="account-menu"
@@ -140,7 +145,7 @@ const NearCoreComponent = (props: any) => {
                                     onClose={() => setAnchorEl(null)}
                                 >
                                     <MenuContent 
-                                        items={accounts.map(item => ({label: item, value: item}))}
+                                        items={accounts.map(item => ({label: formatLongAddress(item), value: item}))}
                                         handleItemClick={handleAccountItemClick}
                                     />
                                 </Menu>
@@ -179,7 +184,7 @@ const NearCoreComponent = (props: any) => {
             ) : (
                 <Grid container justifyContent='space-between'>
                     <Button color="primary" variant="contained" component={Link} to={`/import-account/near`}>Import Account</Button>
-                    <Button color="primary" variant="outlined" onClick={handleCreateAccount}>Create Account</Button>
+                    <Button color="primary" variant="outlined" component={Link} to={`/create-account/near`}>Create Account</Button>
                 </Grid>
             )}
             

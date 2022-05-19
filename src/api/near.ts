@@ -1,23 +1,21 @@
 import {connect, keyStores, Near, KeyPair} from 'near-api-js';
 import axios from 'axios';
 
-const {parseSeedPhrase} = require('near-seed-phrase')
+const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
 
 class NearCore extends Near{
     near: any;
     networkId: string;
-    config: any;
     constructor(config:any){
         super({...config, keyStore: new keyStores.BrowserLocalStorageKeyStore()});
         this.networkId = config?.networkId;
-        this.config = config;
-        this.init();
+        this.init(config);
     }
-    async init(){
+    async init(config :any){
         const keyStore = new keyStores.BrowserLocalStorageKeyStore()
         const near = await connect({
             keyStore, 
-            ...this.config
+            ...config
         })
         this.near = near;
     }
@@ -45,6 +43,11 @@ class NearCore extends Near{
     async forgetAccount(accountId:string){
         const {keyStore} = this.near.config;
         await keyStore.removeKey(this.networkId, accountId);
+    }
+
+    generateKeyPair(){
+        const keys = generateSeedPhrase();
+        return keys;
     }
 }
 export default NearCore;
