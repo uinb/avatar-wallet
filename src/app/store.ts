@@ -4,6 +4,7 @@ import autoMergeLevel2 from 'reduxjs-toolkit-persist/lib/stateReconciler/autoMer
 import storage from 'reduxjs-toolkit-persist/lib/storage';
 import authReducer from '../reducer/auth';
 import networkReducer from '../reducer/network';
+import nearReducer from '../reducer/near';
 
 const persistConfig = {
   key: 'avatar-wallet',
@@ -14,7 +15,8 @@ const persistConfig = {
 
 const rootReducers = combineReducers({
   auth: authReducer,
-  network: networkReducer
+  network: networkReducer,
+  near: nearReducer
 })
 
 const _persistedReducer = persistReducer<any,AnyAction>(persistConfig, rootReducers);

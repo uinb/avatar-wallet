@@ -10,6 +10,7 @@ export default {
         name:'near',
         primary: '#000000',
         background: '#000000',
+        ftPriceUrl:'https://indexer.ref-finance.net/list-token-price',
     },
     fusotao: {
         logo: fusotao,

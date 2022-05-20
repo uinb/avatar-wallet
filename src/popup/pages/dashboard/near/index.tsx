@@ -22,21 +22,32 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import {formatLongAddress} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
+import {setSignerAccounts} from '../../../../reducer/near';
+import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
+import Big from 'big.js';
+
+interface BalanceProps {
+    decimal: number;
+    price: string;
+    symbol: string;
+    balance:string    
+}
 
 const NearCoreComponent = (props: any) => {
     const {config, theme} = props;
+    const dispatch = useAppDispatch()
     const [anchorEl, setAnchorEl] = useState(null)
     const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
     const [activeAccount, setActiveAccount] = useState('');
     const [balances, setBalances] = useState({}) as any;
+    const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const refreshAccountList = useCallback(async () => {
-        const accounts = await Near.getAccounts();
-        setAccounts(accounts);
-        setActiveAccount(accounts[0]);
+        const fecthedAccounts = await Near.getAccounts();
+        setAccounts(fecthedAccounts);
+        setActiveAccount(fecthedAccounts[0]);
     },[])
 
-    console.log(Near);
 
     const fetchBalances = useCallback(async () => {
         if(!activeAccount){
@@ -45,6 +56,8 @@ const NearCoreComponent = (props: any) => {
         try{
             const account = await Near.account(activeAccount);
             const balances = await account.getAccountBalance();
+            const ftContract = await Near.fetchFtBalance(activeAccount);
+            setFTBalances(ftContract)
             setBalances(balances);
         }catch(e){
             setBalances({total: 0});
@@ -167,16 +180,29 @@ const NearCoreComponent = (props: any) => {
                             <Tab label="NFTs" value="nfts"/>
                         </Tabs>
                         <Grid className="assetsList mt2">
-                            <Card>
+                            <Card className="mb1">
                                 <ListItem>
                                     <ListItemAvatar>
                                         <Avatar style={{background: chains.near.background}}>
                                             <img src={chains.near.logo} alt=""/>
                                         </Avatar>
                                     </ListItemAvatar>
-                                    <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='折合USD' />
+                                    <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='≈折合USD' />
                                 </ListItem>
+                                
                             </Card>
+                            {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
+                                <Card>
+                                    <ListItem>
+                                        <ListItemAvatar>
+                                            <Avatar style={{background: chains.near.background}}>
+                                                <img src={chains.near.logo} alt=""/>
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary='≈折合USD' />
+                                    </ListItem>
+                                </Card> 
+                            )) :null}
                         </Grid>
                     </Grid>
                 </>

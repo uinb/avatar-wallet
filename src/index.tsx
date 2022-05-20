@@ -23,6 +23,10 @@ const theme:ThemeOptions  = createTheme({
     text:{
       primary: '#282828',
       secondary: '#666666',
+      hint:'#BEC1D6',
+    },
+    error:{
+      main: '#F23E5F'
     },
     action:{
       disabled: '#fff',
@@ -33,7 +37,8 @@ const theme:ThemeOptions  = createTheme({
     MuiTypography:{
       caption:{
         fontSize: '0.75rem',
-        lineHeight: 1
+        lineHeight: 1.75,
+        fontWeight: 200
       }
     },
     MuiMenu:{
@@ -63,12 +68,14 @@ const theme:ThemeOptions  = createTheme({
         background: "#F5F5F5",
         padding: '8px',
         "&:after":{
-          border: 0
+          border: '1px solid transparent'
         },
         borderRadius: '4px !important',
         "&:hover": {
           border: '1px solid #438AFD',
-        
+        },
+        "&.Mui-error": {
+          border: '1px solid #F23E5F',
         }
       },
       underline:{
