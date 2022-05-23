@@ -192,11 +192,16 @@ const NearCoreComponent = (props: any) => {
                                 
                             </Card>
                             {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
-                                <Card>
+                                <Card className="mt2">
                                     <ListItem>
                                         <ListItemAvatar>
-                                            <Avatar style={{background: chains.near.background}}>
-                                                <img src={chains.near.logo} alt=""/>
+                                            <Avatar style={{background: chains[item.symbol.toLowerCase()].background || theme.palette.primary.main}}>
+                                                {!chains[item.symbol.toLowerCase()]?.logo ? (
+                                                    <img src={chains[item.symbol.toLowerCase()]?.logo} alt=""/>
+                                                ): (
+                                                    item.symbol.slice(0,1)
+                                                )}
+                                                
                                             </Avatar>
                                         </ListItemAvatar>
                                         <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary='≈折合USD' />

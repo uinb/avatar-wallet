@@ -93,6 +93,10 @@ class NearCore extends Near{
         const refactorTokensBalance = Object.keys(tokens).map((token, index) => ({...tokens[token], balance: value[index]}))
         return refactorTokensBalance || []
     }
+    async fetchNfts(accountId){
+        const result = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
+        console.log(result);
+    }
 }
 export default NearCore;
 
