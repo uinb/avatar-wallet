@@ -5,23 +5,25 @@ import Grid from '@material-ui/core/Grid';
 import { Near } from '../../../api';
 import Typography from '@material-ui/core/Typography';
 import { useNavigate, Link } from 'react-router-dom';
-import {KeyPair} from 'near-api-js';
+import {KeyPair, utils} from 'near-api-js';
 import { useAppSelector } from '../../../app/hooks';
 import { selectNetwork } from '../../../reducer/network';
+import { selectSignerAccount } from '../../../reducer/near';
 import Seeds from './components/seeds';
 import ConfirmSeed from './components/confirmSeed';
 import CreateSuccess from './components/createSuccess';
 import SetNearAccount from './components/setNearAcccount';
 import BN from 'bn.js';
+import axios from 'axios';
 
 
 const bs58 = require('bs58');
 
 
 const CreateAccount = (props:any) => {
-    const {hasAccount} = props;
+    const singerAccounts = useAppSelector(selectSignerAccount)
     const [seeds, setSeeds] = useState('');
-    const [step, setStep] = useState('setNearAccount');
+    const [step, setStep] = useState(singerAccounts.length ? 'setNearAccount' : 'generate');
     const [tempAddress, setTempAddress] = useState('');
     const [tempKeyPair, setKeypair] = useState() as any;
     const networkId = useAppSelector(selectNetwork);
@@ -43,9 +45,10 @@ const CreateAccount = (props:any) => {
 
     const handleCreateAccount = async () => {
         const {keyStore} = Near.config;
-        const {secretKey, publicKey} = tempKeyPair;
+        const keyPair = tempKeyPair;
+        const {secretKey, publicKey} = keyPair;
+        const address = tempAddress || Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex');
         if(!tempAddress){
-            const address = tempAddress || Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex');
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
             await keyStore.setKey(networkId, address, keyPair);
@@ -54,15 +57,25 @@ const CreateAccount = (props:any) => {
         }else{
             try{
                 const PRIVATE_KEY = secretKey.split("ed25519:")[1];
-                const keyPair = KeyPair.fromString(PRIVATE_KEY);
-                const creator = await Near.account('ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
-                await keyStore.setKey(networkId, tempAddress, keyPair);
-                await creator.createAccount(
-                    tempAddress,
-                    publicKey.split(':')[1],
-                    new BN(0)
-                )
+                const setKeyPair = KeyPair.fromString(PRIVATE_KEY);
+                const creator = await Near.account(singerAccounts[0]);
+                const targetAccount = await Near.account(tempAddress);
+                await keyStore.setKey(networkId, tempAddress, setKeyPair);
+                /* await creator.functionCall({
+                    contractId: "near",
+                    methodName: "create_account",
+                    args: {
+                      new_account_id: tempAddress,
+                      new_public_key: keyPair.publicKey.toString(),
+                    },
+                    gas: "300000000000000",
+                    attachedDeposit: utils.format.parseNearAmount('0.1'),
+                  });
+                const addKeyResult = await targetAccount.addKey(keyPair.publicKey.toString());
+                console.log(addKeyResult); */
+                
             }catch(e){
+                console.log(e);
                 setStep('createSuccess');
             }
             setStep('createSuccess');

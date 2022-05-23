@@ -2,7 +2,7 @@ import  React, {useState, useEffect, useCallback} from 'react';
 import  Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import {Near} from '../../../../api';
-import {utils} from 'near-api-js';
+import {utils, KeyPair} from 'near-api-js';
 import {Link} from 'react-router-dom';
 import Paper from '@material-ui/core/Paper';
 import {Typography, withTheme} from '@material-ui/core';
@@ -22,9 +22,13 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import {formatLongAddress} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
-import {setSignerAccounts} from '../../../../reducer/near';
+import {setSignerAccounts, selectSignerAccount} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import SendIcon from '@material-ui/icons/Send';
+import axios from 'axios';
 
 interface BalanceProps {
     decimal: number;
@@ -35,7 +39,8 @@ interface BalanceProps {
 
 const NearCoreComponent = (props: any) => {
     const {config, theme} = props;
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const signerAccounts = useAppSelector(selectSignerAccount);
     const [anchorEl, setAnchorEl] = useState(null)
     const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
@@ -47,6 +52,16 @@ const NearCoreComponent = (props: any) => {
         setAccounts(fecthedAccounts);
         setActiveAccount(fecthedAccounts[0]);
     },[])
+
+    useEffect(() => {
+        if(!accounts.length){
+            return 
+        }
+        (async () => {
+            const accountsState = await Near.fetchAccountsState(accounts);
+            dispatch(setSignerAccounts(Object.keys(accountsState).filter((account) => !accountsState[account])))
+        })()
+    },[accounts])
 
 
     const fetchBalances = useCallback(async () => {
@@ -70,6 +85,7 @@ const NearCoreComponent = (props: any) => {
 
     useEffect(() => {
         refreshAccountList();
+        
     },[refreshAccountList])
 
 
@@ -77,6 +93,36 @@ const NearCoreComponent = (props: any) => {
         setActiveAccount(account);
         setAnchorEl(null);
     }
+
+    /* useEffect(() => {
+        if(!signerAccounts.length){
+            return;
+        }
+        (async () => {
+            const {keyStore} = Near.config;
+            const tempAddress = 'wulin8.near';
+            const creator = await Near.account('ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
+            const keyPair = await keyStore.getKey('mainnet', 'ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
+            const setKeyPair = KeyPair.fromString(keyPair.secretKey);
+            console.log(setKeyPair)
+            //await keyStore.setKey('mainnet', tempAddress, setKeyPair);
+            
+            await creator.functionCall({
+                contractId: "near",
+                methodName: "create_account",
+                args: {
+                    new_account_id: tempAddress,
+                    new_public_key: keyPair.publicKey.toString(),
+                },
+                gas: "300000000000000",
+                attachedDeposit: utils.format.parseNearAmount('0'),
+            });
+            const targetAccount = await Near.account(tempAddress);
+            const addKeyResult = await targetAccount.addKey(keyPair.publicKey.toString());
+            console.log(addKeyResult);
+
+        })()
+    },[signerAccounts]) */
 
     const MenuContent:any = (props:any) => {
         const {items = [], handleItemClick} = props as {items: Array<any>, handleItemClick: any};
@@ -131,7 +177,28 @@ const NearCoreComponent = (props: any) => {
         refreshAccountList();
         setOperationAnchorEl(null);
     }
-    
+
+    const sendMoney = async () => {
+        /* const senderAccount = await Near.account(signerAccounts[1]);
+        const sendResult = await senderAccount.sendMoney(signerAccounts[0], utils.format.parseNearAmount('0.02')); */
+        console.log('sendmoney')
+    }
+
+    const createNewAccount = async () => {
+        const  keyPair = Near.generateKeyPair();
+        console.log(keyPair);
+        const {publicKey, secretKey } = keyPair;
+        const PRIVATE_KEY = secretKey.split("ed25519:")[1];
+        //const keyPair = KeyPair.fromString(PRIVATE_KEY);
+        const creator = await Near.account(signerAccounts[0]);
+      /*   const contract = await Near.loadContract('near', {
+            sender: creator
+        });
+        console.log(contract); */
+        const result = await creator.addKey('wulin6.near', publicKey);
+        console.log(result);
+    }
+
 
     return (
         <Grid component="div" className="px1 mt1">
@@ -188,15 +255,17 @@ const NearCoreComponent = (props: any) => {
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='≈折合USD' />
+                                    <ListItemSecondaryAction>
+                                        <SendIcon color="action" fontSize="small"  onClick={sendMoney} style={{transform: 'rotate(-90deg)'}}/>
+                                    </ListItemSecondaryAction>
                                 </ListItem>
-                                
                             </Card>
                             {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
-                                <Card className="mt2">
+                                <Card className="mt2" key={item.symbol}>
                                     <ListItem>
                                         <ListItemAvatar>
                                             <Avatar style={{background: chains[item.symbol.toLowerCase()].background || theme.palette.primary.main}}>
-                                                {!chains[item.symbol.toLowerCase()]?.logo ? (
+                                                {chains[item.symbol.toLowerCase()]?.logo ? (
                                                     <img src={chains[item.symbol.toLowerCase()]?.logo} alt=""/>
                                                 ): (
                                                     item.symbol.slice(0,1)

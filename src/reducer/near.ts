@@ -27,5 +27,6 @@ export const near = createSlice({
 
 export const {setSignerAccounts} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
+export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts)
 
 export default near.reducer;

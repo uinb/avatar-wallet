@@ -50,10 +50,8 @@ const SetNearAccount =  (props:any) => {
             </Box>
             {account.length ? accountState ? (<Typography color="primary" variant="caption">Congrats! {`${account}.near`} is available.</Typography>) : (<Typography color="error" variant="caption">Account ID is taken. Try something else.</Typography>) : null}
             <Box>
-                {accountRules.map(rule => (
-                    <>
-                        <Typography variant='caption' component="div" color="textSecondary" className={cn(!rule.startsWith('-') ? 'mt2' : '')}>{rule}</Typography>
-                    </>
+                {accountRules.map((rule, index) => (
+                    <Typography key={index} variant='caption' component="div" color="textSecondary" className={cn(!rule.startsWith('-') ? 'mt2' : '')}>{rule}</Typography>
                 ))}
             </Box>
             <Button 

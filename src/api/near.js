@@ -2,7 +2,8 @@ import * as nearAPI from 'near-api-js';
 import axios from 'axios';
 import chainConfig from '../constant/chains';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
-const {connect, keyStores, Near, KeyPair, Contract, ContractMethods} = nearAPI;
+const {connect, keyStores, Near, KeyPair, Contract, utils} = nearAPI;
+const bs58 = require('bs58');
 
 
 class NearCore extends Near{
@@ -31,10 +32,11 @@ class NearCore extends Near{
             await keyStore.setKey(this.networkId, data[0], keyPair);
             return null
         }else{
-            return {
-                type: 'error',
-                msg: 'invalid seeds'
-            }
+            const PRIVATE_KEY = secretKey.split("ed25519:")[1];
+            const keyPair = KeyPair.fromString(PRIVATE_KEY);
+            const address = Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex')
+            await keyStore.setKey(this.networkId, address, keyPair);
+            return null
         }
     }
     async getAccounts(){
@@ -60,9 +62,8 @@ class NearCore extends Near{
             return true
         }
     }
-    async fetchFTContract(accountId){
+    async fetchFTContract(){
         const {data} = await axios.get(chainConfig.near.ftPriceUrl)
-        await this.contractBalanceOf(accountId, 'f5cfbc74057c610c8ef151a439252680ac68c6dc.factory.bridge.near');
         if(data){
             return data;
         }else{
@@ -84,7 +85,7 @@ class NearCore extends Near{
 
     }
     async fetchFtBalance(accountId){
-        const tokens = await this.fetchFTContract(accountId);
+        const tokens = await this.fetchFTContract();
         const request = Object.keys(tokens).map(address => {
             return this.contractBalanceOf(accountId, address);
         })
@@ -96,6 +97,16 @@ class NearCore extends Near{
     async fetchNfts(accountId){
         const result = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
         console.log(result);
+    }
+
+    async fetchAccountsState(accounts){
+        const request = accounts.map(account => this.viewAccountState(account));
+        const result = await Promise.all(request);
+        const accountState = accounts.reduce((all, account, index) => ({
+            ...all,
+            [account]: result[index]
+        }), {})
+       return accountState;
     }
 }
 export default NearCore;

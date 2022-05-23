@@ -5,10 +5,9 @@ import mainnetConfig from "../constant/mainnet-config";
 const connectNetworkId = localStorage.getItem('networkId') || 'mainnet'
 const config = connectNetworkId === 'testnet' ? testnetConfig.near : mainnetConfig.near;
 
-const Near = new NearCore({
+const Near:any = new NearCore({
     ...config,
-    connectNetworkId
+    connectNetworkId,
 })
 
-
-export {Near};
+export { Near };
