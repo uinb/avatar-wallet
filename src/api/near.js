@@ -82,7 +82,20 @@ class NearCore extends Near{
         )
         const balance = await contract.ft_balance_of({account_id: accountId});
         return balance
-
+    }
+    async NFTtMetadata(accountId, contractId){
+        const account = await this.near.account(accountId);
+        const contract = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['nft_metadata', 'nft_tokens_for_owner'],
+                changeMethods: ["addMessage"],
+            }
+        )
+        const metadata = await contract.nft_metadata();
+        const tokens = await contract.nft_tokens_for_owner({account_id: accountId});
+        return {...metadata, tokens}
     }
     async fetchFtBalance(accountId){
         const tokens = await this.fetchFTContract();
@@ -94,9 +107,20 @@ class NearCore extends Near{
         const refactorTokensBalance = Object.keys(tokens).map((token, index) => ({...tokens[token], balance: value[index]}))
         return refactorTokensBalance || []
     }
-    async fetchNfts(accountId){
-        const result = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
-        console.log(result);
+    async fetchNFTBalance(accountId){
+        const {data} = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
+        if(data.length){
+            const request = data.map(contract => this.NFTtMetadata(accountId, contract));
+            const result = await Promise.all(request);
+            const refactorNFTMetadata = data.reduce((all, current, index) => {
+                return {
+                    ...all,
+                    [current]: result[index]
+                }
+            }, {})
+            return refactorNFTMetadata;
+        }
+       return {}
     }
 
     async fetchAccountsState(accounts){

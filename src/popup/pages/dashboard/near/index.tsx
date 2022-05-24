@@ -37,6 +37,10 @@ interface BalanceProps {
     balance:string    
 }
 
+interface NFTMetadataProps{
+    [key:string] :any
+}
+
 const NearCoreComponent = (props: any) => {
     const {config, theme} = props;
     const dispatch = useAppDispatch();
@@ -47,6 +51,8 @@ const NearCoreComponent = (props: any) => {
     const [activeAccount, setActiveAccount] = useState('');
     const [balances, setBalances] = useState({}) as any;
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
+    const [activeTab, setActiveTab] = useState('nfts');
+    const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const refreshAccountList = useCallback(async () => {
         const fecthedAccounts = await Near.getAccounts();
         setAccounts(fecthedAccounts);
@@ -79,9 +85,26 @@ const NearCoreComponent = (props: any) => {
         }
     },[activeAccount])
 
+    const fetchNfts = useCallback(async () => {
+        if(!activeAccount){
+            return ;
+        }
+        try{
+            const nftMetadata = await Near.fetchNFTBalance(activeAccount);
+            setNftBalances(nftMetadata)
+        }catch(e){
+            console.log(e)
+        }
+    },[activeAccount])
+
     useEffect(() => {
         fetchBalances();
+        fetchNfts();
     },[fetchBalances])
+
+    useEffect(() =>{
+        fetchNfts()
+    },[fetchNfts])
 
     useEffect(() => {
         refreshAccountList();
@@ -242,42 +265,64 @@ const NearCoreComponent = (props: any) => {
                         </Grid>
                     </Paper>
                     <Grid>
-                        <Tabs indicatorColor="primary" textColor="primary" value="assets">
+                        <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => setActiveTab(value)}>
                             <Tab label="Assets" value="assets"/>
                             <Tab label="NFTs" value="nfts"/>
                         </Tabs>
-                        <Grid className="assetsList mt2">
-                            <Card className="mb1">
-                                <ListItem>
-                                    <ListItemAvatar>
-                                        <Avatar style={{background: chains.near.background}}>
-                                            <img src={chains.near.logo} alt=""/>
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='≈折合USD' />
-                                    <ListItemSecondaryAction>
-                                        <SendIcon color="action" fontSize="small"  onClick={sendMoney} style={{transform: 'rotate(-90deg)'}}/>
-                                    </ListItemSecondaryAction>
-                                </ListItem>
-                            </Card>
-                            {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
-                                <Card className="mt2" key={item.symbol}>
+                        {activeTab === 'assets' ? (
+                            <Grid className="assetsList mt2">
+                                <Card className="mb1">
                                     <ListItem>
                                         <ListItemAvatar>
-                                            <Avatar style={{background: chains[item.symbol.toLowerCase()].background || theme.palette.primary.main}}>
-                                                {chains[item.symbol.toLowerCase()]?.logo ? (
-                                                    <img src={chains[item.symbol.toLowerCase()]?.logo} alt=""/>
-                                                ): (
-                                                    item.symbol.slice(0,1)
-                                                )}
-                                                
+                                            <Avatar style={{background: chains.near.background}}>
+                                                <img src={chains.near.logo} alt=""/>
                                             </Avatar>
                                         </ListItemAvatar>
-                                        <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary='≈折合USD' />
+                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='≈折合USD' />
+                                        <ListItemSecondaryAction>
+                                            <SendIcon color="action" fontSize="small"  onClick={sendMoney} style={{transform: 'rotate(-90deg)'}}/>
+                                        </ListItemSecondaryAction>
                                     </ListItem>
-                                </Card> 
-                            )) :null}
-                        </Grid>
+                                </Card>
+                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
+                                    <Card className="mt2" key={item.symbol}>
+                                        <ListItem>
+                                            <ListItemAvatar>
+                                                <Avatar style={{background: chains[item.symbol.toLowerCase()].background || theme.palette.primary.main}}>
+                                                    {chains[item.symbol.toLowerCase()]?.logo ? (
+                                                        <img src={chains[item.symbol.toLowerCase()]?.logo} alt=""/>
+                                                    ): (
+                                                        item.symbol.slice(0,1)
+                                                    )}
+                                                    
+                                                </Avatar>
+                                            </ListItemAvatar>
+                                            <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary='≈折合USD' />
+                                        </ListItem>
+                                    </Card> 
+                                )) :null}
+                            </Grid>
+                        ) : null}
+                        {activeTab === "nfts" ? (
+                            <Grid className="assetsList mt2">
+                                {Object.entries(nftBalances).length ? Object.entries(nftBalances).map(([contract, {tokens = [], ...restProps}]) => {
+                                    return (
+                                        <Grid container spacing={2}>
+                                            <Grid item sm={6} md={6} lg={6}>
+                                                {tokens.map(token => (
+                                                    <Grid key={token?.title}>
+                                                        <Box>
+                                                            <img src={`${restProps.base_uri}/${token.metadata.media}`} alt="" width="134px" height="134px" style={{borderRadius: 8}}/>
+                                                        </Box>
+                                                        <Typography variant="caption" color="primary" className="mt1" component='div'>{token.metadata.title}</Typography>
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="center">No Collections</Typography>)}
+                            </Grid>
+                        ) : null}
                     </Grid>
                 </>
                 
