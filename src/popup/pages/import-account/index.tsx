@@ -19,11 +19,7 @@ const ImportAccount = (props:any) => {
     const handleImport = async () => {
         if(chain === 'near'){
             const result = await Near.importAccount(seeds);
-            if(result?.msg){
-                setErrorText(result.msg)
-            }else{
-                navigator('/dashboard');
-            }
+            navigator('/dashboard');
         }
     }
     const handleSetSeeds = (e:any) => {
