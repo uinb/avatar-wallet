@@ -9,7 +9,7 @@ interface StateProps {
 
 const initialState: StateProps = {
   loading: false,
-  networkId: 'testnet',
+  networkId: 'mainnet',
   chain:'near',
 }
 
@@ -31,7 +31,7 @@ export const network = createSlice({
   }
 })
 
-export const {setChain}  = network.actions;
+export const {setChain, setNetwork}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
 export const selectChain = createSelector(selectRootState, state => state.chain); 
 export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
