@@ -104,8 +104,21 @@ class NearCore extends Near{
         })
 
         const value = await Promise.all(request);
-        const refactorTokensBalance = Object.keys(tokens).map((token, index) => ({...tokens[token], balance: value[index]}))
-        return refactorTokensBalance || []
+        const refactorTokensBalance = Object.keys(tokens).reduce((all: {balances: Array<any> , tokens: Array<any>}, token: any, index:number) =>  {
+            return {
+                ...all,
+                balances: all.balances.concat({...tokens[token], balance: value[index]}),
+                tokens: all.tokens.concat(tokens[token])
+            }
+        }, {
+            balances: [], 
+            tokens: []
+        })
+
+        return refactorTokensBalance || {
+            balances: [],
+            tokens: []
+        }
     }
     async fetchNFTBalance(accountId){
         const {data} = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);

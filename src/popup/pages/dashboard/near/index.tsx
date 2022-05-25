@@ -1,4 +1,4 @@
-import  React, {useState, useEffect, useCallback} from 'react';
+import  React, {useState, useEffect, useCallback, useMemo} from 'react';
 import  Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import {Near} from '../../../../api';
@@ -20,9 +20,9 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {formatLongAddress} from '../../../../utils';
+import {formatLongAddress, decimalNumber} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
-import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount} from '../../../../reducer/near';
+import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -53,6 +53,7 @@ const NearCoreComponent = (props: any) => {
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
+    const priceList = useAppSelector(selectPriceList);
     const refreshAccountList = useCallback(async () => {
         const fecthedAccounts = await Near.getAccounts();
         setAccounts(fecthedAccounts);
@@ -90,8 +91,9 @@ const NearCoreComponent = (props: any) => {
             return ;
         }
         try{
-            const ftContract = await Near.fetchFtBalance(activeAccount);
-            setFTBalances(ftContract)
+            const {balances, tokens} = await Near.fetchFtBalance(activeAccount);
+            setFTBalances(balances)
+            dispatch(setPriceList(tokens))
         }catch(e){
             console.log(e);
         }
@@ -233,6 +235,12 @@ const NearCoreComponent = (props: any) => {
         console.log(result);
     }
 
+    const getPrice = useCallback((symbol:any) =>  {
+        const symbolItem = priceList.find(item => item.symbol === symbol);
+        return symbolItem?.price || '1';
+    },[priceList])
+
+
 
     return (
         <Grid component="div" className="px1 mt1">
@@ -289,7 +297,7 @@ const NearCoreComponent = (props: any) => {
                                                 <img src={chains.near.logo} alt=""/>
                                             </Avatar>
                                         </ListItemAvatar>
-                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='≈折合USD' />
+                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary={`$${decimalNumber(new Big(balances.total || 0).times(getPrice('near')).toNumber(), 24, 4)}`} />
                                         <ListItemSecondaryAction>
                                             <SendIcon color="action" fontSize="small"  onClick={sendMoney} style={{transform: 'rotate(-90deg)'}}/>
                                         </ListItemSecondaryAction>
@@ -308,7 +316,7 @@ const NearCoreComponent = (props: any) => {
                                                     
                                                 </Avatar>
                                             </ListItemAvatar>
-                                            <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary='≈折合USD' />
+                                            <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary={`$${decimalNumber(new Big(item.balance).times(getPrice(item.symbol)).toNumber(), item.decimal, 4)}`} />
                                         </ListItem>
                                     </Card> 
                                 )) :null}
