@@ -51,7 +51,7 @@ const NearCoreComponent = (props: any) => {
     const [activeAccount, setActiveAccount] = useState('');
     const [balances, setBalances] = useState({}) as any;
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
-    const [activeTab, setActiveTab] = useState('nfts');
+    const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const refreshAccountList = useCallback(async () => {
         const fecthedAccounts = await Near.getAccounts();
@@ -70,18 +70,28 @@ const NearCoreComponent = (props: any) => {
     },[accounts])
 
 
-    const fetchBalances = useCallback(async () => {
+    const fetchNearBalances = useCallback(async () => {
         if(!activeAccount){
             return ;
         }
         try{
             const account = await Near.account(activeAccount);
             const balances = await account.getAccountBalance();
-            const ftContract = await Near.fetchFtBalance(activeAccount);
-            setFTBalances(ftContract)
             setBalances(balances);
         }catch(e){
             setBalances({total: 0});
+        }
+    },[activeAccount])
+
+    const fetchFtBalance = useCallback(async () => {
+        if(!activeAccount){
+            return ;
+        }
+        try{
+            const ftContract = await Near.fetchFtBalance(activeAccount);
+            setFTBalances(ftContract)
+        }catch(e){
+            console.log(e);
         }
     },[activeAccount])
 
@@ -98,9 +108,9 @@ const NearCoreComponent = (props: any) => {
     },[activeAccount])
 
     useEffect(() => {
-        fetchBalances();
-        fetchNfts();
-    },[fetchBalances])
+        fetchNearBalances();
+        fetchFtBalance()
+    },[fetchNearBalances])
 
     useEffect(() =>{
         fetchNfts()
@@ -108,7 +118,6 @@ const NearCoreComponent = (props: any) => {
 
     useEffect(() => {
         refreshAccountList();
-        
     },[refreshAccountList])
 
 
