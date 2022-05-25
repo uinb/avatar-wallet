@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import Welcome from './pages/welcome';
 import ImportAccount from './pages/import-account';
 import CreateAccount from './pages/create-account';
+import Transfer from './pages/dashboard/near/components/transfer';
 
 const Popup = () => {
    
@@ -22,6 +23,7 @@ const Popup = () => {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/import-account/:chain" element={<ImportAccount />} />
                     <Route path="/create-account/:chain" element={<CreateAccount />} />
+                    <Route path="/transfer/:chain" element={<Transfer />} />
                 </Routes>
             </HashRouter>
         </Grid>

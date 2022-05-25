@@ -20,9 +20,9 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {formatLongAddress, decimalNumber} from '../../../../utils';
+import {formatLongAddress, decimalTokenAmount} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
-import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList} from '../../../../reducer/near';
+import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList, setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -34,7 +34,10 @@ interface BalanceProps {
     decimal: number;
     price: string;
     symbol: string;
-    balance:string    
+    balance:string ,
+    usdValue: string ;
+    contractId: string;
+    icon:string;
 }
 
 interface NFTMetadataProps{
@@ -53,7 +56,7 @@ const NearCoreComponent = (props: any) => {
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
-    const priceList = useAppSelector(selectPriceList);
+    const nearSymbolConfig = useAppSelector(selectNearConfig);
     const refreshAccountList = useCallback(async () => {
         const fecthedAccounts = await Near.getAccounts();
         setAccounts(fecthedAccounts);
@@ -81,6 +84,7 @@ const NearCoreComponent = (props: any) => {
             const account = await Near.account(activeAccount);
             const balances = await account.getAccountBalance();
             setBalances(balances);
+            dispatch(setNearBalanceForAccount({account: activeAccount, balance: {...balances, available: utils.format.formatNearAmount(balances.available)}}))
         }catch(e){
             setBalances({total: 0});
         }
@@ -92,8 +96,10 @@ const NearCoreComponent = (props: any) => {
         }
         try{
             const {balances, tokens} = await Near.fetchFtBalance(activeAccount);
+            console.log(balances, tokens);
             setFTBalances(balances)
             dispatch(setPriceList(tokens))
+            dispatch(setBalancesForAccount({account: activeAccount, balances}))
         }catch(e){
             console.log(e);
         }
@@ -235,13 +241,8 @@ const NearCoreComponent = (props: any) => {
         console.log(result);
     }
 
-    const getPrice = useCallback((symbol:any) =>  {
-        const symbolItem = priceList.find(item => item.symbol === symbol);
-        return symbolItem?.price || '1';
-    },[priceList])
 
-
-
+ 
     return (
         <Grid component="div" className="px1 mt1">
             {accounts.length ? (
@@ -291,32 +292,29 @@ const NearCoreComponent = (props: any) => {
                         {activeTab === 'assets' ? (
                             <Grid className="assetsList mt2">
                                 <Card className="mb1">
-                                    <ListItem>
+                                    <ListItem component={Link} to="/transfer/near">
                                         <ListItemAvatar>
-                                            <Avatar style={{background: chains.near.background}}>
+                                            <Avatar style={{background: chains.near.background,height: 32, width:32}}>
                                                 <img src={chains.near.logo} alt=""/>
                                             </Avatar>
                                         </ListItemAvatar>
-                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary={`$${decimalNumber(new Big(balances.total || 0).times(getPrice('near')).toNumber(), 24, 4)}`} />
-                                        <ListItemSecondaryAction>
-                                            <SendIcon color="action" fontSize="small"  onClick={sendMoney} style={{transform: 'rotate(-90deg)'}}/>
-                                        </ListItemSecondaryAction>
+                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.available, 4)} NEAR`} secondary={`$${new Big(utils.format.formatNearAmount(balances.available)).times(nearSymbolConfig?.price || 1).toFixed(4)}`} />
                                     </ListItem>
                                 </Card>
-                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
+                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map(item => (
                                     <Card className="mt2" key={item.symbol}>
-                                        <ListItem>
+                                        <ListItem component={Link} to="/transfer/near">
                                             <ListItemAvatar>
-                                                <Avatar style={{background: chains[item.symbol.toLowerCase()].background || theme.palette.primary.main}}>
-                                                    {chains[item.symbol.toLowerCase()]?.logo ? (
-                                                        <img src={chains[item.symbol.toLowerCase()]?.logo} alt=""/>
+                                                <Avatar style={{height: 32, width:32}}>
+                                                    {item?.icon ? (
+                                                        <img src={item?.icon} alt=""/>
                                                     ): (
                                                         item.symbol.slice(0,1)
                                                     )}
                                                     
                                                 </Avatar>
                                             </ListItemAvatar>
-                                            <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary={`$${decimalNumber(new Big(item.balance).times(getPrice(item.symbol)).toNumber(), item.decimal, 4)}`} />
+                                            <ListItemText primary={`${new Big(item.balance).toFixed(4)} ${item.symbol}`} secondary={`$${new Big(item?.usdValue).toFixed(4)}`} />
                                         </ListItem>
                                     </Card> 
                                 )) :null}
@@ -339,7 +337,7 @@ const NearCoreComponent = (props: any) => {
                                             </Grid>
                                         </Grid>
                                     )
-                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="center">No Collections</Typography>)}
+                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="left">No Collections</Typography>)}
                             </Grid>
                         ) : null}
                     </Grid>

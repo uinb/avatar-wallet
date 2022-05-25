@@ -1,10 +1,15 @@
 import * as nearAPI from 'near-api-js';
 import axios from 'axios';
+import Big from 'big.js';
 import chainConfig from '../constant/chains';
+import BN from 'bn.js';
+import { receiveMessageOnPort } from 'worker_threads';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
-const {connect, keyStores, Near, KeyPair, Contract, utils} = nearAPI;
+const {connect, keyStores, Near, KeyPair, Contract, utils, transactions} = nearAPI;
 const bs58 = require('bs58');
 
+
+const MAX_GAS = "300000000000000";
 
 class NearCore extends Near{
     near;
@@ -76,12 +81,18 @@ class NearCore extends Near{
             account,
             contractId,
             {
-                viewMethods: ['ft_balance_of'],
+                viewMethods: ['ft_balance_of','ft_metadata'],
                 changeMethods: ["ft_transfer"],
             }
         )
+        const ftMetadata = await contract.ft_metadata();
+        console.log(ftMetadata);
         const balance = await contract.ft_balance_of({account_id: accountId});
-        return balance
+        console.log(balance);
+        return {
+            ...ftMetadata, 
+            balance
+        }
     }
     async NFTtMetadata(accountId, contractId){
         const account = await this.near.account(accountId);
@@ -104,20 +115,18 @@ class NearCore extends Near{
         })
 
         const value = await Promise.all(request);
-        const refactorTokensBalance = Object.keys(tokens).reduce((all: {balances: Array<any> , tokens: Array<any>}, token: any, index:number) =>  {
-            return {
-                ...all,
-                balances: all.balances.concat({...tokens[token], balance: value[index]}),
-                tokens: all.tokens.concat(tokens[token])
-            }
-        }, {
-            balances: [], 
-            tokens: []
-        })
+        console.log(value[0]);
+        const refactorTokensBalance = Object.keys(tokens).map((token: string, index:number) => ({
+            ...tokens[token], 
+            ...value[index],
+            balance: new Big(value[index].balance).div(new Big(10).pow(tokens[token].decimal)).toNumber(),
+            usdValue: new Big(value[index].balance).div(new Big(10).pow(tokens[token].decimal)).times(tokens[token].price).toNumber(),
+            contractId: token
+        }))
 
-        return refactorTokensBalance || {
-            balances: [],
-            tokens: []
+        return {
+            balances: refactorTokensBalance,
+            tokens
         }
     }
     async fetchNFTBalance(accountId){
@@ -147,18 +156,44 @@ class NearCore extends Near{
     }
 
     async ftTransfer(payload){
-        const {sender, contractId, ...restProps} = payload;
+        const {sender, contractId, receiver, amount} = payload;
+        console.log(payload);
         const account = await this.near.account(sender);
+        console.log(account);
         const contract:any = new Contract(
             account,
             contractId,
             {
-                viewMethods: ['ft_balance_of'],
-                changeMethods: ["ft_transfer"],
+                viewMethods: ['ft_balance_of', 'storage_balance_of'],
+                changeMethods: ["ft_transfer", 'storage_deposit'],
             }
         )
-        const result = await contract.ft_transfer({...restProps})
+        const approveResult = await contract.storage_deposit({
+            args:{
+                account_id: sender
+            },
+            amount: utils.format.parseNearAmount('0.00125')
+        })
+        console.log(approveResult);
+        /* const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        console.log(viewApproveAmount); */
+        const result = await contract.ft_transfer({
+            args:{
+                receiver_id: receiver, 
+                amount
+            },
+            amount: utils.format.parseNearAmount('0.00125')
+        })
+
         console.log(result);
+    }
+    async transferNear(payload){
+        const {sender, receiver, amount} = payload;
+        console.log(payload);
+        const account = await this.near.account(sender);
+        const result = await account.sendMoney(receiver, amount)
+        console.log('transfer', result);
+        return result;
     }
 }
 export default NearCore;
