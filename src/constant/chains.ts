@@ -4,6 +4,19 @@ import fusotaoGray from '../img/chains/tao-gray.svg';
 import fusotao from '../img/chains/tao.svg';
 import oct from '../img/oct.svg'
 
+interface InstanceProps{
+    logo: any;
+    inactiveLogo: any;
+    name: string;
+    primary: string;
+    background: string;
+    ftPriceUrl?: string;
+}
+
+interface ChainsProps {
+    [key: string]: InstanceProps
+}
+
 
 export default {
     near: {
@@ -37,4 +50,4 @@ export default {
         primary: string,
         background: string
     }
-}
+} as ChainsProps

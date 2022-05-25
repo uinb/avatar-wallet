@@ -72,12 +72,12 @@ class NearCore extends Near{
     }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);
-        const contract = new Contract(
+        const contract:any = new Contract(
             account,
             contractId,
             {
                 viewMethods: ['ft_balance_of'],
-                changeMethods: ["addMessage"],
+                changeMethods: ["ft_transfer"],
             }
         )
         const balance = await contract.ft_balance_of({account_id: accountId});
@@ -85,12 +85,12 @@ class NearCore extends Near{
     }
     async NFTtMetadata(accountId, contractId){
         const account = await this.near.account(accountId);
-        const contract = new Contract(
+        const contract:any = new Contract(
             account,
             contractId,
             {
                 viewMethods: ['nft_metadata', 'nft_tokens_for_owner'],
-                changeMethods: ["addMessage"],
+                changeMethods: ["nft_transfer"],
             }
         )
         const metadata = await contract.nft_metadata();
@@ -131,6 +131,21 @@ class NearCore extends Near{
             [account]: result[index]
         }), {})
        return accountState;
+    }
+
+    async ftTransfer(payload){
+        const {sender, contractId, ...restProps} = payload;
+        const account = await this.near.account(sender);
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['ft_balance_of'],
+                changeMethods: ["ft_transfer"],
+            }
+        )
+        const result = await contract.ft_transfer({...restProps})
+        console.log(result);
     }
 }
 export default NearCore;

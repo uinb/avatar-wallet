@@ -22,7 +22,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import {formatLongAddress} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
-import {setSignerAccounts, selectSignerAccount} from '../../../../reducer/near';
+import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -48,7 +48,7 @@ const NearCoreComponent = (props: any) => {
     const [anchorEl, setAnchorEl] = useState(null)
     const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
-    const [activeAccount, setActiveAccount] = useState('');
+    const activeAccount = useAppSelector(selectActiveAccount)
     const [balances, setBalances] = useState({}) as any;
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const [activeTab, setActiveTab] = useState('assets');
@@ -56,7 +56,9 @@ const NearCoreComponent = (props: any) => {
     const refreshAccountList = useCallback(async () => {
         const fecthedAccounts = await Near.getAccounts();
         setAccounts(fecthedAccounts);
-        setActiveAccount(fecthedAccounts[0]);
+        if(!activeAccount){
+            dispatch(setActiveAccount(fecthedAccounts[0]))
+        }
     },[])
 
     useEffect(() => {
@@ -122,7 +124,7 @@ const NearCoreComponent = (props: any) => {
 
 
     const handleAccountItemClick = (account:string) => {
-        setActiveAccount(account);
+        dispatch(setActiveAccount(account))
         setAnchorEl(null);
     }
 
