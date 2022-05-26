@@ -112,7 +112,6 @@ class NearCore extends Near{
         })
 
         const value = await Promise.all(request);
-        console.log(value[0]);
         const refactorTokensBalance = Object.keys(tokens).map((token: string, index:number) => ({
             ...tokens[token], 
             ...value[index],
@@ -154,9 +153,7 @@ class NearCore extends Near{
 
     async ftTransfer(payload){
         const {sender, contractId, receiver, amount} = payload;
-        console.log(payload);
         const account = await this.near.account(sender);
-        console.log(account);
         const contract:any = new Contract(
             account,
             contractId,
