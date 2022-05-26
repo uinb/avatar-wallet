@@ -18,7 +18,7 @@ const theme:ThemeOptions  = createTheme({
     },
     background: {
       default: '#FFFFFF',
-      paper: "#F9F9F9"
+      paper: "#F5F5F5"
     },
     text:{
       primary: '#282828',
@@ -54,11 +54,15 @@ const theme:ThemeOptions  = createTheme({
     },
     MuiCard:{
       root:{
-        background: '#F9F9F9',
+        background: '#F5F5F5',
         boxShadow: '0 0 0'
-      }
+      },
     },
     MuiPaper:{
+      root:{
+        padding: '8px',
+        boxShadow: '0 0 0 !important',
+      },
       rounded:{
         borderRadius: 12,
       }
@@ -104,6 +108,39 @@ const theme:ThemeOptions  = createTheme({
           background: alpha('#2F64F9', 0.2)
         }
       },
+    },
+    MuiDialog:{
+      root:{
+        padding: 0,
+        
+      },
+      paper:{
+        background: '#fff',
+        width:'90%'
+      }
+    },
+    MuiDialogContent:{
+      root:{
+        paddingLeft: 8, 
+        paddingRight: 8, 
+      }
+    },
+    MuiDialogTitle:{
+      root:{
+        paddingLeft: 8, 
+        paddingRight: 8, 
+      }
+    },
+    MuiInputLabel:{
+      root: {
+        fontSize: '0.875rem',
+        fontWeight: 300
+      }
+    },
+    MuiListItemAvatar:{
+      root: {
+        minWidth: 42
+      }
     }
   }
 })

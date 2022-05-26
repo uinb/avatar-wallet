@@ -2,6 +2,7 @@ import near from '../img/chains/near.svg';
 import nearGray from '../img/chains/near-gray.svg';
 import fusotaoGray from '../img/chains/tao-gray.svg';
 import fusotao from '../img/chains/tao.svg';
+import nearIcon from '../img/near.svg';
 
 interface InstanceProps{
     logo: any;
@@ -10,6 +11,7 @@ interface InstanceProps{
     primary: string;
     background: string;
     ftPriceUrl?: string;
+    icon?: any 
 }
 
 interface ChainsProps {
@@ -25,6 +27,7 @@ export default {
         primary: '#000000',
         background: '#000000',
         ftPriceUrl:'https://indexer.ref-finance.net/list-token-price',
+        icon: nearIcon
     },
     fusotao: {
         logo: fusotao,

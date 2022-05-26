@@ -9,6 +9,7 @@ import Welcome from './pages/welcome';
 import ImportAccount from './pages/import-account';
 import CreateAccount from './pages/create-account';
 import Transfer from './pages/dashboard/near/components/transfer';
+import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 
 const Popup = () => {
    
@@ -24,6 +25,7 @@ const Popup = () => {
                     <Route path="/import-account/:chain" element={<ImportAccount />} />
                     <Route path="/create-account/:chain" element={<CreateAccount />} />
                     <Route path="/transfer/:chain" element={<Transfer />} />
+                    <Route path="/transfer-success" element={<TransferSuccess />} />
                 </Routes>
             </HashRouter>
         </Grid>

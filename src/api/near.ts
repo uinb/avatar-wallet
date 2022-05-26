@@ -9,7 +9,6 @@ const {connect, keyStores, Near, KeyPair, Contract, utils, transactions} = nearA
 const bs58 = require('bs58');
 
 
-const MAX_GAS = "300000000000000";
 
 class NearCore extends Near{
     near;
@@ -86,9 +85,7 @@ class NearCore extends Near{
             }
         )
         const ftMetadata = await contract.ft_metadata();
-        console.log(ftMetadata);
         const balance = await contract.ft_balance_of({account_id: accountId});
-        console.log(balance);
         return {
             ...ftMetadata, 
             balance
@@ -168,32 +165,47 @@ class NearCore extends Near{
                 changeMethods: ["ft_transfer", 'storage_deposit'],
             }
         )
-        const approveResult = await contract.storage_deposit({
+        /* const approveResult = await contract.storage_deposit({
             args:{
-                account_id: sender
+                account_id: sender, 
             },
             amount: utils.format.parseNearAmount('0.00125')
         })
-        console.log(approveResult);
-        /* const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
-        console.log(viewApproveAmount); */
-        const result = await contract.ft_transfer({
-            args:{
+        console.log(approveResult); */
+        const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        return contract.ft_transfer(
+            {
                 receiver_id: receiver, 
                 amount
             },
-            amount: utils.format.parseNearAmount('0.00125')
+            "300000000000000",
+            1
+        ).then(resp => {
+            return {
+                ...resp,
+                status: true
+            }
+        }).catch(e => {
+            return {
+                status: false,
+                msg: e.message
+            }
         })
-
-        console.log(result);
     }
     async transferNear(payload){
         const {sender, receiver, amount} = payload;
-        console.log(payload);
         const account = await this.near.account(sender);
-        const result = await account.sendMoney(receiver, amount)
-        console.log('transfer', result);
-        return result;
+        return account.sendMoney(receiver, amount).then(resp => {
+            return {
+                ...resp,
+                status: true
+            }
+        }).catch(e => {
+            return {
+                status: false,
+                msg: e.message
+            }
+        })
     }
 }
 export default NearCore;

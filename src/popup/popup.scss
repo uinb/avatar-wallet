@@ -106,3 +106,15 @@ textarea{
     margin: 16px 0;
     resize: none;
 }
+
+.flex{
+    display: flex !important;
+}
+
+.justify-between{
+    justify-content: space-between !important;
+}
+
+.items-center{
+    align-items: center !important;
+}

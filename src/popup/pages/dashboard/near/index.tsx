@@ -292,9 +292,9 @@ const NearCoreComponent = (props: any) => {
                         {activeTab === 'assets' ? (
                             <Grid className="assetsList mt2">
                                 <Card className="mb1">
-                                    <ListItem component={Link} to="/transfer/near">
+                                    <ListItem component={Link} to="/transfer/near" disableGutters dense>
                                         <ListItemAvatar>
-                                            <Avatar style={{background: chains.near.background,height: 32, width:32}}>
+                                            <Avatar style={{background: chains.near.background, height: 32, width:32}}>
                                                 <img src={chains.near.logo} alt=""/>
                                             </Avatar>
                                         </ListItemAvatar>
@@ -303,7 +303,7 @@ const NearCoreComponent = (props: any) => {
                                 </Card>
                                 {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map(item => (
                                     <Card className="mt2" key={item.symbol}>
-                                        <ListItem component={Link} to="/transfer/near">
+                                        <ListItem component={Link} to="/transfer/near" disableGutters dense>
                                             <ListItemAvatar>
                                                 <Avatar style={{height: 32, width:32}}>
                                                     {item?.icon ? (
