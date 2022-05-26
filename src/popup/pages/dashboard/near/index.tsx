@@ -1,4 +1,4 @@
-import  React, {useState, useEffect, useCallback} from 'react';
+import  React, {useState, useEffect, useCallback, useMemo} from 'react';
 import  Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import {Near} from '../../../../api';
@@ -20,9 +20,9 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {formatLongAddress} from '../../../../utils';
+import {formatLongAddress, decimalTokenAmount} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
-import {setSignerAccounts, selectSignerAccount} from '../../../../reducer/near';
+import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList, setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -34,7 +34,10 @@ interface BalanceProps {
     decimal: number;
     price: string;
     symbol: string;
-    balance:string    
+    balance:string ,
+    usdValue: string ;
+    contractId: string;
+    icon:string;
 }
 
 interface NFTMetadataProps{
@@ -48,15 +51,18 @@ const NearCoreComponent = (props: any) => {
     const [anchorEl, setAnchorEl] = useState(null)
     const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
-    const [activeAccount, setActiveAccount] = useState('');
+    const activeAccount = useAppSelector(selectActiveAccount)
     const [balances, setBalances] = useState({}) as any;
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
+    const nearSymbolConfig = useAppSelector(selectNearConfig);
     const refreshAccountList = useCallback(async () => {
         const fecthedAccounts = await Near.getAccounts();
         setAccounts(fecthedAccounts);
-        setActiveAccount(fecthedAccounts[0]);
+        if(!activeAccount){
+            dispatch(setActiveAccount(fecthedAccounts[0]))
+        }
     },[])
 
     useEffect(() => {
@@ -78,6 +84,7 @@ const NearCoreComponent = (props: any) => {
             const account = await Near.account(activeAccount);
             const balances = await account.getAccountBalance();
             setBalances(balances);
+            dispatch(setNearBalanceForAccount({account: activeAccount, balance: {...balances, available: utils.format.formatNearAmount(balances.available)}}))
         }catch(e){
             setBalances({total: 0});
         }
@@ -88,8 +95,11 @@ const NearCoreComponent = (props: any) => {
             return ;
         }
         try{
-            const ftContract = await Near.fetchFtBalance(activeAccount);
-            setFTBalances(ftContract)
+            const {balances, tokens} = await Near.fetchFtBalance(activeAccount);
+            console.log(balances, tokens);
+            setFTBalances(balances)
+            dispatch(setPriceList(tokens))
+            dispatch(setBalancesForAccount({account: activeAccount, balances}))
         }catch(e){
             console.log(e);
         }
@@ -122,7 +132,7 @@ const NearCoreComponent = (props: any) => {
 
 
     const handleAccountItemClick = (account:string) => {
-        setActiveAccount(account);
+        dispatch(setActiveAccount(account))
         setAnchorEl(null);
     }
 
@@ -232,6 +242,7 @@ const NearCoreComponent = (props: any) => {
     }
 
 
+ 
     return (
         <Grid component="div" className="px1 mt1">
             {accounts.length ? (
@@ -281,32 +292,29 @@ const NearCoreComponent = (props: any) => {
                         {activeTab === 'assets' ? (
                             <Grid className="assetsList mt2">
                                 <Card className="mb1">
-                                    <ListItem>
+                                    <ListItem component={Link} to="/transfer/near" disableGutters dense>
                                         <ListItemAvatar>
-                                            <Avatar style={{background: chains.near.background}}>
+                                            <Avatar style={{background: chains.near.background, height: 32, width:32}}>
                                                 <img src={chains.near.logo} alt=""/>
                                             </Avatar>
                                         </ListItemAvatar>
-                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.total, 4)} NEAR`} secondary='≈折合USD' />
-                                        <ListItemSecondaryAction>
-                                            <SendIcon color="action" fontSize="small"  onClick={sendMoney} style={{transform: 'rotate(-90deg)'}}/>
-                                        </ListItemSecondaryAction>
+                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.available, 4)} NEAR`} secondary={`$${new Big(utils.format.formatNearAmount(balances.available)).times(nearSymbolConfig?.price || 1).toFixed(4)}`} />
                                     </ListItem>
                                 </Card>
-                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0).map(item => (
+                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map(item => (
                                     <Card className="mt2" key={item.symbol}>
-                                        <ListItem>
+                                        <ListItem component={Link} to="/transfer/near" disableGutters dense>
                                             <ListItemAvatar>
-                                                <Avatar style={{background: chains[item.symbol.toLowerCase()].background || theme.palette.primary.main}}>
-                                                    {chains[item.symbol.toLowerCase()]?.logo ? (
-                                                        <img src={chains[item.symbol.toLowerCase()]?.logo} alt=""/>
+                                                <Avatar style={{height: 32, width:32}}>
+                                                    {item?.icon ? (
+                                                        <img src={item?.icon} alt=""/>
                                                     ): (
                                                         item.symbol.slice(0,1)
                                                     )}
                                                     
                                                 </Avatar>
                                             </ListItemAvatar>
-                                            <ListItemText primary={`${new Big(item.balance).div(new Big(10).pow(item.decimal)).toNumber()} ${item.symbol}`} secondary='≈折合USD' />
+                                            <ListItemText primary={`${new Big(item.balance).toFixed(4)} ${item.symbol}`} secondary={`$${new Big(item?.usdValue).toFixed(4)}`} />
                                         </ListItem>
                                     </Card> 
                                 )) :null}
@@ -329,7 +337,7 @@ const NearCoreComponent = (props: any) => {
                                             </Grid>
                                         </Grid>
                                     )
-                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="center">No Collections</Typography>)}
+                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="left">No Collections</Typography>)}
                             </Grid>
                         ) : null}
                     </Grid>

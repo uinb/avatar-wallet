@@ -2,7 +2,21 @@ import near from '../img/chains/near.svg';
 import nearGray from '../img/chains/near-gray.svg';
 import fusotaoGray from '../img/chains/tao-gray.svg';
 import fusotao from '../img/chains/tao.svg';
-import oct from '../img/oct.svg'
+import nearIcon from '../img/near.svg';
+
+interface InstanceProps{
+    logo: any;
+    inactiveLogo: any;
+    name: string;
+    primary: string;
+    background: string;
+    ftPriceUrl?: string;
+    icon?: any 
+}
+
+interface ChainsProps {
+    [key: string]: InstanceProps
+}
 
 
 export default {
@@ -13,6 +27,7 @@ export default {
         primary: '#000000',
         background: '#000000',
         ftPriceUrl:'https://indexer.ref-finance.net/list-token-price',
+        icon: nearIcon
     },
     fusotao: {
         logo: fusotao,
@@ -21,13 +36,6 @@ export default {
         primary: '#F23E5F',
         background: '#fafafa',
     },
-    oct:{
-        logo: oct,
-        inactiveLogo: oct,
-        name:'Oct',
-        primary: '#014299',
-        background: '#014299',
-    }
 
 } as {
     [key:string]: {
@@ -37,4 +45,4 @@ export default {
         primary: string,
         background: string
     }
-}
+} as ChainsProps

@@ -1,9 +1,13 @@
 import * as nearAPI from 'near-api-js';
 import axios from 'axios';
+import Big from 'big.js';
 import chainConfig from '../constant/chains';
+import BN from 'bn.js';
+import { receiveMessageOnPort } from 'worker_threads';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
-const {connect, keyStores, Near, KeyPair, Contract, utils} = nearAPI;
+const {connect, keyStores, Near, KeyPair, Contract, utils, transactions} = nearAPI;
 const bs58 = require('bs58');
+
 
 
 class NearCore extends Near{
@@ -72,25 +76,29 @@ class NearCore extends Near{
     }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);
-        const contract = new Contract(
+        const contract:any = new Contract(
             account,
             contractId,
             {
-                viewMethods: ['ft_balance_of'],
-                changeMethods: ["addMessage"],
+                viewMethods: ['ft_balance_of','ft_metadata'],
+                changeMethods: ["ft_transfer"],
             }
         )
+        const ftMetadata = await contract.ft_metadata();
         const balance = await contract.ft_balance_of({account_id: accountId});
-        return balance
+        return {
+            ...ftMetadata, 
+            balance
+        }
     }
     async NFTtMetadata(accountId, contractId){
         const account = await this.near.account(accountId);
-        const contract = new Contract(
+        const contract:any = new Contract(
             account,
             contractId,
             {
                 viewMethods: ['nft_metadata', 'nft_tokens_for_owner'],
-                changeMethods: ["addMessage"],
+                changeMethods: ["nft_transfer"],
             }
         )
         const metadata = await contract.nft_metadata();
@@ -104,8 +112,19 @@ class NearCore extends Near{
         })
 
         const value = await Promise.all(request);
-        const refactorTokensBalance = Object.keys(tokens).map((token, index) => ({...tokens[token], balance: value[index]}))
-        return refactorTokensBalance || []
+        console.log(value[0]);
+        const refactorTokensBalance = Object.keys(tokens).map((token: string, index:number) => ({
+            ...tokens[token], 
+            ...value[index],
+            balance: new Big(value[index].balance).div(new Big(10).pow(tokens[token].decimal)).toNumber(),
+            usdValue: new Big(value[index].balance).div(new Big(10).pow(tokens[token].decimal)).times(tokens[token].price).toNumber(),
+            contractId: token
+        }))
+
+        return {
+            balances: refactorTokensBalance,
+            tokens
+        }
     }
     async fetchNFTBalance(accountId){
         const {data} = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
@@ -131,6 +150,62 @@ class NearCore extends Near{
             [account]: result[index]
         }), {})
        return accountState;
+    }
+
+    async ftTransfer(payload){
+        const {sender, contractId, receiver, amount} = payload;
+        console.log(payload);
+        const account = await this.near.account(sender);
+        console.log(account);
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['ft_balance_of', 'storage_balance_of'],
+                changeMethods: ["ft_transfer", 'storage_deposit'],
+            }
+        )
+        /* const approveResult = await contract.storage_deposit({
+            args:{
+                account_id: sender, 
+            },
+            amount: utils.format.parseNearAmount('0.00125')
+        })
+        console.log(approveResult); */
+        const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        return contract.ft_transfer(
+            {
+                receiver_id: receiver, 
+                amount
+            },
+            "300000000000000",
+            1
+        ).then(resp => {
+            return {
+                ...resp,
+                status: true
+            }
+        }).catch(e => {
+            return {
+                status: false,
+                msg: e.message
+            }
+        })
+    }
+    async transferNear(payload){
+        const {sender, receiver, amount} = payload;
+        const account = await this.near.account(sender);
+        return account.sendMoney(receiver, amount).then(resp => {
+            return {
+                ...resp,
+                status: true
+            }
+        }).catch(e => {
+            return {
+                status: false,
+                msg: e.message
+            }
+        })
     }
 }
 export default NearCore;
