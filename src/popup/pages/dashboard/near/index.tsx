@@ -96,7 +96,6 @@ const NearCoreComponent = (props: any) => {
         }
         try{
             const {balances, tokens} = await Near.fetchFtBalance(activeAccount);
-            console.log(balances, tokens);
             setFTBalances(balances)
             dispatch(setPriceList(tokens))
             dispatch(setBalancesForAccount({account: activeAccount, balances}))
