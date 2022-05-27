@@ -11,6 +11,16 @@ import Grid from '@material-ui/core/Grid';
 import FiberManualRecord from '@material-ui/icons/FiberManualRecord';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import Box from '@material-ui/core/Button';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@material-ui/core/Dialog';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import CloseIcon from '@material-ui/icons/Close';
+import Button from '@material-ui/core/Button';
+import "./header.scss"
+const networks = ['Mainnet','Testnet'];
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -47,7 +57,13 @@ const useStyles = makeStyles(theme => ({
     },
     link:{
         color: theme.palette.primary.main
-    }
+    },
+    closeButton: {
+      position: 'absolute',
+      right: theme.spacing(1),
+      top: theme.spacing(1),
+      color: theme.palette.grey[500],
+    },
 }))
 
 export const HeaderWithBack  = (props:any) => {
@@ -60,15 +76,65 @@ export const HeaderWithBack  = (props:any) => {
         </AppBar>
     )
 }
-
+export interface SimpleDialogProps {
+  open: boolean;
+  selectedValue: string;
+  onClose: (value: string) => void;
+}
+export const NetworkDialog = (props: SimpleDialogProps) => {
+    const { onClose, selectedValue, open } = props;
+    const handleClose = () => {
+      onClose(selectedValue);
+    };
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      onClose((event.target as HTMLInputElement).value);
+    };
+    const closeDialog = () => {
+      console.log(selectedValue)
+      onClose(selectedValue)
+    }
+    const classes = useStyles();
+    return (
+      <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" fullWidth open={open}>
+        <DialogTitle id="simple-dialog-title">Network</DialogTitle>
+        <IconButton aria-label="close" className={cn(classes.closeButton, 'ml1')} onClick={closeDialog}>
+          <CloseIcon />
+        </IconButton>
+        <FormControl component="fieldset">
+          <div className='box'>
+            <RadioGroup aria-label="gender" name={selectedValue} value={selectedValue} onChange={handleChange}>
+              {
+                networks.map(network => (
+                  <FormControlLabel value={network} control={<Radio />} label={network} />
+                ))
+              }
+            </RadioGroup>
+            <Button variant="outlined" color="primary" size="large" fullWidth component={Link} to="/addcustom">+Add Custom</Button>
+          </div>
+        
+      </FormControl>
+      </Dialog>
+    );
+}
 export const DashboardHeader = () => {
+    const [open, setOpen] = React.useState(false);
+    const [selectedValue, setSelectedValue] = React.useState(networks[1]);
+    console.log(selectedValue)
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+    const handleClose = (value: any) => {
+      setOpen(false);
+      setSelectedValue(value);
+    };
     const classes = useStyles();
     return (
         <AppBar className={cn(classes.dashboardBar)}>
             <img src={dashboardLogo} alt="" height="24"/>
             <Grid>
-                <Box className={classes.fnTab}><FiberManualRecord color="primary" fontSize="inherit"/> &nbsp;Mainnet <ArrowDropDown color="action"/></Box>
+                <Box className={classes.fnTab} onClick={handleClickOpen}><FiberManualRecord color="primary" fontSize="inherit"/> &nbsp;{selectedValue} <ArrowDropDown color="action"/></Box>
                 <Box className={cn(classes.fnTab, 'ml1', classes.link)} component={Link} to="/bridge">Bridge</Box>
+                <NetworkDialog selectedValue={selectedValue} open={open} onClose={handleClose} />
                 <IconButton className={cn(classes.iconButton, 'ml1')} component={Link} to="/">
                     <Settings fontSize='inherit'/>
                 </IconButton>
