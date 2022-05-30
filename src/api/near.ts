@@ -1,7 +1,6 @@
 import * as nearAPI from 'near-api-js';
 import axios from 'axios';
 import Big from 'big.js';
-import chainConfig from '../constant/chains';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
 const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
 const bs58 = require('bs58');
@@ -45,8 +44,8 @@ class NearCore extends Near{
         return accounts;
     }
     async forgetAccount(accountId){
-        const {keyStore} = this.near.config;
-        await keyStore.removeKey(this.networkId, accountId);
+        const {keyStore, networkId} = this.near.config;
+        await keyStore.removeKey(networkId, accountId);
     }
 
     generateKeyPair(){
@@ -64,12 +63,16 @@ class NearCore extends Near{
         }
     }
     async fetchFTContract(){
-        const {data} = await axios.get(chainConfig.near.ftPriceUrl)
-        if(data){
-            return data;
-        }else{
-            return {}
+        const {ftPriceUrl =''} = this.near.config;
+        if(ftPriceUrl){
+            const {data} = await axios.get(ftPriceUrl)
+            if(data){
+                return data;
+            }else{
+                return {}
+            }
         }
+        return {}
     }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);
@@ -123,19 +126,24 @@ class NearCore extends Near{
         }
     }
     async fetchNFTBalance(accountId){
-        const {data} = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
-        if(data.length){
-            const request = data.map(contract => this.NFTtMetadata(accountId, contract));
-            const result = await Promise.all(request);
-            const refactorNFTMetadata = data.reduce((all, current, index) => {
-                return {
-                    ...all,
-                    [current]: result[index]
-                }
-            }, {})
-            return refactorNFTMetadata;
+        const {nftFetchUrl = ''} = this.near.config;
+        const [base, path] = nftFetchUrl?.split('{requestAccount}');
+        if(nftFetchUrl){
+            const {data} = await axios.get(`${base}${accountId}${path}`);
+            if(data.length){
+                const request = data.map(contract => this.NFTtMetadata(accountId, contract));
+                const result = await Promise.all(request);
+                const refactorNFTMetadata = data.reduce((all, current, index) => {
+                    return {
+                        ...all,
+                        [current]: result[index]
+                    }
+                }, {})
+                return refactorNFTMetadata;
+            }
+           return {}
         }
-       return {}
+        return {}
     }
 
     async fetchAccountsState(accounts){
@@ -200,6 +208,22 @@ class NearCore extends Near{
                 msg: e.message
             }
         })
+    }
+    async getAppChains(accountId){
+        const account = await this.near.account('lindawu8134.testnet');
+        const contractId = 'octopus-relay.testnet';
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['get_token_contract_id'],
+                changeMethods: [],
+            }
+        )
+        const appChains = await contract.get_token_contract_id();
+        //const appChains = await contract.get_appchain();
+        console.log(appChains);
+        
     }
 }
 export default NearCore;

@@ -136,6 +136,16 @@ const NearCoreComponent = (props: any) => {
     }
 
     /* useEffect(() => {
+        if(!activeAccount){
+            return;
+        }
+        (async () => {
+            const result = await Near.getAppChains(activeAccount);
+            console.log(result)
+        })()
+    },[activeAccount]) */
+
+    /* useEffect(() => {
         if(!signerAccounts.length){
             return;
         }
