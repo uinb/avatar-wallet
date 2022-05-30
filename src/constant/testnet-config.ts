@@ -1,4 +1,4 @@
-export default {
+const config = {
     near:{
         networkId: "testnet",
         nodeUrl: "https://rpc.testnet.near.org",
@@ -8,3 +8,5 @@ export default {
         headers:{}
     }      
 }
+
+export default config;

@@ -1,4 +1,4 @@
-export default {
+const config = {
     near:{
         networkId: "mainnet",
         nodeUrl: "https://rpc.mainnet.near.org",
@@ -7,4 +7,7 @@ export default {
         explorerUrl: "https://explorer.mainnet.near.org",
         headers: {},
     },
+    
 }
+
+export default config

@@ -1,8 +1,8 @@
-import  React, {useState, useEffect, useCallback, useMemo} from 'react';
+import  React, {useState, useEffect, useCallback} from 'react';
 import  Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import {Near} from '../../../../api';
-import {utils, KeyPair} from 'near-api-js';
+import {utils,} from 'near-api-js';
 import {Link} from 'react-router-dom';
 import Paper from '@material-ui/core/Paper';
 import {Typography, withTheme} from '@material-ui/core';
@@ -20,15 +20,15 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {formatLongAddress, decimalTokenAmount} from '../../../../utils';
+import {formatLongAddress} from '../../../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
-import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList, setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
+import {setSignerAccounts, /* selectSignerAccount,  */selectActiveAccount, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+/* import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import SendIcon from '@material-ui/icons/Send';
-import axios from 'axios';
+import axios from 'axios'; */
 
 interface BalanceProps {
     decimal: number;
@@ -47,7 +47,7 @@ interface NFTMetadataProps{
 const NearCoreComponent = (props: any) => {
     const {config, theme} = props;
     const dispatch = useAppDispatch();
-    const signerAccounts = useAppSelector(selectSignerAccount);
+    //const signerAccounts = useAppSelector(selectSignerAccount);
     const [anchorEl, setAnchorEl] = useState(null)
     const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
@@ -63,7 +63,7 @@ const NearCoreComponent = (props: any) => {
         if(!activeAccount){
             dispatch(setActiveAccount(fecthedAccounts[0]))
         }
-    },[])
+    },[dispatch, activeAccount])
 
     useEffect(() => {
         if(!accounts.length){
@@ -73,7 +73,7 @@ const NearCoreComponent = (props: any) => {
             const accountsState = await Near.fetchAccountsState(accounts);
             dispatch(setSignerAccounts(Object.keys(accountsState).filter((account) => !accountsState[account])))
         })()
-    },[accounts])
+    },[accounts, dispatch])
 
 
     const fetchNearBalances = useCallback(async () => {
@@ -88,7 +88,7 @@ const NearCoreComponent = (props: any) => {
         }catch(e){
             setBalances({total: 0});
         }
-    },[activeAccount])
+    },[activeAccount, dispatch])
 
     const fetchFtBalance = useCallback(async () => {
         if(!activeAccount){
@@ -102,7 +102,7 @@ const NearCoreComponent = (props: any) => {
         }catch(e){
             console.log(e);
         }
-    },[activeAccount])
+    },[activeAccount, dispatch])
 
     const fetchNfts = useCallback(async () => {
         if(!activeAccount){
@@ -119,7 +119,7 @@ const NearCoreComponent = (props: any) => {
     useEffect(() => {
         fetchNearBalances();
         fetchFtBalance()
-    },[fetchNearBalances])
+    },[fetchFtBalance, fetchNearBalances])
 
     useEffect(() =>{
         fetchNfts()
@@ -219,29 +219,6 @@ const NearCoreComponent = (props: any) => {
         setOperationAnchorEl(null);
     }
 
-    const sendMoney = async () => {
-        /* const senderAccount = await Near.account(signerAccounts[1]);
-        const sendResult = await senderAccount.sendMoney(signerAccounts[0], utils.format.parseNearAmount('0.02')); */
-        console.log('sendmoney')
-    }
-
-    const createNewAccount = async () => {
-        const  keyPair = Near.generateKeyPair();
-        console.log(keyPair);
-        const {publicKey, secretKey } = keyPair;
-        const PRIVATE_KEY = secretKey.split("ed25519:")[1];
-        //const keyPair = KeyPair.fromString(PRIVATE_KEY);
-        const creator = await Near.account(signerAccounts[0]);
-      /*   const contract = await Near.loadContract('near', {
-            sender: creator
-        });
-        console.log(contract); */
-        const result = await creator.addKey('wulin6.near', publicKey);
-        console.log(result);
-    }
-
-
- 
     return (
         <Grid component="div" className="px1 mt1">
             {accounts.length ? (

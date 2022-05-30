@@ -14,11 +14,11 @@ import Content from '../../components/layout-content';
 const ImportAccount = (props:any) => {
     const chain = useAppSelector(selectChain);
     const [seeds, setSeeds] = useState('');
-    const [errorText, setErrorText] = useState('');
+    const [errorText] = useState('');
     const navigator = useNavigate()
     const handleImport = async () => {
         if(chain === 'near'){
-            const result = await Near.importAccount(seeds);
+            await Near.importAccount(seeds);
             navigator('/dashboard');
         }
     }
