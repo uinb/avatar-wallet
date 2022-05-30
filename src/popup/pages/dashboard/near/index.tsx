@@ -17,6 +17,7 @@ import Tab from '@material-ui/core/Tab';
 import {setSignerAccounts, /* selectSignerAccount,  */selectActiveAccount, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
+import {setAppChains} from '../../../../reducer/network';
 /* import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import SendIcon from '@material-ui/icons/Send';
@@ -125,15 +126,15 @@ const NearCoreComponent = (props: any) => {
         dispatch(setActiveAccount(account))
     }
 
-    /* useEffect(() => {
+    useEffect(() => {
         if(!activeAccount){
             return;
         }
         (async () => {
             const result = await Near.getAppChains(activeAccount);
-            console.log(result)
+            dispatch(setAppChains({...result}));
         })()
-    },[activeAccount]) */
+    },[activeAccount, dispatch])
 
     /* useEffect(() => {
         if(!signerAccounts.length){

@@ -4,13 +4,17 @@ import { RootState } from '../app/store';
 interface StateProps {
   loading: boolean,
   networkId: string,
-  chain: string
+  chain: string,
+  appChains: {
+    [network:string]: Array<any>
+  }
 }
 
 const initialState: StateProps = {
   loading: false,
-  networkId: 'mainnet',
+  networkId: localStorage.getItem('networkId') || 'mainnet',
   chain:'near',
+  appChains: {}
 }
 
 
@@ -24,6 +28,10 @@ export const network = createSlice({
     },
     setChain(state, {payload = ''}){
         state.chain = payload
+    },
+    setAppChains(state, {payload}){
+      const {networkId, chains} = payload;
+      state.appChains[networkId] = chains;
     }
   },
   extraReducers: (builder) => {
@@ -31,10 +39,13 @@ export const network = createSlice({
   }
 })
 
-export const {setChain, setNetwork}  = network.actions;
+export const {setChain, setNetwork, setAppChains}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
 export const selectChain = createSelector(selectRootState, state => state.chain); 
 export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
+export const selectAppChains = (networkId) =>  createSelector(selectRootState, (state) => {
+  return state.appChains[networkId] || [];
+})
 
 
 export default network.reducer;

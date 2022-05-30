@@ -1,6 +1,8 @@
 import * as nearAPI from 'near-api-js';
 import axios from 'axios';
 import Big from 'big.js';
+import mainnetConfig from '../constant/mainnet-config';
+import testnetConfig from '../constant/testnet-config';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
 const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
 const bs58 = require('bs58');
@@ -22,25 +24,25 @@ class NearCore extends Near{
         this.near = near;
     }
     async importAccount(seeds){
-        const { helperUrl, keyStore } = this.near?.config;
+        const { helperUrl, keyStore, networkId } = this.near?.config;
         const {secretKey, publicKey} = parseSeedPhrase(seeds);
         const {data} = await axios.get(`${helperUrl}/publicKey/${publicKey}/accounts`);
         if(data.length){
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
-            await keyStore.setKey(this.networkId, data[0], keyPair);
+            await keyStore.setKey(networkId, data[0], keyPair);
             return null
         }else{
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
             const address = Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex')
-            await keyStore.setKey(this.networkId, address, keyPair);
+            await keyStore.setKey(networkId, address, keyPair);
             return null
         }
     }
     async getAccounts(){
-        const {keyStore} = this.near.config;
-        const accounts = await keyStore.getAccounts(this.networkId);
+        const {keyStore, networkId} = this.near.config;
+        const accounts = await keyStore.getAccounts(networkId);
         return accounts;
     }
     async forgetAccount(accountId){
@@ -55,8 +57,7 @@ class NearCore extends Near{
     async viewAccountState(account){
         try{
             const viewAccount = await this.near.account(account);
-            const result = await viewAccount.state();
-            console.log(result)
+            await viewAccount.state();
             return false;
         }catch(e){
             return true
@@ -210,19 +211,29 @@ class NearCore extends Near{
         })
     }
     async getAppChains(accountId){
-        const account = await this.near.account('lindawu8134.testnet');
-        const contractId = 'octopus-relay.testnet';
+        const {networkId} = this.near.config;
+        const account = await this.near.account(accountId);
+        const contractId = networkId === 'testnet' ? testnetConfig.oct.registryContractId: mainnetConfig.oct.registryContractId;
         const contract:any = new Contract(
             account,
             contractId,
             {
-                viewMethods: ['get_token_contract_id'],
+                viewMethods: ['get_token_contract_id', 'get_appchains_with_state_of', 'get_appchain_ids'],
                 changeMethods: [],
             }
         )
-        const appChains = await contract.get_token_contract_id();
-        //const appChains = await contract.get_appchain();
-        console.log(appChains);
+        const appChains = await contract.get_appchains_with_state_of({
+            appchain_state: ['Active'],
+            page_number: 1,
+            page_size: 50,
+            sorting_field: 'RegisteredTime',
+            sorting_order: 'Descending'
+            }
+        );
+        return {
+            networkId, 
+            chains: appChains
+        } || {networkId, chains: []}
         
     }
 }

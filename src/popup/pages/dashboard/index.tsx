@@ -7,15 +7,17 @@ import { Typography } from '@material-ui/core';
 import { withTheme } from '@material-ui/core';
 import NearCore from './near';
 import { useAppSelector } from '../../../app/hooks';
-import { selectNetwork } from '../../../reducer/network';
+import { selectNetwork, selectAppChains } from '../../../reducer/network';
+import Avatar from '@material-ui/core/Avatar';
 
 const Dashboard = (props:any) => {
     const {theme} = props;
     const [activeChain, setActiveChain] = useState('near');
+    const networkId = useAppSelector(selectNetwork);
+    const appChains = useAppSelector(selectAppChains(networkId));
     const handleChangeChain = (chain:string) => {
         setActiveChain(chain)
     }
-    const networkId = useAppSelector(selectNetwork);
 
     return (
         <Grid>
@@ -29,6 +31,18 @@ const Dashboard = (props:any) => {
                                 <Typography color="primary" variant='caption' className="icon" onClick={() => handleChangeChain(key)} style={{backgroundColor: activeChain === key ? item.background : theme.palette.background.paper}}>
                                 <img src={activeChain === key ? item.logo : item.inactiveLogo} alt="" width="18"/>
                                 </Typography>
+                            </div>
+                        )
+                    })}
+                    {appChains?.map((item) => {
+                        return (
+                            <div className="chainItem" key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
+                                <Avatar style={{width: 32, height: 32}}>
+                                    {item.appchain_metadata.fungible_token_metadata.icon ? (
+                                        <img src={activeChain === item.appchain_id ? item.appchain_metadata.fungible_token_metadata.icon : item.appchain_metadata.fungible_token_metadata.icon} alt="" width="100%"/>
+                                    ) : item.appchain_id.substr(0,1).toUpperCase()}
+                                </Avatar>
+                                <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === item.appchain_id ? 'block' : 'none'}}></span>
                             </div>
                         )
                     })}
