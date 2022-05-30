@@ -9,13 +9,14 @@ import './index.scss';
 import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
 import { useAppDispatch } from '../../../app/hooks';
-import {setUserPwd} from '../../../reducer/auth';
+import {setNetwork} from '../../../reducer/network';
 
-const SignUp = () => {
+const AddNetwork = () => {
     const dispatch = useAppDispatch();
-    const [pwd, setPwd] = useState('');
-    const handleSignUp = () => {
-        dispatch(setUserPwd(pwd))
+    const [name, setName] = useState('');
+    const [url, setUrl] = useState('');
+    const handleAddNetwork = () => {
+        dispatch(setNetwork({name,url}));
     }
     return (
         <Grid container direction="column" >
@@ -27,7 +28,7 @@ const SignUp = () => {
                         <Input 
                             fullWidth 
                             className="mt2"
-                            onChange={(e) => {setPwd(e.target.value)}} 
+                            onChange={(e) => {setName(e.target.value)}} 
                             type="text"
                             ></Input>
                     </Box>
@@ -37,13 +38,14 @@ const SignUp = () => {
                             fullWidth 
                             type="text"
                             className="mt2" 
+                            onChange={(e) => {setUrl(e.target.value)}} 
                             ></Input>
                     </Box>
                 </Box>
-                <Button fullWidth color="primary" variant='contained' size="large" component={Link} to="/dashboard" disabled={false} className="mt2" onClick={handleSignUp}>Sign up</Button><br/><br/>
+                <Button fullWidth color="primary" variant='contained' size="large" component={Link} to="/" disabled={false} className="mt2" onClick={handleAddNetwork}>Save</Button><br/><br/>
             </Container> 
         </Grid>
     )
 }
 
-export default SignUp; 
+export default AddNetwork; 

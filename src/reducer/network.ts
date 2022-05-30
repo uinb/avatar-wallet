@@ -3,13 +3,24 @@ import { RootState } from '../app/store';
 
 interface StateProps {
   loading: boolean,
-  networkId: string,
+  networkOption: any,
   chain: string
 }
 
 const initialState: StateProps = {
   loading: false,
-  networkId: 'testnet',
+  networkOption: [
+    {
+      name:"Miannet",
+      networkUrl:"wss://binnode.brandy.fusotao.org",
+      active:true
+    },
+    {
+      name:"Testnet",
+      networkUrl:"wss://binnode.brandy.fusotao.org",
+      active:false
+    }
+  ],
   chain:'near',
 }
 
@@ -18,12 +29,11 @@ export const network = createSlice({
   name:'network',
   initialState,
   reducers: {
-    setNetwork(state, {payload = ''}){
-      state.networkId = payload;
-      localStorage.setItem('networkId', payload)
+    setNetwork(state, {payload = {}}){
+      state.networkOption.push(payload);
     },
     setChain(state, {payload = ''}){
-        state.chain = payload
+      state.chain = payload
     }
   },
   extraReducers: (builder) => {
@@ -31,10 +41,10 @@ export const network = createSlice({
   }
 })
 
-export const {setChain}  = network.actions;
+export const {setChain,setNetwork}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
 export const selectChain = createSelector(selectRootState, state => state.chain); 
-export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
+export const selectNetwork = createSelector(selectRootState, state => state.networkOption); 
 
 
 export default network.reducer;

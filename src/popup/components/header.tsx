@@ -19,6 +19,9 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
 import Button from '@material-ui/core/Button';
+import { useAppSelector } from '../../app/hooks';
+import { selectNetwork} from '../../reducer/network';
+
 import "./header.scss"
 const networks = ['Mainnet','Testnet'];
 
@@ -83,6 +86,8 @@ export interface SimpleDialogProps {
 }
 export const NetworkDialog = (props: SimpleDialogProps) => {
     const { onClose, selectedValue, open } = props;
+    const networkList = useAppSelector(selectNetwork);
+    console.log("list --- > ",networkList)
     const handleClose = () => {
       onClose(selectedValue);
     };
