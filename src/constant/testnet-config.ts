@@ -6,7 +6,12 @@ const config = {
         helperUrl: "https://helper.testnet.near.org",
         explorerUrl: "https://explorer.testnet.near.org",
         headers:{}
-    }      
+    },
+    oct:{
+        explorerUrl: "https://explorer.testnet.oct.network",
+        octTokenContractId: "oct.beta_oct_relay.testnet",
+        registryContractId: "registry.test_oct.testnet",
+    }   
 }
 
 export default config;

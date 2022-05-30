@@ -6,6 +6,8 @@ const config = {
         helperUrl: "https://helper.mainnet.near.org",
         explorerUrl: "https://explorer.mainnet.near.org",
         headers: {},
+        ftPriceUrl:'https://indexer.ref-finance.net/list-token-price',
+        nftFetchUrl:'https://api.kitwallet.app/account/{requestAccount}/likelyNFTs'
     },
     
 }
