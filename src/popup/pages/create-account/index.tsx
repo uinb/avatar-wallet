@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import { HeaderWithBack } from '../../components/header';
 import Content from '../../components/layout-content';
 import Grid from '@material-ui/core/Grid';
 import { Near } from '../../../api';
 import Typography from '@material-ui/core/Typography';
 import { useNavigate, Link } from 'react-router-dom';
-import {KeyPair, utils} from 'near-api-js';
+import {KeyPair} from 'near-api-js';
 import { useAppSelector } from '../../../app/hooks';
 import { selectNetwork } from '../../../reducer/network';
 import { selectSignerAccount } from '../../../reducer/near';
@@ -13,8 +13,8 @@ import Seeds from './components/seeds';
 import ConfirmSeed from './components/confirmSeed';
 import CreateSuccess from './components/createSuccess';
 import SetNearAccount from './components/setNearAcccount';
-import BN from 'bn.js';
-import axios from 'axios';
+/* import BN from 'bn.js';
+import axios from 'axios'; */
 
 
 const bs58 = require('bs58');
@@ -60,6 +60,7 @@ const CreateAccount = (props:any) => {
                 const setKeyPair = KeyPair.fromString(PRIVATE_KEY);
                 const creator = await Near.account(singerAccounts[0]);
                 const targetAccount = await Near.account(tempAddress);
+                console.log(creator, targetAccount);
                 await keyStore.setKey(networkId, tempAddress, setKeyPair);
                 /* await creator.functionCall({
                     contractId: "near",

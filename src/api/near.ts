@@ -2,13 +2,9 @@ import * as nearAPI from 'near-api-js';
 import axios from 'axios';
 import Big from 'big.js';
 import chainConfig from '../constant/chains';
-import BN from 'bn.js';
-import { receiveMessageOnPort } from 'worker_threads';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
-const {connect, keyStores, Near, KeyPair, Contract, utils, transactions} = nearAPI;
+const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
 const bs58 = require('bs58');
-
-
 
 class NearCore extends Near{
     near;
@@ -61,6 +57,7 @@ class NearCore extends Near{
         try{
             const viewAccount = await this.near.account(account);
             const result = await viewAccount.state();
+            console.log(result)
             return false;
         }catch(e){
             return true
@@ -169,7 +166,7 @@ class NearCore extends Near{
             amount: utils.format.parseNearAmount('0.00125')
         })
         console.log(approveResult); */
-        const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        //const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
         return contract.ft_transfer(
             {
                 receiver_id: receiver, 
