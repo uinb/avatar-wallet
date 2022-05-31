@@ -10,7 +10,7 @@ const persistConfig = {
   key: 'avatar-wallet',
   storage: storage,
   stateReconciler: autoMergeLevel2,
-  whitelist: ['auth', 'network']
+  whitelist: ['auth', 'network', 'near']
 };
 
 const rootReducers = combineReducers({
