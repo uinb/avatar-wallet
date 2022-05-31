@@ -4,7 +4,9 @@ import { RootState } from '../app/store';
 interface StateProps {
   loading: boolean,
   networkId: string,
-  chain: string,
+  chain: {
+    [key:string]: string
+  },
   appChains: {
     [network:string]: Array<any>
   }
@@ -13,7 +15,7 @@ interface StateProps {
 const initialState: StateProps = {
   loading: false,
   networkId: localStorage.getItem('networkId') || 'mainnet',
-  chain:'near',
+  chain:{},
   appChains: {}
 }
 
@@ -26,8 +28,9 @@ export const network = createSlice({
       state.networkId = payload;
       localStorage.setItem('networkId', payload)
     },
-    setChain(state, {payload = ''}){
-        state.chain = payload
+    setChain(state, {payload}){
+        const {networkId, chain} = payload;
+        state.chain[networkId] = chain
     },
     setAppChains(state, {payload}){
       const {networkId, chains} = payload;
@@ -41,10 +44,17 @@ export const network = createSlice({
 
 export const {setChain, setNetwork, setAppChains}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
-export const selectChain = createSelector(selectRootState, state => state.chain); 
+export const selectChain = (networkId:string) => createSelector(selectRootState, state => state.chain[networkId] || 'near'); 
 export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
 export const selectAppChains = (networkId) =>  createSelector(selectRootState, (state) => {
   return state.appChains[networkId] || [];
+})
+export const selectAppChain = (networkId:string,  name: string) => createSelector(selectAppChains(networkId),  state => {
+  if(!name){
+    return {}
+  }else{
+    return state.find(item => item.appchain_id === name) 
+  }
 })
 
 

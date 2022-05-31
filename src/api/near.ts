@@ -234,7 +234,20 @@ class NearCore extends Near{
             networkId, 
             chains: appChains
         } || {networkId, chains: []}
-        
+    }
+
+    async fetchContractTokens(){
+        const account = await this.near.account('lindawu8134.testnet');
+        const contract:any = new Contract(
+            account,
+            'fusotao.registry.test_oct.testnet',
+            {
+                viewMethods: ['get_near_fungible_tokens'],
+                changeMethods: [],
+            }
+        )
+        const result = await contract.get_near_fungible_tokens();
+        console.log(result)
     }
 }
 export default NearCore;

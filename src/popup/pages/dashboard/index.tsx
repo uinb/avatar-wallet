@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import Grid from '@material-ui/core/Grid';
 import {DashboardHeader} from '../../components/header';
 import './index.scss';
@@ -6,19 +5,20 @@ import chains from '../../../constant/chains';
 import { Typography } from '@material-ui/core';
 import { withTheme } from '@material-ui/core';
 import NearCore from './near';
-import { useAppSelector } from '../../../app/hooks';
-import { selectNetwork, selectAppChains } from '../../../reducer/network';
+import { useAppSelector, useAppDispatch } from '../../../app/hooks';
+import { selectNetwork, selectAppChains, setChain, selectChain} from '../../../reducer/network';
 import Avatar from '@material-ui/core/Avatar';
+import AppChainCore from './appchain-wrapper';
 
 const Dashboard = (props:any) => {
     const {theme} = props;
-    const [activeChain, setActiveChain] = useState('near');
+    const dispatch = useAppDispatch();
     const networkId = useAppSelector(selectNetwork);
+    const activeChain = useAppSelector(selectChain(networkId));
     const appChains = useAppSelector(selectAppChains(networkId));
     const handleChangeChain = (chain:string) => {
-        setActiveChain(chain)
+        dispatch(setChain({networkId, chain}));
     }
-
     return (
         <Grid>
             <DashboardHeader />
@@ -48,7 +48,8 @@ const Dashboard = (props:any) => {
                     })}
                 </Grid>
                 <Grid className="chainContent">
-                    <NearCore networkId={networkId} config={chains.near}/>
+                    {activeChain === 'near' ? <NearCore networkId={networkId} config={chains.near}/> : null}
+                    {activeChain !== 'near' ? <AppChainCore /> : null}
                 </Grid>
             </Grid>
         </Grid>

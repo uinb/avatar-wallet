@@ -5,14 +5,15 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import { HeaderWithBack } from '../../components/header';
 import { useAppSelector } from '../../../app/hooks';
-import { selectChain} from '../../../reducer/network';
+import { selectChain, selectNetwork} from '../../../reducer/network';
 import {Near} from '../../../api';
 import { useNavigate } from 'react-router-dom';
 import Content from '../../components/layout-content';
 
 
 const ImportAccount = (props:any) => {
-    const chain = useAppSelector(selectChain);
+    const networkId = useAppSelector(selectNetwork)
+    const chain = useAppSelector(selectChain(networkId));
     const [seeds, setSeeds] = useState('');
     const [errorText] = useState('');
     const navigator = useNavigate()
