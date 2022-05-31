@@ -1,17 +1,11 @@
-import  React, {useState, useEffect, useCallback} from 'react';
-import  Grid from '@material-ui/core/Grid';
+import {useState, useEffect, useCallback} from 'react';
+import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import {Near} from '../../../../api';
 import {utils,} from 'near-api-js';
 import {Link} from 'react-router-dom';
-import Paper from '@material-ui/core/Paper';
-import {Typography, withTheme} from '@material-ui/core';
-import MoreVert from '@material-ui/icons/MoreVert';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
-import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -20,8 +14,6 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {formatLongAddress} from '../../../../utils';
-import FileCopy from '@material-ui/icons/FileCopy';
 import {setSignerAccounts, /* selectSignerAccount,  */selectActiveAccount, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
@@ -29,6 +21,7 @@ import Big from 'big.js';
 import IconButton from '@material-ui/core/IconButton';
 import SendIcon from '@material-ui/icons/Send';
 import axios from 'axios'; */
+import AccountsCard from '../../../components/chains-account-card';
 
 interface BalanceProps {
     decimal: number;
@@ -45,11 +38,9 @@ interface NFTMetadataProps{
 }
 
 const NearCoreComponent = (props: any) => {
-    const {config, theme} = props;
+    const {config} = props;
     const dispatch = useAppDispatch();
     //const signerAccounts = useAppSelector(selectSignerAccount);
-    const [anchorEl, setAnchorEl] = useState(null)
-    const [operationAnchorEl, setOperationAnchorEl] = useState(null);
     const [accounts, setAccounts] = useState([]);
     const activeAccount = useAppSelector(selectActiveAccount)
     const [balances, setBalances] = useState({}) as any;
@@ -132,7 +123,6 @@ const NearCoreComponent = (props: any) => {
 
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount(account))
-        setAnchorEl(null);
     }
 
     /* useEffect(() => {
@@ -174,28 +164,6 @@ const NearCoreComponent = (props: any) => {
 
         })()
     },[signerAccounts]) */
-
-    const MenuContent:any = (props:any) => {
-        const {items = [], handleItemClick} = props as {items: Array<any>, handleItemClick: any};
-        return (
-            items.map((item:any, index:number) => (
-                item.link ? (
-                    <MenuItem 
-                        key={index} 
-                        component={Link}
-                        to={item.link}
-                    >{item.label}</MenuItem> 
-                ) : (
-                    <MenuItem key={index} onClick={() => handleItemClick(item.value)}>{item.label}</MenuItem> 
-                )
-            ))
-        )
-    }
-
-    const handleChangeAccount = (e:any) => {
-        setAnchorEl(e.currentTarget);
-    }
-
     const operations = [
         {
             label:'Create Account',
@@ -217,59 +185,25 @@ const NearCoreComponent = (props: any) => {
         }
     ]
 
-    const handleAccountOperate = (e:any) => {
-        setOperationAnchorEl(e.currentTarget);
-    }
-
     const handleOperateClick = async (type:string) => {
         if(type === 'forgetAccount'){
             await Near.forgetAccount(activeAccount);
         }
         refreshAccountList();
-        setOperationAnchorEl(null);
     }
 
     return (
         <Grid component="div" className="px1 mt1">
             {accounts.length ? (
                 <>
-                    <Paper style={{padding: theme.spacing(2),background: config.primary, color: theme.palette.primary.contrastText}}>
-                        <Grid container justifyContent='space-between'>
-                            <Box>
-                                <Grid container onClick={handleChangeAccount}>
-                                    <Typography variant="body2" component="div">{formatLongAddress(activeAccount)}</Typography> &nbsp;
-                                    <ArrowDropDown fontSize="medium"/>
-                                </Grid>
-                                <CopyToClipboard 
-                                    text={activeAccount}
-                                    onCopy={() => {console.log('copied!')}}
-                                >
-                                    <Typography variant="caption" color="textSecondary" className="mt2">{formatLongAddress(activeAccount)} <FileCopy color="inherit" fontSize="inherit"/></Typography>
-                                </CopyToClipboard>
-                                <Menu
-                                    id="account-menu"
-                                    anchorEl={anchorEl}
-                                    keepMounted
-                                    open={Boolean(anchorEl)}
-                                    onClose={() => setAnchorEl(null)}
-                                >
-                                    <MenuContent 
-                                        items={accounts.map(item => ({label: formatLongAddress(item), value: item}))}
-                                        handleItemClick={handleAccountItemClick}
-                                    />
-                                </Menu>
-                            </Box>
-                            <MoreVert onClick={handleAccountOperate}/>
-                            <Menu
-                                id="operate-menu"
-                                anchorEl={operationAnchorEl}
-                                open={Boolean(operationAnchorEl)}
-                                onClose={() => {setOperationAnchorEl(null)}}
-                            >
-                                <MenuContent items={operations} handleItemClick={handleOperateClick}/>
-                            </Menu>
-                        </Grid>
-                    </Paper>
+                    <AccountsCard 
+                        accounts={accounts}
+                        handleAccountItemClick={handleAccountItemClick}
+                        handleOperateClick={handleOperateClick}
+                        config={config}
+                        operations={operations}
+                        activeAccount={activeAccount}
+                    />
                     <Grid>
                         <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => setActiveTab(value)}>
                             <Tab label="Assets" value="assets"/>
@@ -341,4 +275,4 @@ const NearCoreComponent = (props: any) => {
 }
 
 
-export default withTheme(NearCoreComponent);
+export default NearCoreComponent;
