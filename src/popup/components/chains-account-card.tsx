@@ -53,7 +53,7 @@ const ChainAccountCard = (props:any) => {
         setOperationAnchorEl(null)
     }
     return (
-        <Paper style={{padding: theme.spacing(2),background: config?.primary, color: theme.palette.primary.contrastText}}>
+        <Paper style={{padding: theme.spacing(2),background: config?.primary ? config?.primary : theme.palette.primary.main, color: theme.palette.primary.contrastText}}>
             <Grid container justifyContent='space-between'>
                 <Box>
                     <Grid container onClick={handleChangeAccount}>
@@ -64,7 +64,7 @@ const ChainAccountCard = (props:any) => {
                         text={activeAccount}
                         onCopy={() => {console.log('copied!')}}
                     >
-                        <Typography variant="caption" color="textSecondary" className="mt2">{formatLongAddress(activeAccount)} <FileCopy color="inherit" fontSize="inherit"/></Typography>
+                        <Typography variant="caption" className="mt2">{formatLongAddress(activeAccount)} <FileCopy color="inherit" fontSize="inherit"/></Typography>
                     </CopyToClipboard>
                     <Menu
                         id="account-menu"
@@ -79,7 +79,9 @@ const ChainAccountCard = (props:any) => {
                         />
                     </Menu>
                 </Box>
-                <MoreVert onClick={handleAccountOperate}/>
+                {operations.length ? (
+                    <MoreVert onClick={handleAccountOperate}/>
+                ) : null}
                 <Menu
                     id="operate-menu"
                     anchorEl={operationAnchorEl}
