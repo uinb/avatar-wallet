@@ -10,7 +10,6 @@ import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
 import {selectAccountBlances, selectActiveAccount, setTempTransferInfomation} from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
-import chains from '../../../../../constant/chains';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import { Near } from '../../../../../api';
 import {utils} from 'near-api-js';
@@ -47,7 +46,7 @@ const Transfer = () => {
         if(!activeAccount){
             navigator('/dashboard');
         }
-    }, [activeAccount])
+    }, [activeAccount, navigator])
     const balances = useAppSelector(selectAccountBlances);
     const handleSend = async () => {
         dispatch(setTempTransferInfomation(state))
@@ -75,20 +74,20 @@ const Transfer = () => {
             navigator('/dashboard');  
             return  
         }
-        setInputState({
+        setInputState(state => ({
             ...state,
             contractId: filterdTokens[0].contractId, 
             symbol: filterdTokens[0].symbol
-        })
-    },[filterdTokens])
+        }))
+    },[filterdTokens, navigator])
 
     const handleChangeToken = (item :any) => {
-        setInputState({
+        setInputState(state => ({
             ...state, 
             contractId: item.contractId,
             symbol: item.symbol,
             amount: ''
-        })
+        }))
         setSelectTokenOpen(false)
     }
 

@@ -84,10 +84,10 @@ const theme:ThemeOptions  = createTheme({
       },
       underline:{
         "&::before":{
-          border: '0px !important',
+          border: '1px solid transparent !important',
         },
         "&::after":{
-          border: '0px !important',
+          border: '1px solid transparent !important',
         }
       }
     },
