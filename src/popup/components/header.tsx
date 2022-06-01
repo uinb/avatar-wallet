@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import AppBar from '@material-ui/core/AppBar';
 import { makeStyles } from '@material-ui/core';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import dashboardLogo from '../../img/dashboard-logo.svg';
 import cn from 'classnames';
 import IconButton from '@material-ui/core/IconButton';
@@ -19,8 +19,9 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
 import Button from '@material-ui/core/Button';
-import { useAppSelector } from '../../app/hooks';
-import { selectNetwork} from '../../reducer/network';
+import { useAppSelector,useAppDispatch } from '../../app/hooks';
+import { selectNetwork,changeNetwork} from '../../reducer/network';
+
 
 import "./header.scss"
 const networks = ['Mainnet','Testnet'];
@@ -31,8 +32,12 @@ const useStyles = makeStyles(theme => ({
         color: theme.palette.text.secondary,
         padding: `${theme.spacing(1)}px`,
         boxShadow: '0 0 0',
-        paddingLeft: theme.spacing(1),
-        paddingright: theme.spacing(1),
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        display: 'flex', 
+        justifyContent: 'space-between',
+        flexWrap: 'nowrap',
+        flexDirection: 'row'
     },
     dashboardBar:{
         background: theme.palette.background.paper,
@@ -56,7 +61,8 @@ const useStyles = makeStyles(theme => ({
     fnTab:{
         background: theme.palette.background.default,
         fontSize: 12,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        textTransform: 'capitalize'
     },
     link:{
         color: theme.palette.primary.main
@@ -71,23 +77,30 @@ const useStyles = makeStyles(theme => ({
 
 export const HeaderWithBack  = (props:any) => {
     const classes = useStyles();
-    const {back = '/' } = props;
+    const {back = '/', callback, action, ...restProps } = props;
     const navigator = useNavigate();
+    const handleCallback= () =>{
+        if(callback){
+            callback();
+        }else{
+            navigator(back);
+        }
+    }
     return (
-        <AppBar className={classes.root}>
-            <ArrowBack color="inherit" onClick={() => navigator(back)}/>
+        <AppBar className={classes.root} {...restProps}>
+            <ArrowBack color="inherit" onClick={handleCallback}/>
+            {action}
         </AppBar>
     )
 }
 export interface SimpleDialogProps {
   open: boolean;
   selectedValue: string;
+  networkList: any;
   onClose: (value: string) => void;
 }
 export const NetworkDialog = (props: SimpleDialogProps) => {
-    const { onClose, selectedValue, open } = props;
-    const networkList = useAppSelector(selectNetwork);
-    console.log("list --- > ",networkList)
+    const { networkList, onClose, selectedValue, open } = props;
     const handleClose = () => {
       onClose(selectedValue);
     };
@@ -95,7 +108,6 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
       onClose((event.target as HTMLInputElement).value);
     };
     const closeDialog = () => {
-      console.log(selectedValue)
       onClose(selectedValue)
     }
     const classes = useStyles();
@@ -109,8 +121,8 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
           <div className='box'>
             <RadioGroup aria-label="gender" name={selectedValue} value={selectedValue} onChange={handleChange}>
               {
-                networks.map(network => (
-                  <FormControlLabel value={network} control={<Radio />} label={network} />
+                networkList.map(network => (
+                  <FormControlLabel value={network.name} control={<Radio />} label={network.name} />
                 ))
               }
             </RadioGroup>
@@ -123,23 +135,29 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
 }
 export const DashboardHeader = () => {
     const [open, setOpen] = React.useState(false);
-    const [selectedValue, setSelectedValue] = React.useState(networks[1]);
-    console.log(selectedValue)
+    const networkList = useAppSelector(selectNetwork);
+    const dispatch = useAppDispatch();
+    const activeNetwork = networkList.filter(network => {
+      return network.active === true;
+    })
+    const [selectedValue, setSelectedValue] = React.useState(activeNetwork[0].name);
     const handleClickOpen = () => {
         setOpen(true);
     };
     const handleClose = (value: any) => {
       setOpen(false);
       setSelectedValue(value);
+      dispatch(changeNetwork(value));
     };
     const classes = useStyles();
+
     return (
         <AppBar className={cn(classes.dashboardBar)}>
             <img src={dashboardLogo} alt="" height="24"/>
             <Grid>
                 <Box className={classes.fnTab} onClick={handleClickOpen}><FiberManualRecord color="primary" fontSize="inherit"/> &nbsp;{selectedValue} <ArrowDropDown color="action"/></Box>
                 <Box className={cn(classes.fnTab, 'ml1', classes.link)} component={Link} to="/bridge">Bridge</Box>
-                <NetworkDialog selectedValue={selectedValue} open={open} onClose={handleClose} />
+                <NetworkDialog networkList={networkList} selectedValue={selectedValue} open={open} onClose={handleClose} />
                 <IconButton className={cn(classes.iconButton, 'ml1')} component={Link} to="/">
                     <Settings fontSize='inherit'/>
                 </IconButton>

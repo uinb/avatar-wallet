@@ -18,11 +18,15 @@ const theme:ThemeOptions  = createTheme({
     },
     background: {
       default: '#FFFFFF',
-      paper: "#F9F9F9"
+      paper: "#F5F5F5"
     },
     text:{
       primary: '#282828',
       secondary: '#666666',
+      hint:'#BEC1D6',
+    },
+    error:{
+      main: '#F23E5F'
     },
     action:{
       disabled: '#fff',
@@ -33,7 +37,8 @@ const theme:ThemeOptions  = createTheme({
     MuiTypography:{
       caption:{
         fontSize: '0.75rem',
-        lineHeight: 1.5
+        lineHeight: 1.75,
+        fontWeight: 200
       }
     },
     MuiMenu:{
@@ -49,11 +54,15 @@ const theme:ThemeOptions  = createTheme({
     },
     MuiCard:{
       root:{
-        background: '#F9F9F9',
+        background: '#F5F5F5',
         boxShadow: '0 0 0'
-      }
+      },
     },
     MuiPaper:{
+      root:{
+        padding: '8px',
+        boxShadow: '0 0 0 !important',
+      },
       rounded:{
         borderRadius: 12,
       }
@@ -63,20 +72,22 @@ const theme:ThemeOptions  = createTheme({
         background: "#F5F5F5",
         padding: '8px',
         "&:after":{
-          border: 0
+          border: '1px solid transparent'
         },
         borderRadius: '4px !important',
         "&:hover": {
           border: '1px solid #438AFD',
-        
+        },
+        "&.Mui-error": {
+          border: '1px solid #F23E5F',
         }
       },
       underline:{
         "&::before":{
-          border: '0px !important',
+          border: '1px solid transparent !important',
         },
         "&::after":{
-          border: '0px !important',
+          border: '1px solid transparent !important',
         }
       }
     },
@@ -89,11 +100,47 @@ const theme:ThemeOptions  = createTheme({
       contained:{
         backgroundColor: '#fff',
         color: "#2F64F9",
-        boxShadow: '0 0 0'
+        boxShadow: '0 0 0',
       },
       containedPrimary:{
-        background:  'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%) !important',
+        background: 'linear-gradient(90deg, #2F64F9 0%, #438AFD 100%)',
+        '&.Mui-disabled':{
+          background: alpha('#2F64F9', 0.2)
+        }
       },
+    },
+    MuiDialog:{
+      root:{
+        padding: 0,
+        
+      },
+      paper:{
+        background: '#fff',
+        width:'90%'
+      }
+    },
+    MuiDialogContent:{
+      root:{
+        paddingLeft: 8, 
+        paddingRight: 8, 
+      }
+    },
+    MuiDialogTitle:{
+      root:{
+        paddingLeft: 8, 
+        paddingRight: 8, 
+      }
+    },
+    MuiInputLabel:{
+      root: {
+        fontSize: '0.875rem',
+        fontWeight: 300
+      }
+    },
+    MuiListItemAvatar:{
+      root: {
+        minWidth: 42
+      }
     }
   }
 })
@@ -109,6 +156,7 @@ const Loading = () => {
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
 root.render(
   <Fragment>
     <ThemeProvider theme={theme}>

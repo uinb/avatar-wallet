@@ -15,7 +15,7 @@ import { setUserPwd } from '../../../reducer/auth';
 import { password } from '../../../utils/validate';
 import Content from '../../components/layout-content';
 
-const SignUp = () => {
+const EditPwsd = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
     const dispatch = useAppDispatch();
     const [pwd, setPwd] = useState<string>('');
@@ -46,22 +46,20 @@ const SignUp = () => {
         if (pwd || confirmPwd) {
             verifyPwd()
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pwd, confirmPwd])
 
-    const handleSignUp = () => {
+    const handleEditPwsd = () => {
         dispatch(setUserPwd(pwd))
         navigate('/dashboard')
     }
-    
+
 
     return (
         <Grid container direction="column" >
-            <HeaderWithBack back="/welcome"/>
+            <HeaderWithBack back="/welcome" />
             <Content>
                 <Box>
-                    <Typography variant="h5" gutterBottom>Set Password</Typography>
-                    <Typography variant="caption" color="textSecondary" gutterBottom>The password is used to protect your Enigma seed phrase(s) so that other Chrome extensions can't access them.</Typography>
                     <Box className="mt2">
                         <InputLabel>New Password</InputLabel>
                         <Input
@@ -83,10 +81,10 @@ const SignUp = () => {
                         {inputError.confirmPassword && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError.confirmPassword}</Typography>}
                     </Box>
                 </Box>
-                <Button fullWidth color="primary" variant='contained' size="large" disabled={!verifyStatus} className="mt2" onClick={handleSignUp}>Sign up</Button><br/><br/>
-            </Content> 
+                <Button fullWidth color="primary" variant='contained' size="large" disabled={!verifyStatus} className="mt2" onClick={handleEditPwsd}>Confirm</Button><br /><br />
+            </Content>
         </Grid>
     )
 }
 
-export default SignUp; 
+export default EditPwsd; 

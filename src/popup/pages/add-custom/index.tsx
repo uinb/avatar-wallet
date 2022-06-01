@@ -16,11 +16,11 @@ const AddNetwork = () => {
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
     const handleAddNetwork = () => {
-        dispatch(setNetwork({name,url}));
+        dispatch(setNetwork({name,networkUrl:url,active:false}));
     }
     return (
         <Grid container direction="column" >
-            <HeaderWithBack back="/welcome"/>
+            <HeaderWithBack back="/welcome"/ >
             <Container className="content">
                 <Box>
                     <Box className="mt2">

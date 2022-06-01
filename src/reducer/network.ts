@@ -32,6 +32,15 @@ export const network = createSlice({
     setNetwork(state, {payload = {}}){
       state.networkOption.push(payload);
     },
+    changeNetwork(state,{payload}){
+      state.networkOption.map(option =>{
+        option.active = false;
+        if(option.name === payload){
+          option.active = true;
+        }
+        return option;
+      });
+    },
     setChain(state, {payload = ''}){
       state.chain = payload
     }
@@ -41,7 +50,7 @@ export const network = createSlice({
   }
 })
 
-export const {setChain,setNetwork}  = network.actions;
+export const {setChain,setNetwork,changeNetwork}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
 export const selectChain = createSelector(selectRootState, state => state.chain); 
 export const selectNetwork = createSelector(selectRootState, state => state.networkOption); 
