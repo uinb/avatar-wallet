@@ -30,6 +30,14 @@ const Popup = () => {
                     <Route path="/edit-pwd" element={<EditPwd />} />
                     <Route path="/transfer/:chain" element={<Transfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
+                    <Route
+                        path="*"
+                        element={
+                            <main style={{ padding: "1rem" }}>
+                            <p>There's nothing here!</p>
+                            </main>
+                        }
+                        />
                 </Routes>
             </HashRouter>
         </Grid>

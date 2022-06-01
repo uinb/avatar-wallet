@@ -10,9 +10,15 @@ const bs58 = require('bs58');
 class NearCore extends Near{
     near;
     networkId;
+    contractAccount;
     constructor(config){
         super({...config, keyStore: new keyStores.BrowserLocalStorageKeyStore()});
         this.networkId = config?.networkId;
+        if(config.networkId === 'testnet'){
+            this.contractAccount = 'testnet';
+        }else{
+            this.contractAccount = 'near'
+        }
         this.init(config);
     }
     async init(config){
@@ -236,18 +242,34 @@ class NearCore extends Near{
         } || {networkId, chains: []}
     }
 
-    async fetchContractTokens(){
-        const account = await this.near.account('lindawu8134.testnet');
+    async fetchContractTokens(contractId:string){
+        const account = await this.near.account(this.contractAccount);
         const contract:any = new Contract(
             account,
-            'fusotao.registry.test_oct.testnet',
+            contractId,
             {
                 viewMethods: ['get_near_fungible_tokens'],
                 changeMethods: [],
             }
         )
-        const result = await contract.get_near_fungible_tokens();
-        console.log(result)
+        const appChainTokens = await contract.get_near_fungible_tokens();
+        console.log(appChainTokens)
+        return appChainTokens;
+    }
+
+    async fetchAppChainTokenBalance(contractId:string = "fusotao.testnet", accountAddress:string){
+        const account = await this.near.account(this.contractAccount);
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['ft_balance_of'],
+                changeMethods: [],
+            }
+        )
+        const tokenBalances = await contract.ft_balance_of({account_id: accountAddress});
+        console.log(tokenBalances);
+        return tokenBalances
     }
 }
 export default NearCore;

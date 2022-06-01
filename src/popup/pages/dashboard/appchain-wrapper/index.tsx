@@ -9,8 +9,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
-
-
+/* import {useEffect} from 'react';
+import { Near } from '../../../../api'; */
 
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
@@ -26,9 +26,18 @@ const AppChainWrapper = (props:any) => {
     }
 
     /* useEffect(() => {
+        if(!appChain){
+            return 
+        }
         (async() => {
-            const result = await Near.fetchContractTokens();
+            const result = await Near.fetchContractTokens(appChain.appchain_anchor);
             console.log('tokens',result);
+        })()
+    },[appChain]) */
+  /*   useEffect(() => {
+        (async() => {
+            const result = await Near.fetchAppChainTokenBalance(appChain.appchain_owner, 'lindawu8134.testnet');
+            console.log('balances', result);
         })()
     },[]) */
     return (
