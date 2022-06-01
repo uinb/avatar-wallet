@@ -12,6 +12,7 @@ import Settings from './pages/settings';
 import EditPwd from './pages/settings/editPwd';
 import Transfer from './pages/dashboard/near/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
+import AddToken  from './pages/dashboard/near/components/add-token'
 
 const Popup = () => {
    
@@ -28,6 +29,7 @@ const Popup = () => {
                     <Route path="/create-account/:chain" element={<CreateAccount />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/edit-pwd" element={<EditPwd />} />
+                    <Route path="/add-token" element={<AddToken />} />
                     <Route path="/transfer/:chain" element={<Transfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                 </Routes>
