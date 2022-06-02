@@ -12,6 +12,7 @@ import Settings from './pages/settings';
 import EditPwd from './pages/settings/editPwd';
 import Transfer from './pages/dashboard/near/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
+import TokenDetail from './pages/dashboard/near/token-detail'
 
 const Popup = () => {
    
@@ -30,6 +31,7 @@ const Popup = () => {
                     <Route path="/edit-pwd" element={<EditPwd />} />
                     <Route path="/transfer/:chain" element={<Transfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
+                    <Route path="/token-detail/:tokenId" element={<TokenDetail />} />
                 </Routes>
             </HashRouter>
         </Grid>
