@@ -1,8 +1,8 @@
 import  React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {Link} from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
-import { HeaderWithBack } from '../../../../components/header';
-import Content from '../../../../components/layout-content';
+import { HeaderWithBack } from '../../../components/header';
+import Content from '../../../components/layout-content';
 import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -10,11 +10,11 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Box from '@material-ui/core/Box';
 import {Typography, withTheme} from '@material-ui/core';
 import Avatar from '@material-ui/core/Avatar';
-import chains from '../../../../../constant/chains';
+import chains from '../../../../constant/chains';
 import {utils, KeyPair} from 'near-api-js';
 import Big from 'big.js';
-import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList, setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../../reducer/near';
-import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
+import {setSignerAccounts, selectSignerAccount, selectActiveAccount, setActiveAccount, setPriceList, selectPriceList, setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
+import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 
 interface BalanceProps {
   decimal: number;

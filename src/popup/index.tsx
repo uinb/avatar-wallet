@@ -12,7 +12,7 @@ import Settings from './pages/settings';
 import EditPwd from './pages/settings/editPwd';
 import Transfer from './pages/dashboard/near/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
-import AddToken  from './pages/dashboard/near/components/add-token'
+import AddToken  from './pages/dashboard/near/add-token'
 
 const Popup = () => {
    

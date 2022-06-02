@@ -69,11 +69,6 @@ const Settings = () => {
           <span>Language</span>
         </div>
         <div className='set-options mt-1-5' onClick={handlePwdOpen}>
-          <img src={IconLock} height="22" />
-          <img src={IconLanguage} height="20" alt=""/>
-          <span>Language</span>
-        </div>
-        <div className='set-options mt-1-5' onClick={handlePwdOpen}>
           <img src={IconLock} height="22"  alt=""/>
           <span>Password</span>
         </div>
