@@ -1,4 +1,4 @@
-import near from '../img/chains/near.svg';
+import near from '../img/chains/near-main.svg';
 import nearGray from '../img/chains/near-gray.svg';
 import nearIcon from '../img/near.svg';
 
