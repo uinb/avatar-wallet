@@ -1,6 +1,5 @@
 import {useState, useEffect, useCallback} from 'react';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
 import {Near} from '../../../../api';
 import {utils,} from 'near-api-js';
 import {Link} from 'react-router-dom';
@@ -23,7 +22,8 @@ import IconButton from '@material-ui/core/IconButton';
 import SendIcon from '@material-ui/icons/Send';
 import axios from 'axios'; */
 import AccountsCard from '../../../components/chains-account-card';
-
+import NullAccountWrapper from '../../../components/null-account-wrapper';
+ 
 interface BalanceProps {
     decimal: number;
     price: string;
@@ -265,10 +265,7 @@ const NearCoreComponent = (props: any) => {
                 </>
                 
             ) : (
-                <Grid container justifyContent='space-between'>
-                    <Button color="primary" variant="contained" component={Link} to={`/import-account/near`}>Import Account</Button>
-                    <Button color="primary" variant="outlined" component={Link} to={`/create-account/near`}>Create Account</Button>
-                </Grid>
+                <NullAccountWrapper chain="near"/>
             )}
             
         </Grid>

@@ -22,7 +22,7 @@ export const auth = createSlice({
       state.password  = payload;
       state.expiredTime = Date.now();
     },
-  },
+  }, 
   extraReducers: (builder) => {
     
   }

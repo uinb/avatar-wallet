@@ -5,6 +5,7 @@ import storage from 'reduxjs-toolkit-persist/lib/storage';
 import authReducer from '../reducer/auth';
 import networkReducer from '../reducer/network';
 import nearReducer from '../reducer/near';
+import accountReducer from '../reducer/account';
 
 const persistConfig = {
   key: 'avatar-wallet',
@@ -16,7 +17,8 @@ const persistConfig = {
 const rootReducers = combineReducers({
   auth: authReducer,
   network: networkReducer,
-  near: nearReducer
+  near: nearReducer,
+  account: accountReducer
 })
 
 const _persistedReducer = persistReducer<any,AnyAction>(persistConfig, rootReducers);
