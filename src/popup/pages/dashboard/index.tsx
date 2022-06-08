@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import Grid from '@material-ui/core/Grid';
 import {DashboardHeader} from '../../components/header';
 import './index.scss';
@@ -6,17 +5,20 @@ import chains from '../../../constant/chains';
 import { Typography } from '@material-ui/core';
 import { withTheme } from '@material-ui/core';
 import NearCore from './near';
-import { useAppSelector } from '../../../app/hooks';
-import { selectNetwork } from '../../../reducer/network';
+import { useAppSelector, useAppDispatch } from '../../../app/hooks';
+import { selectNetwork, selectAppChains, setChain, selectChain} from '../../../reducer/network';
+import Avatar from '@material-ui/core/Avatar';
+import AppChainCore from './appchain-wrapper';
 
 const Dashboard = (props:any) => {
     const {theme} = props;
-    const [activeChain, setActiveChain] = useState('near');
-    const handleChangeChain = (chain:string) => {
-        setActiveChain(chain)
-    }
+    const dispatch = useAppDispatch();
     const networkId = useAppSelector(selectNetwork);
-
+    const activeChain = useAppSelector(selectChain(networkId));
+    const appChains = useAppSelector(selectAppChains(networkId));
+    const handleChangeChain = (chain:string) => {
+        dispatch(setChain({networkId, chain}));
+    }
     return (
         <Grid>
             <DashboardHeader />
@@ -32,9 +34,22 @@ const Dashboard = (props:any) => {
                             </div>
                         )
                     })}
+                    {appChains?.map((item) => {
+                        return (
+                            <div className="chainItem" key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
+                                <Avatar style={{width: 32, height: 32}}>
+                                    {item.appchain_metadata.fungible_token_metadata.icon ? (
+                                        <img src={activeChain === item.appchain_id ? item.appchain_metadata.fungible_token_metadata.icon : item.appchain_metadata.fungible_token_metadata.icon} alt="" width="100%"/>
+                                    ) : item.appchain_id.substr(0,1).toUpperCase()}
+                                </Avatar>
+                                <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === item.appchain_id ? 'block' : 'none'}}></span>
+                            </div>
+                        )
+                    })}
                 </Grid>
                 <Grid className="chainContent">
-                    <NearCore networkId={networkId} config={chains.near}/>
+                    {activeChain === 'near' ? <NearCore networkId={networkId} config={chains.near}/> : null}
+                    {activeChain !== 'near' ? <AppChainCore /> : null}
                 </Grid>
             </Grid>
         </Grid>

@@ -1,14 +1,11 @@
 import * as nearAPI from 'near-api-js';
 import axios from 'axios';
 import Big from 'big.js';
-import chainConfig from '../constant/chains';
-import BN from 'bn.js';
-import { receiveMessageOnPort } from 'worker_threads';
+import mainnetConfig from '../constant/mainnet-config';
+import testnetConfig from '../constant/testnet-config';
 const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
-const {connect, keyStores, Near, KeyPair, Contract, utils, transactions} = nearAPI;
+const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
 const bs58 = require('bs58');
-
-
 
 class NearCore extends Near{
     near;
@@ -27,30 +24,30 @@ class NearCore extends Near{
         this.near = near;
     }
     async importAccount(seeds){
-        const { helperUrl, keyStore } = this.near?.config;
+        const { helperUrl, keyStore, networkId } = this.near?.config;
         const {secretKey, publicKey} = parseSeedPhrase(seeds);
         const {data} = await axios.get(`${helperUrl}/publicKey/${publicKey}/accounts`);
         if(data.length){
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
-            await keyStore.setKey(this.networkId, data[0], keyPair);
+            await keyStore.setKey(networkId, data[0], keyPair);
             return null
         }else{
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
             const address = Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex')
-            await keyStore.setKey(this.networkId, address, keyPair);
+            await keyStore.setKey(networkId, address, keyPair);
             return null
         }
     }
     async getAccounts(){
-        const {keyStore} = this.near.config;
-        const accounts = await keyStore.getAccounts(this.networkId);
+        const {keyStore, networkId} = this.near.config;
+        const accounts = await keyStore.getAccounts(networkId);
         return accounts;
     }
     async forgetAccount(accountId){
-        const {keyStore} = this.near.config;
-        await keyStore.removeKey(this.networkId, accountId);
+        const {keyStore, networkId} = this.near.config;
+        await keyStore.removeKey(networkId, accountId);
     }
 
     generateKeyPair(){
@@ -60,19 +57,23 @@ class NearCore extends Near{
     async viewAccountState(account){
         try{
             const viewAccount = await this.near.account(account);
-            const result = await viewAccount.state();
+            await viewAccount.state();
             return false;
         }catch(e){
             return true
         }
     }
     async fetchFTContract(){
-        const {data} = await axios.get(chainConfig.near.ftPriceUrl)
-        if(data){
-            return data;
-        }else{
-            return {}
+        const {ftPriceUrl =''} = this.near.config;
+        if(ftPriceUrl){
+            const {data} = await axios.get(ftPriceUrl)
+            if(data){
+                return data;
+            }else{
+                return {}
+            }
         }
+        return {}
     }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);
@@ -126,19 +127,24 @@ class NearCore extends Near{
         }
     }
     async fetchNFTBalance(accountId){
-        const {data} = await axios.get(`https://api.kitwallet.app/account/${accountId}/likelyNFTs`);
-        if(data.length){
-            const request = data.map(contract => this.NFTtMetadata(accountId, contract));
-            const result = await Promise.all(request);
-            const refactorNFTMetadata = data.reduce((all, current, index) => {
-                return {
-                    ...all,
-                    [current]: result[index]
-                }
-            }, {})
-            return refactorNFTMetadata;
+        const {nftFetchUrl = ''} = this.near.config;
+        const [base, path] = nftFetchUrl?.split('{requestAccount}');
+        if(nftFetchUrl){
+            const {data} = await axios.get(`${base}${accountId}${path}`);
+            if(data.length){
+                const request = data.map(contract => this.NFTtMetadata(accountId, contract));
+                const result = await Promise.all(request);
+                const refactorNFTMetadata = data.reduce((all, current, index) => {
+                    return {
+                        ...all,
+                        [current]: result[index]
+                    }
+                }, {})
+                return refactorNFTMetadata;
+            }
+           return {}
         }
-       return {}
+        return {}
     }
 
     async fetchAccountsState(accounts){
@@ -169,7 +175,7 @@ class NearCore extends Near{
             amount: utils.format.parseNearAmount('0.00125')
         })
         console.log(approveResult); */
-        const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        //const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
         return contract.ft_transfer(
             {
                 receiver_id: receiver, 
@@ -203,6 +209,45 @@ class NearCore extends Near{
                 msg: e.message
             }
         })
+    }
+    async getAppChains(accountId){
+        const {networkId} = this.near.config;
+        const account = await this.near.account(accountId);
+        const contractId = networkId === 'testnet' ? testnetConfig.oct.registryContractId: mainnetConfig.oct.registryContractId;
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['get_token_contract_id', 'get_appchains_with_state_of', 'get_appchain_ids'],
+                changeMethods: [],
+            }
+        )
+        const appChains = await contract.get_appchains_with_state_of({
+            appchain_state: ['Active'],
+            page_number: 1,
+            page_size: 50,
+            sorting_field: 'RegisteredTime',
+            sorting_order: 'Descending'
+            }
+        );
+        return {
+            networkId, 
+            chains: appChains
+        } || {networkId, chains: []}
+    }
+
+    async fetchContractTokens(){
+        const account = await this.near.account('lindawu8134.testnet');
+        const contract:any = new Contract(
+            account,
+            'fusotao.registry.test_oct.testnet',
+            {
+                viewMethods: ['get_near_fungible_tokens'],
+                changeMethods: [],
+            }
+        )
+        const result = await contract.get_near_fungible_tokens();
+        console.log(result)
     }
 }
 export default NearCore;

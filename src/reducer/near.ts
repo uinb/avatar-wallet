@@ -24,7 +24,7 @@ const initialState: StateProps = {
   activeAccount: '',
   priceList: {},
   accountBalances: {},
-  transferInfomation: {}
+  transferInfomation: {},
 }
 
 
