@@ -15,7 +15,6 @@ import Transfer from './pages/dashboard/near/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 
 const Popup = () => {
-   
     return (
         <Grid className="root">
             <HashRouter>

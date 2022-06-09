@@ -30,7 +30,6 @@ const MenuContent:any = (props:any) => {
     )
 }
 
-
 const ChainAccountCard = (props:any) => {
     const {config, operations, handleAccountItemClick, accounts, activeAccount, handleOperateClick} = props;
     const theme = useTheme();

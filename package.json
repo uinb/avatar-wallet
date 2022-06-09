@@ -11,6 +11,7 @@
     "@polkadot/keyring": "^9.4.1",
     "@polkadot/ui-keyring": "^2.4.1",
     "@polkadot/util-crypto": "^9.4.1",
+    "@polkadot/wasm-crypto": "^6.1.1",
     "@reduxjs/toolkit": "^1.8.2",
     "@svgr/webpack": "^5.5.0",
     "@testing-library/jest-dom": "^5.16.4",
