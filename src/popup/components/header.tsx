@@ -20,12 +20,10 @@ import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
 import Button from '@material-ui/core/Button';
 import { useAppSelector,useAppDispatch } from '../../app/hooks';
-import { selectNetwork,changeNetwork} from '../../reducer/network';
+import { selectNetworkList,changeNetwork} from '../../reducer/network';
 
 
 import "./header.scss"
-const networks = ['Mainnet','Testnet'];
-
 const useStyles = makeStyles(theme => ({
     root: {
         background: theme.palette.background.default,
@@ -122,7 +120,7 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
             <RadioGroup aria-label="gender" name={selectedValue} value={selectedValue} onChange={handleChange}>
               {
                 networkList.map(network => (
-                  <FormControlLabel value={network.name} control={<Radio />} label={network.name} />
+                  <FormControlLabel value={network.name} control={<Radio />} label={network.name.slice(0,1).toUpperCase() +network.name.slice(1).toLowerCase()} />
                 ))
               }
             </RadioGroup>
@@ -135,7 +133,7 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
 }
 export const DashboardHeader = () => {
     const [open, setOpen] = React.useState(false);
-    const networkList = useAppSelector(selectNetwork);
+    const networkList = useAppSelector(selectNetworkList);
     const dispatch = useAppDispatch();
     const activeNetwork = networkList.filter(network => {
       return network.active === true;

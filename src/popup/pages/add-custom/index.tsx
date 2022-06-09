@@ -1,8 +1,8 @@
 import React, {useState,useEffect} from 'react';
 import Button from '@material-ui/core/Button';
-import {Link} from 'react-router-dom';
 import Input from '@material-ui/core/Input';
 import {HeaderWithBack} from '../../components/header';
+import { useNavigate } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import './index.scss';
@@ -10,29 +10,30 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { useAppSelector,useAppDispatch } from '../../../app/hooks';
-import {selectNetwork,setNetwork} from '../../../reducer/network';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-const connectToBlockchain = async (url) => {
-  const wsProvider = new WsProvider(url)
-  return await ApiPromise.create({provider: wsProvider});
-}
+import {selectNetworkList,addNetwork} from '../../../reducer/network';
+// import { ApiPromise, WsProvider } from '@polkadot/api';
+// const connectToBlockchain = async (url) => {
+//   const wsProvider = new WsProvider(url)
+//   return await ApiPromise.create({provider: wsProvider});
+// }
 const AddNetwork = () => {
     const dispatch = useAppDispatch();
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
-    const networkList = useAppSelector(selectNetwork);
+    const networkList = useAppSelector(selectNetworkList);
     const [inputError, setInputError] = useState({ customName: '', customUrl: '' });
     const [verifyStatus, setVerifyStatus] = useState(false);
+    const navigate = useNavigate()
 
     /**
      * verify networks
      */
      const verifyNetworks = () => {
         let sameNetworksUrl = networkList.filter(item => {
-          return item.networkUrl == url;
+          return item.networkUrl === url;
         });
         let sameNetworksName = networkList.filter(item => {
-          return item.name == name;
+          return item.name === name;
         });
         if(sameNetworksUrl.length){
           setInputError({ customName: '', customUrl: "RPC URL must be unique !!" })
@@ -64,11 +65,11 @@ const AddNetwork = () => {
     const handleAddNetwork = async () => {
 
       
-      //check URL
+      // //check URL
       // let api = await connectToBlockchain(url);
-      // console.log(api);
-
-      dispatch(setNetwork({name,networkUrl:url,active:false}));
+      // console.log(api.genesisHash.toHex());
+      navigate('/dashboard')
+      dispatch(addNetwork({name,networkUrl:url,active:false}));
     }
     return (
         <Grid container direction="column" >
@@ -96,7 +97,7 @@ const AddNetwork = () => {
                         {inputError.customUrl && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError.customUrl}</Typography>}
                     </Box>
                 </Box>
-                <Button fullWidth color="primary" variant='contained' size="large" disabled={!verifyStatus} component={Link} to="/" className="mt2" onClick={handleAddNetwork}>Save</Button><br/><br/>
+                <Button fullWidth color="primary" variant='contained' size="large" disabled={!verifyStatus} className="mt2" onClick={handleAddNetwork}>Save</Button><br/><br/>
             </Container> 
         </Grid>
     )

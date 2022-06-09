@@ -17,17 +17,17 @@ const initialState: StateProps = {
   loading: false,
   networkOption: [
     {
-      name:"Miannet",
+      name:"mainnet",
       networkUrl:"wss://binnode.brandy.fusotao.org",
       active:true
     },
     {
-      name:"Testnet",
+      name:"testnet",
       networkUrl:"wss://binnode.brandy.fusotao.org",
       active:false
     }
   ],
-  networkId: "Miannet",
+  networkId: localStorage.getItem('networkId') || 'mainnet',
   chain:{},
   appChains: {}
 }
@@ -37,8 +37,12 @@ export const network = createSlice({
   name:'network',
   initialState,
   reducers: {
-    setNetwork(state, {payload = {}}){
+    addNetwork(state, {payload = {}}){
       state.networkOption.push(payload);
+    },
+    setNetwork(state, {payload = ''}){
+      state.networkId = payload;
+      localStorage.setItem('networkId', payload)
     },
     changeNetwork(state,{payload}){
       state.networkOption.map(option =>{
@@ -64,9 +68,10 @@ export const network = createSlice({
   }
 })
 
-export const {setChain,setNetwork,changeNetwork,setAppChains}  = network.actions;
+export const {setChain,addNetwork,setNetwork,changeNetwork,setAppChains}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
-export const selectNetwork = createSelector(selectRootState, state => state.networkOption); 
+export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
+export const selectNetworkList = createSelector(selectRootState, state => state.networkOption); 
 export const selectChain = (networkId:string) => createSelector(selectRootState, state => state.chain[networkId] || 'near'); 
 export const selectAppChains = (networkId) =>  createSelector(selectRootState, (state) => {
   return state.appChains[networkId] || [];
