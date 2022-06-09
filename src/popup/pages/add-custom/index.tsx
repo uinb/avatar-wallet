@@ -11,11 +11,11 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { useAppSelector,useAppDispatch } from '../../../app/hooks';
 import {selectNetwork,setNetwork} from '../../../reducer/network';
-// import { ApiPromise, WsProvider } from '@polkadot/api';
-// const connectToBlockchain = async (url) => {
-//   const wsProvider = new WsProvider(url)
-//   return await ApiPromise.create({provider: wsProvider});
-// }
+import { ApiPromise, WsProvider } from '@polkadot/api';
+const connectToBlockchain = async (url) => {
+  const wsProvider = new WsProvider(url)
+  return await ApiPromise.create({provider: wsProvider});
+}
 const AddNetwork = () => {
     const dispatch = useAppDispatch();
     const [name, setName] = useState('');
