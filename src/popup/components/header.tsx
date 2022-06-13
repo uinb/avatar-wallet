@@ -71,6 +71,9 @@ const useStyles = makeStyles(theme => ({
       top: theme.spacing(1),
       color: theme.palette.grey[500],
     },
+    label:{
+      textTransform: 'capitalize'
+    }
 }))
 
 export const HeaderWithBack  = (props:any) => {
@@ -119,8 +122,8 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
           <div className='box'>
             <RadioGroup aria-label="gender" name={selectedValue} value={selectedValue} onChange={handleChange}>
               {
-                networkList.map(network => (
-                  <FormControlLabel value={network.name} control={<Radio />} label={network.name.slice(0,1).toUpperCase() +network.name.slice(1).toLowerCase()} />
+                networkList.map((network, index) => (
+                  <FormControlLabel key={index} value={network.name} classes={{root: classes.label}} control={<Radio />} label={network.name} />
                 ))
               }
             </RadioGroup>
