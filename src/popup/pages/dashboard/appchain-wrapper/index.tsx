@@ -13,6 +13,7 @@ import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import {useMemo} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
+import { useNavigate } from 'react-router-dom';
 
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
@@ -21,12 +22,17 @@ const AppChainWrapper = (props:any) => {
     const appChain = useAppSelector(selectAppChain(networkId, chain));
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
     const dispatch = useAppDispatch();
+    const navigator = useNavigate();
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
 
-    const handleOperateClick = () => {
-
+    const handleOperateClick = (type:string) => {
+        if(type === 'forgetAccount'){
+            const result = keyring.forgetAccount(activeAccount);
+            console.log(result);
+            navigator('/dashboard', {replace: false})
+        }
     }
 
     const address = useMemo(() => {
