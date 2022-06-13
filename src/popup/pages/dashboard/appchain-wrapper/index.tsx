@@ -32,6 +32,9 @@ const AppChainWrapper = (props:any) => {
             const result = keyring.forgetAccount(activeAccount);
             console.log(result);
             navigator('/dashboard', {replace: false})
+        }else if(type === 'exportAccount'){
+            const account = keyring.getPairs().find(item => item.address === activeAccount);
+            const result = keyring.backupAccount(account, '')
         }
     }
 
