@@ -13,7 +13,10 @@ const config = {
         explorerUrl: "https://explorer.mainnet.oct.network",
         octTokenContractId: "f5cfbc74057c610c8ef151a439252680ac68c6dc.factory.bridge.near",
         registryContractId: "octopus-registry.near",
-    }
+    },
+    fusotao:{
+        node: 'wss://binnode.brandy.fusotao.org'
+    } 
 }
 
 export default config

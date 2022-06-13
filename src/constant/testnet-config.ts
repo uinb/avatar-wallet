@@ -11,7 +11,10 @@ const config = {
         explorerUrl: "https://explorer.testnet.oct.network",
         octTokenContractId: "oct.beta_oct_relay.testnet",
         registryContractId: "registry.test_oct.testnet",
-    }   
+    },
+    fusotao:{
+        nodeId: 'wss://binnode.brandy.fusotao.org'
+    } 
 }
 
 export default config;
