@@ -1,6 +1,6 @@
 /* global chrome */
 
-chrome.runtime.onInstalled.addListener(function() {
+/* chrome.runtime.onInstalled.addListener(function() {
     chrome.declarativeContent.onPageChanged.removeRules(undefined, function(){
         chrome.declarativeContent.onPageChanged.addRules([{
             conditions: [
@@ -11,4 +11,8 @@ chrome.runtime.onInstalled.addListener(function() {
             ]
         }])
     })
-})
+}) */
+
+chrome.runtime.onInstalled.addListener(function () {
+    console.log("插件已被安装");
+  });

@@ -50,6 +50,7 @@ export const network = createSlice({
         if(option.name === payload){
           option.active = true;
           state.networkId = payload;
+          localStorage.setItem('networkId', payload)
         }
         return option;
       });
