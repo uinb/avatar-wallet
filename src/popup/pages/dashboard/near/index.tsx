@@ -12,10 +12,10 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {setSignerAccounts, /* selectSignerAccount,  */selectActiveAccountByNetworkId, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
+import {setSignerAccounts, /* selectSignerAccount,  */selectNearActiveAccountByNetworkId, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
-import {selectNetwork, setAppChains} from '../../../../reducer/network';
+import {selectNetwork} from '../../../../reducer/network';
 /* import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import SendIcon from '@material-ui/icons/Send';
@@ -40,11 +40,11 @@ interface NFTMetadataProps{
 
 const NearCoreComponent = (props: any) => {
     const {config} = props;
-    const dispatch = useAppDispatch();
     const networkId = useAppSelector(selectNetwork)
+    const dispatch = useAppDispatch();
     const near = useNear(networkId);
     const [accounts, setAccounts] = useState([]);
-    const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId))
+    const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId))
     const [balances, setBalances] = useState({}) as any;
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const [activeTab, setActiveTab] = useState('assets');
@@ -128,16 +128,6 @@ const NearCoreComponent = (props: any) => {
         dispatch(setActiveAccount({account, networkId}))
     }
 
-    useEffect(() => {
-        if(!activeAccount || !near){
-            return;
-        }
-        (async () => {
-            const result = await near.getAppChains(activeAccount);
-            dispatch(setAppChains({...result}));
-        })()
-    },[activeAccount, dispatch, near])
-
     /* useEffect(() => {
         if(!signerAccounts.length){
             return;
@@ -191,6 +181,7 @@ const NearCoreComponent = (props: any) => {
     const handleOperateClick = async (type:string) => {
         if(type === 'forgetAccount'){
             await near.forgetAccount(activeAccount);
+            dispatch(setActiveAccount({networkId, account: ''}));
         }
     }
 

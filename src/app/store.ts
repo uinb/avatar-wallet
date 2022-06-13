@@ -12,7 +12,7 @@ const persistConfig = {
   key: 'avatar-wallet',
   storage: storage,
   stateReconciler: autoMergeLevel2,
-  whitelist: ['auth', 'network', 'near']
+  whitelist: ['auth', 'network', 'near', 'account']
 };
 
 const rootReducers = combineReducers({
@@ -27,7 +27,7 @@ const _persistedReducer = persistReducer<any,AnyAction>(persistConfig, rootReduc
 
 export const store = configureStore({
   reducer: _persistedReducer,
-  middleware: (getDefaultMiddleware: any) => {
+  middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [
@@ -55,4 +55,3 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 export interface ActionReducer<T, V extends Action = Action> {
   (state: T | undefined, action: V): T;
 }
-

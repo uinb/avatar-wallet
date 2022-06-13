@@ -114,6 +114,9 @@ div{
 .container {
     height: 100vh;
     padding: 48px 16px 0;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
 }
 
 .ml1{
@@ -155,4 +158,10 @@ textarea {
 }
 .background-color-F9F9F9{
     background-color: #F9F9F9 !important;
+}
+.root{
+    /* display: flex;
+    justify-content: center; */
+    width: 360px;
+     
 }

@@ -97,9 +97,9 @@ export const near = createSlice({
 export const {setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
 export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts);
-export const selectActiveAccountByNetworkId = (networkId:string) => createSelector(selectRootState, state => state.activeAccount[networkId] || '');
+export const selectNearActiveAccountByNetworkId = (networkId:string) => createSelector(selectRootState, state => state.activeAccount[networkId] || '');
 export const selectPriceList = createSelector(selectRootState, state => state.priceList);
-export const selectAccountBlances = (networkId:string) => createSelector(selectRootState, selectActiveAccountByNetworkId(networkId), (state,account) => {
+export const selectAccountBlances = (networkId:string) => createSelector(selectRootState, selectNearActiveAccountByNetworkId(networkId), (state,account) => {
   if(state.accountBalances[account] && Object.keys(state.accountBalances[account])){
     return Object.entries(state.accountBalances[account]).map(([key, item]: [string, TokenProps]) => item)
   }else{

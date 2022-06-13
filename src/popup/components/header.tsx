@@ -1,7 +1,7 @@
 import React from 'react';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import AppBar from '@material-ui/core/AppBar';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Typography } from '@material-ui/core';
 import { Link, useNavigate} from 'react-router-dom';
 import dashboardLogo from '../../img/dashboard-logo.svg';
 import cn from 'classnames';
@@ -20,10 +20,10 @@ import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
 import Button from '@material-ui/core/Button';
 import { useAppSelector,useAppDispatch } from '../../app/hooks';
-import { selectNetworkList,changeNetwork} from '../../reducer/network';
-
-
+import { selectNetworkList,changeNetwork, selectNetwork, selectChain, selectAppChains} from '../../reducer/network';
 import "./header.scss"
+
+
 const useStyles = makeStyles(theme => ({
     root: {
         background: theme.palette.background.default,
@@ -78,7 +78,7 @@ const useStyles = makeStyles(theme => ({
 
 export const HeaderWithBack  = (props:any) => {
     const classes = useStyles();
-    const {back = '/', callback, action, ...restProps } = props;
+    const {back = '/', callback, action, title = '', ...restProps } = props;
     const navigator = useNavigate();
     const handleCallback= () =>{
         if(callback){
@@ -90,7 +90,10 @@ export const HeaderWithBack  = (props:any) => {
     return (
         <AppBar className={classes.root} {...restProps}>
             <ArrowBack color="inherit" onClick={handleCallback}/>
-            {action}
+            <Typography variant='body1' align='center'>{title}</Typography>
+            <div>
+              {action}
+            </div>
         </AppBar>
     )
 }
@@ -137,11 +140,15 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
 export const DashboardHeader = () => {
     const [open, setOpen] = React.useState(false);
     const networkList = useAppSelector(selectNetworkList);
+    const networkId = useAppSelector(selectNetwork)
     const dispatch = useAppDispatch();
-    const activeNetwork = networkList.filter(network => {
+    const activeChain = useAppSelector(selectChain(networkId));
+    const appChains = useAppSelector(selectAppChains(networkId))
+    const navigator = useNavigate();
+    /* const activeNetwork = networkList.filter(network => {
       return network.active === true;
-    })
-    const [selectedValue, setSelectedValue] = React.useState(activeNetwork[0].name);
+    }) */
+    const [selectedValue, setSelectedValue] = React.useState(networkId);
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -152,12 +159,20 @@ export const DashboardHeader = () => {
     };
     const classes = useStyles();
 
+    const handleToBridge = () => {
+      if(activeChain === 'near'){
+        navigator(`/bridge/near/${appChains[0].appchain_id}`);
+      }else{
+        navigator(`/bridge/${activeChain}/near`);
+      }
+    }
+
     return (
         <AppBar className={cn(classes.dashboardBar)}>
             <img src={dashboardLogo} alt="" height="24"/>
             <Grid>
                 <Box className={classes.fnTab} onClick={handleClickOpen}><FiberManualRecord color="primary" fontSize="inherit"/> &nbsp;{selectedValue} <ArrowDropDown color="action"/></Box>
-                <Box className={cn(classes.fnTab, 'ml1', classes.link)} component={Link} to="/bridge">Bridge</Box>
+                <Button color="primary" className={cn(classes.fnTab, 'ml1', classes.link)} onClick={handleToBridge}>Bridge</Button>
                 <NetworkDialog networkList={networkList} selectedValue={selectedValue} open={open} onClose={handleClose} />
                 <IconButton className={cn(classes.iconButton, 'ml1')} component={Link} to="/settings">
                     <Settings fontSize='inherit'/>

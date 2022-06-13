@@ -6,10 +6,11 @@ import { Typography } from '@material-ui/core';
 import { withTheme } from '@material-ui/core';
 import NearCore from './near';
 import { useAppSelector, useAppDispatch } from '../../../app/hooks';
-import { selectNetwork, selectAppChains, setChain, selectChain} from '../../../reducer/network';
+import { selectNetwork, selectAppChains, setChain, selectChain, fetchAppChains} from '../../../reducer/network';
 import Avatar from '@material-ui/core/Avatar';
 import AppChainCore from './appchain-wrapper';
 import cn from 'classnames'
+import { useEffect } from 'react';
 
 
 const Dashboard = (props:any) => {
@@ -21,6 +22,13 @@ const Dashboard = (props:any) => {
     const handleChangeChain = (chain:string) => {
         dispatch(setChain({networkId, chain}));
     }
+
+    useEffect(() => {
+        if(!networkId) {
+            return;
+        }
+        dispatch(fetchAppChains({networkId}))
+    },[networkId, dispatch])
     
     return (
         <Grid>
