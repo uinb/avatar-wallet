@@ -4,6 +4,7 @@ import SignUp from './pages/sign-up';
 import SignIn from './pages/sigh-in';
 import {HashRouter, Route, Routes} from 'react-router-dom';
 import Dashboard from './pages/dashboard';
+import AddCustom from './pages/add-custom';
 import Grid from '@material-ui/core/Grid';
 import Welcome from './pages/welcome';
 import ImportAccount from './pages/import-account';
@@ -15,7 +16,6 @@ import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 import TokenDetail from './pages/dashboard/near/token-detail'
 
 const Popup = () => {
-   
     return (
         <Grid className="root">
             <HashRouter>
@@ -25,6 +25,7 @@ const Popup = () => {
                     <Route path="/sign-up" element={<SignUp />} />
                     <Route path="/sign-in" element={<SignIn />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/addcustom" element={<AddCustom />} />
                     <Route path="/import-account/:chain" element={<ImportAccount />} />
                     <Route path="/create-account/:chain" element={<CreateAccount />} />
                     <Route path="/settings" element={<Settings />} />

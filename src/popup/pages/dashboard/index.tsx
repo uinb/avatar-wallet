@@ -10,6 +10,7 @@ import { selectNetwork, selectAppChains, setChain, selectChain} from '../../../r
 import Avatar from '@material-ui/core/Avatar';
 import AppChainCore from './appchain-wrapper';
 
+
 const Dashboard = (props:any) => {
     const {theme} = props;
     const dispatch = useAppDispatch();
@@ -37,7 +38,7 @@ const Dashboard = (props:any) => {
                     {appChains?.map((item) => {
                         return (
                             <div className="chainItem" key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
-                                <Avatar style={{width: 32, height: 32}}>
+                                <Avatar className="img">
                                     {item.appchain_metadata.fungible_token_metadata.icon ? (
                                         <img src={activeChain === item.appchain_id ? item.appchain_metadata.fungible_token_metadata.icon : item.appchain_metadata.fungible_token_metadata.icon} alt="" width="100%"/>
                                     ) : item.appchain_id.substr(0,1).toUpperCase()}
