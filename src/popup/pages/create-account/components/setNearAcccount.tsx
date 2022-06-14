@@ -6,7 +6,9 @@ import Input from '@material-ui/core/Input';
 import Box from '@material-ui/core/Box';
 import cn from 'classnames';
 import { makeStyles } from '@material-ui/core';
-import {Near} from '../../../../api';
+import useNear from '../../../../hooks/useNear';
+import { selectNetwork } from '../../../../reducer/network';
+import { useAppSelector } from '../../../../app/hooks';
 
 const accountRules = [
     "Your account ID can contain any of the following:",
@@ -35,10 +37,12 @@ const SetNearAccount =  (props:any) => {
     const [account, setViewAccount] = useState('');
     const [accountState, setAccountState] = useState(true);
     const {setAccount} = props;
+    const networkId = useAppSelector(selectNetwork);
+    const near = useNear(networkId)
 
     const handleInput = async (e:any) => {
         setViewAccount(e.target.value)
-        const viewAccountState = await Near.viewAccountState(`${e.target.value}.near`);
+        const viewAccountState = await near.viewAccountState(`${e.target.value}.near`);
         setAccountState(viewAccountState)
     }
     return (

@@ -11,7 +11,7 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
 import testnetConfig from '../../../../constant/testnet-config';
@@ -44,6 +44,7 @@ const AppChainWrapper = (props:any) => {
         }else if(type === 'exportAccount'){
             const account = keyring.getPairs().find(item => item.address === activeAccount);
             const result = keyring.backupAccount(account, '')
+            console.log(result);
         }
     }
 
