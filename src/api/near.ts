@@ -7,7 +7,7 @@ const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
 const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
 const bs58 = require('bs58');
 
-class NearCore extends Near{
+class NearCore extends Near {
     near;
     networkId;
     constructor(config){
