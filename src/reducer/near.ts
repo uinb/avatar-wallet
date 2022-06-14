@@ -6,7 +6,9 @@ import chains from '../constant/chains';
 interface StateProps {
   loading: boolean,
   signerAccounts: Array<string>,
-  activeAccount: string,
+  activeAccount: {
+    [networkId:string]: string
+  },
   accountBalances: {
     [key: string] : {
       [key:string]: TokenProps
@@ -21,7 +23,7 @@ interface StateProps {
 const initialState: StateProps = {
   loading: false,
   signerAccounts: [],
-  activeAccount: '',
+  activeAccount: {},
   priceList: {},
   accountBalances: {},
   transferInfomation: {},
@@ -35,8 +37,16 @@ export const near = createSlice({
     setSignerAccounts(state, {payload  = []}){
         state.signerAccounts = payload;
     },
-    setActiveAccount(state, {payload = ''}){
-      state.activeAccount = payload;
+    setActiveAccount(state, {payload}){
+      const {account, networkId} = payload;
+      if(state.activeAccount[networkId]){
+        state.activeAccount[networkId] = account;
+      }else{
+        state.activeAccount = {
+          ...state.activeAccount,
+          [networkId]: account
+        }
+      }
     },
     setBalancesForAccount(state, {payload}){
       const {account, balances} = payload;
@@ -87,9 +97,9 @@ export const near = createSlice({
 export const {setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
 export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts);
-export const selectActiveAccount = createSelector(selectRootState, state => state.activeAccount);
+export const selectActiveAccountByNetworkId = (networkId:string) => createSelector(selectRootState, state => state.activeAccount[networkId] || '');
 export const selectPriceList = createSelector(selectRootState, state => state.priceList);
-export const selectAccountBlances = createSelector(selectRootState, selectActiveAccount, (state,account) => {
+export const selectAccountBlances = (networkId:string) => createSelector(selectRootState, selectActiveAccountByNetworkId(networkId), (state,account) => {
   if(state.accountBalances[account] && Object.keys(state.accountBalances[account])){
     return Object.entries(state.accountBalances[account]).map(([key, item]: [string, TokenProps]) => item)
   }else{

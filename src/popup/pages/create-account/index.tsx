@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react';
 import { HeaderWithBack } from '../../components/header';
 import Content from '../../components/layout-content';
 import Grid from '@material-ui/core/Grid';
-import { Near } from '../../../api';
 import Typography from '@material-ui/core/Typography';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import {KeyPair} from 'near-api-js';
@@ -14,6 +13,7 @@ import ConfirmSeed from './components/confirmSeed';
 import CreateSuccess from './components/createSuccess';
 import SetNearAccount from './components/setNearAcccount';
 import keyring from '@polkadot/ui-keyring';
+import useNear from '../../../hooks/useNear';
 /* import BN from 'bn.js';
 import axios from 'axios'; */
 
@@ -31,11 +31,15 @@ const CreateAccount = (props:any) => {
     const [tempKeyPair, setKeypair] = useState() as any;
     const networkId = useAppSelector(selectNetwork);
     const [randomSeed] = useState(Math.ceil(Math.random()*12));
+    const near = useNear(networkId)
     useEffect(() => {
-        const tempSeeds = Near.generateKeyPair();
+        if(!near){
+            return ;
+        }
+        const tempSeeds = near.generateKeyPair();
         setKeypair(tempSeeds)
         setSeeds(tempSeeds.seedPhrase);
-    },[])
+    },[near])
     const navigator = useNavigate();
 
     const handleBack = () => {
@@ -48,8 +52,7 @@ const CreateAccount = (props:any) => {
 
     const handleCreateAccount = async () => {
         if(chain === 'near'){
-
-            const {keyStore} = Near.config;
+            const {keyStore} = near.config;
             const keyPair = tempKeyPair;
             const {secretKey, publicKey} = keyPair;
             const address = tempAddress || Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex');
@@ -63,8 +66,8 @@ const CreateAccount = (props:any) => {
                 try{
                     const PRIVATE_KEY = secretKey.split("ed25519:")[1];
                     const setKeyPair = KeyPair.fromString(PRIVATE_KEY);
-                    const creator = await Near.account(singerAccounts[0]);
-                    const targetAccount = await Near.account(tempAddress);
+                    const creator = await near.account(singerAccounts[0]);
+                    const targetAccount = await near.account(tempAddress);
                     console.log(creator, targetAccount);
                     await keyStore.setKey(networkId, tempAddress, setKeyPair);
                     /* await creator.functionCall({

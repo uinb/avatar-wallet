@@ -39,10 +39,13 @@ class NearCore extends Near {
             return null
         });
     }
-    async getAccounts(){
-        const {keyStore, networkId} = this.near.config;
-        const accounts = await keyStore.getAccounts(networkId);
-        return accounts;
+    getAccounts(){
+        const {keyStore, networkId} = this.config;
+        return keyStore.getAccounts(networkId).then(resp => {
+            return resp;
+        }).catch(e => {
+            return [];
+        });
     }
     async forgetAccount(accountId){
         const {keyStore, networkId} = this.near.config;
@@ -65,14 +68,13 @@ class NearCore extends Near {
     async fetchFTContract(){
         const {ftPriceUrl =''} = this.near.config;
         if(ftPriceUrl){
-            const {data} = await axios.get(ftPriceUrl)
-            if(data){
+            return axios.get(ftPriceUrl).then(({data}) => {
                 return data;
-            }else{
+            }).catch(e => {
                 return {}
-            }
+            })
         }
-        return {}
+        return {};
     }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);

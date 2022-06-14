@@ -1,6 +1,5 @@
 import {useState, useEffect, useCallback} from 'react';
 import Grid from '@material-ui/core/Grid';
-import {Near} from '../../../../api';
 import {utils,} from 'near-api-js';
 import {Link} from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
@@ -13,16 +12,17 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {setSignerAccounts, /* selectSignerAccount,  */selectActiveAccount, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
+import {setSignerAccounts, /* selectSignerAccount,  */selectActiveAccountByNetworkId, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
-import {setAppChains} from '../../../../reducer/network';
+import {selectNetwork, setAppChains} from '../../../../reducer/network';
 /* import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import SendIcon from '@material-ui/icons/Send';
 import axios from 'axios'; */
 import AccountsCard from '../../../components/chains-account-card';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
+import useNear from '../../../../hooks/useNear';
  
 interface BalanceProps {
     decimal: number;
@@ -41,72 +41,76 @@ interface NFTMetadataProps{
 const NearCoreComponent = (props: any) => {
     const {config} = props;
     const dispatch = useAppDispatch();
-    //const signerAccounts = useAppSelector(selectSignerAccount);
+    const networkId = useAppSelector(selectNetwork)
+    const near = useNear(networkId);
     const [accounts, setAccounts] = useState([]);
-    const activeAccount = useAppSelector(selectActiveAccount)
+    const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId))
     const [balances, setBalances] = useState({}) as any;
     const [ftBalances, setFTBalances] = useState<Array<BalanceProps>>([]);
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const nearSymbolConfig = useAppSelector(selectNearConfig);
     const refreshAccountList = useCallback(async () => {
-        const fecthedAccounts = await Near.getAccounts();
-        setAccounts(fecthedAccounts);
-        if(!activeAccount){
-            dispatch(setActiveAccount(fecthedAccounts[0]))
+        if(!near){
+            return ;
         }
-    },[dispatch, activeAccount])
+        const fecthedAccounts = await near.getAccounts();
+        setAccounts(fecthedAccounts);
+        if(!activeAccount || near.config.networkId === networkId){
+            dispatch(setActiveAccount({account: fecthedAccounts[0], networkId}))
+        }
+    },[dispatch, activeAccount, near, networkId])
 
     useEffect(() => {
-        if(!accounts.length){
+        if(!accounts.length || !near){
             return 
         }
         (async () => {
-            const accountsState = await Near.fetchAccountsState(accounts);
+            const accountsState = await near.fetchAccountsState(accounts);
             dispatch(setSignerAccounts(Object.keys(accountsState).filter((account) => !accountsState[account])))
         })()
-    },[accounts, dispatch])
+    },[accounts, dispatch, near])
 
 
     const fetchNearBalances = useCallback(async () => {
-        if(!activeAccount){
+        if(!activeAccount || !near){
             return ;
         }
         try{
-            const account = await Near.account(activeAccount);
+            const account = await near.account(activeAccount);
             const balances = await account.getAccountBalance();
             setBalances(balances);
             dispatch(setNearBalanceForAccount({account: activeAccount, balance: {...balances, available: utils.format.formatNearAmount(balances.available)}}))
         }catch(e){
             setBalances({total: 0});
         }
-    },[activeAccount, dispatch])
+    },[activeAccount, dispatch, near])
 
     const fetchFtBalance = useCallback(async () => {
-        if(!activeAccount){
+        if(!activeAccount || !near){
             return ;
         }
         try{
-            const {balances, tokens} = await Near.fetchFtBalance(activeAccount);
+            const {balances, tokens} = await near.fetchFtBalance(activeAccount);
             setFTBalances(balances)
             dispatch(setPriceList(tokens))
             dispatch(setBalancesForAccount({account: activeAccount, balances}))
         }catch(e){
             console.log(e);
         }
-    },[activeAccount, dispatch])
+    },[activeAccount, dispatch, near])
 
     const fetchNfts = useCallback(async () => {
-        if(!activeAccount){
+        if(!activeAccount || !near){
             return ;
         }
         try{
-            const nftMetadata = await Near.fetchNFTBalance(activeAccount);
+            const nftMetadata = await near.fetchNFTBalance(activeAccount);
             setNftBalances(nftMetadata)
         }catch(e){
             console.log(e)
         }
-    },[activeAccount])
+    },[activeAccount, near])
 
     useEffect(() => {
         fetchNearBalances();
@@ -123,27 +127,27 @@ const NearCoreComponent = (props: any) => {
 
 
     const handleAccountItemClick = (account:string) => {
-        dispatch(setActiveAccount(account))
+        dispatch(setActiveAccount({account, networkId}))
     }
 
     useEffect(() => {
-        if(!activeAccount){
+        if(!activeAccount || !near){
             return;
         }
         (async () => {
-            const result = await Near.getAppChains(activeAccount);
+            const result = await near.getAppChains(activeAccount);
             dispatch(setAppChains({...result}));
         })()
-    },[activeAccount, dispatch])
+    },[activeAccount, dispatch, near])
 
     /* useEffect(() => {
         if(!signerAccounts.length){
             return;
         }
         (async () => {
-            const {keyStore} = Near.config;
+            const {keyStore} = near.config;
             const tempAddress = 'wulin8.near';
-            const creator = await Near.account('ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
+            const creator = await near.account('ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
             const keyPair = await keyStore.getKey('mainnet', 'ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
             const setKeyPair = KeyPair.fromString(keyPair.secretKey);
             console.log(setKeyPair)
@@ -159,7 +163,7 @@ const NearCoreComponent = (props: any) => {
                 gas: "300000000000000",
                 attachedDeposit: utils.format.parseNearAmount('0'),
             });
-            const targetAccount = await Near.account(tempAddress);
+            const targetAccount = await near.account(tempAddress);
             const addKeyResult = await targetAccount.addKey(keyPair.publicKey.toString());
             console.log(addKeyResult);
 
@@ -188,7 +192,7 @@ const NearCoreComponent = (props: any) => {
 
     const handleOperateClick = async (type:string) => {
         if(type === 'forgetAccount'){
-            await Near.forgetAccount(activeAccount);
+            await near.forgetAccount(activeAccount);
         }
         refreshAccountList();
     }
