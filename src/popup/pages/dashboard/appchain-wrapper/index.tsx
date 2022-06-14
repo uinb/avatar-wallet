@@ -11,12 +11,13 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo,useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
-import testnetConfig from '../../../../constant/testnet-config';
 import useAppChain from '../../../../hooks/useAppChain';
-
+import mainnetConfig from '../../../../constant/mainnet-config';
+import testnetConfig from '../../../../constant/testnet-config';
+import { formatBalance } from '@polkadot/util';
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
@@ -28,13 +29,30 @@ const AppChainWrapper = (props:any) => {
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
-    const api = useAppChain(testnetConfig.myriad.nodeId);
+    const networkConfig = {mainnetConfig,testnetConfig};
+    const networkIdKey = networkId+"Config";
+    const symbol = networkConfig[networkIdKey][chain]['symbol'];
+    const nodeId = networkConfig[networkIdKey][chain]['nodeId'];
+    const api = useAppChain(nodeId);
     useEffect(() => {
         if(!api){
             return;
         }
         console.log(api.getBlockHash())
     },[api])
+    // const tokensList = networkConfig[networkIdKey][chain]['tokens'];
+    const [balance,setBalance] = useState('--') as any;
+    useEffect(() => {
+        if(!api){
+            return;
+        }
+        //setLoading(true);
+        (async () => {
+            const { data:{ free } }  = await api.query.system.account(activeAccount) as any;
+            const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
+            setBalance(balance);
+        })()
+    },[activeAccount, api]);
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -95,7 +113,7 @@ const AppChainWrapper = (props:any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <Grid className="mt4">
+                    <Grid className="mt4 akakakak">
                         <Card className="mt2">
                             <ListItem disableGutters dense>
                                 <ListItemAvatar>
@@ -107,7 +125,7 @@ const AppChainWrapper = (props:any) => {
                                         <Avatar style={{height: 32, width:32}}>{appChain.appchain_metadata?.fungible_token_metadata?.symbol.slice(0,1)}</Avatar>
                                     )}
                                 </ListItemAvatar>
-                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`}/>
+                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={balance}/>
                             </ListItem>
                         </Card> 
                     </Grid>
@@ -118,6 +136,4 @@ const AppChainWrapper = (props:any) => {
         </Grid>
     )
 }
-
-
 export default withTheme(AppChainWrapper)
