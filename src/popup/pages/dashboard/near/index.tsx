@@ -50,16 +50,19 @@ const NearCoreComponent = (props: any) => {
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const nearSymbolConfig = useAppSelector(selectNearConfig);
-    const refreshAccountList = useCallback(async () => {
+
+    useEffect(() => {
         if(!near){
             return ;
         }
-        const fecthedAccounts = await near.getAccounts();
-        setAccounts(fecthedAccounts);
-        if(!activeAccount || near.config.networkId === networkId){
-            dispatch(setActiveAccount({account: fecthedAccounts[0], networkId}))
-        }
-    },[dispatch, activeAccount, near, networkId])
+        (async () => {
+            const fecthedAccounts = await near.getAccounts();
+            setAccounts(fecthedAccounts);
+            if(!activeAccount){
+                dispatch(setActiveAccount({account: fecthedAccounts[0], networkId}))
+            }
+        })()
+    },[networkId, near, activeAccount, dispatch])
 
     useEffect(() => {
         if(!accounts.length || !near){
@@ -120,11 +123,6 @@ const NearCoreComponent = (props: any) => {
     useEffect(() =>{
         fetchNfts()
     },[fetchNfts])
-
-    useEffect(() => {
-        refreshAccountList();
-    },[refreshAccountList])
-
 
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account, networkId}))
@@ -194,7 +192,6 @@ const NearCoreComponent = (props: any) => {
         if(type === 'forgetAccount'){
             await near.forgetAccount(activeAccount);
         }
-        refreshAccountList();
     }
 
     return (
