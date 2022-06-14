@@ -11,9 +11,11 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
-import {useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
+import testnetConfig from '../../../../constant/testnet-config';
+import useAppChain from '../../../../hooks/useAppChain';
 
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
@@ -26,6 +28,13 @@ const AppChainWrapper = (props:any) => {
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
+    const api = useAppChain(testnetConfig.myriad.nodeId);
+    useEffect(() => {
+        if(!api){
+            return;
+        }
+        console.log(api.getBlockHash())
+    },[api])
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -37,6 +46,7 @@ const AppChainWrapper = (props:any) => {
             const result = keyring.backupAccount(account, '')
         }
     }
+
 
     const address = useMemo(() => {
         const accounts = keyring.getPairs()?.map(item => item.address);

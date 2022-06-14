@@ -20,6 +20,7 @@ const Dashboard = (props:any) => {
     const handleChangeChain = (chain:string) => {
         dispatch(setChain({networkId, chain}));
     }
+    
     return (
         <Grid>
             <DashboardHeader />

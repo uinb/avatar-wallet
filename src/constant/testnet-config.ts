@@ -14,7 +14,7 @@ const config = {
     },
     fusotao:{
         netwoekId: 'testnet',
-        nodeId: 'wss://binnode.brandy.fusotao.org',
+        nodeId: 'wss://gateway.testnet.octopus.network/fusotao/erc8ygm5qvmi2fw23ijpvzgpzzto47mi',
         name:'Fusotao',
         website: '',
         icon:"",
@@ -34,7 +34,7 @@ const config = {
         tokens:[]
     },
     myriad:{
-        nodeId: 'wss://gateway.testnet.octopus.network/barnacle0918/j8xz59egu4h8y814qnunm0cqfrq09lrw',
+        nodeId: 'wss://gateway.testnet.octopus.network/myriad/8f543a1c219f14d83c0faedefdd5be6e',
         tokenModule: 'token',
         tokenMethod: 'tokens',
         tokens:[]
