@@ -14,22 +14,6 @@ const config = {
         octTokenContractId: "f5cfbc74057c610c8ef151a439252680ac68c6dc.factory.bridge.near",
         registryContractId: "octopus-registry.near",
     },
-    fusotao:{
-        netwoekId: 'testnet',
-        nodeId: 'wss://gateway.testnet.octopus.network/fusotao/erc8ygm5qvmi2fw23ijpvzgpzzto47mi',
-        name:'Fusotao',
-        symbol:"TAO",
-        website: '',
-        icon:"",
-        tokenModule: 'token',
-        tokenMethod: 'tokens',
-        tokens:[
-            {"code":0, decimal: 18, symbol: "TAO", "name":"TAO", "logo":"https://www.fusotao.org/share/tao.svg"},
-            {"code":1, decimal: 18, symbol: "USDT", "name":"USDT", "logo":"https://www.fusotao.org/share/usdt.svg"},
-            {"code":2, decimal: 18, symbol: "WETH", "name":"WETH", "logo":"https://www.fusotao.org/share/weth.svg"},
-            {"code":3, decimal: 18, symbol: "wNEAR", "name":"wNEAR", "logo":"https://www.fusotao.org/share/wnear.svg"}
-        ]
-    },
     atocha:{
         nodeId:"wss://gateway.mainnet.octopus.network/atocha/jungxomf4hdcfocwcalgoiz64g9avjim",
         symbol:"ATO"
