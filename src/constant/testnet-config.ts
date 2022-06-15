@@ -5,7 +5,9 @@ const config = {
         walletUrl: "https://wallet.testnet.near.org",
         helperUrl: "https://helper.testnet.near.org",
         explorerUrl: "https://explorer.testnet.near.org",
-        headers:{}
+        headers:{},
+        ftPriceUrl:'https://dev-indexer.ref-finance.com//list-token-price',
+        nftFetchUrl:'https://testnet-api.kitwallet.app/account/{requestAccount}/likelyNFTs'
     },
     oct:{
         explorerUrl: "https://explorer.testnet.oct.network",

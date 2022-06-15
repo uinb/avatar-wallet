@@ -15,9 +15,9 @@ import {useEffect, useMemo,useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
 import useAppChain from '../../../../hooks/useAppChain';
-import mainnetConfig from '../../../../constant/mainnet-config';
-import testnetConfig from '../../../../constant/testnet-config';
-import { formatBalance } from '@polkadot/util';
+import {selectConfig} from '../../../../utils';
+
+
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
@@ -29,10 +29,13 @@ const AppChainWrapper = (props:any) => {
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
-    const networkConfig = {mainnetConfig,testnetConfig};
-    const networkIdKey = networkId+"Config";
-    const symbol = networkConfig[networkIdKey][chain]['symbol'];
-    const nodeId = networkConfig[networkIdKey][chain]['nodeId'];
+    const networkConfig = useMemo(() => {
+        if(!networkId || !chain){
+            return {} as any
+        }
+        return selectConfig(chain, networkId);
+    },[chain, networkId])
+    const {symbol='', nodeId=''} = networkConfig;
     const api = useAppChain(nodeId);
     useEffect(() => {
         if(!api){
@@ -43,16 +46,15 @@ const AppChainWrapper = (props:any) => {
     // const tokensList = networkConfig[networkIdKey][chain]['tokens'];
     const [balance,setBalance] = useState('--') as any;
     useEffect(() => {
-        if(!api){
+        if(!api || !activeAccount || !symbol){
             return;
         }
         //setLoading(true);
         (async () => {
-            const { data:{ free } }  = await api.query.system.account(activeAccount) as any;
-            const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
+            const balance = await api.fetchBalances(activeAccount, symbol);
             setBalance(balance);
         })()
-    },[activeAccount, api]);
+    },[activeAccount, api, symbol]);
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
