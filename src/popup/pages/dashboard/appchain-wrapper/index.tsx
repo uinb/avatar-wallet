@@ -34,12 +34,6 @@ const AppChainWrapper = (props:any) => {
     const symbol = networkConfig[networkIdKey][chain]['symbol'];
     const nodeId = networkConfig[networkIdKey][chain]['nodeId'];
     const api = useAppChain(nodeId);
-    useEffect(() => {
-        if(!api){
-            return;
-        }
-        console.log(api.getBlockHash())
-    },[api])
     // const tokensList = networkConfig[networkIdKey][chain]['tokens'];
     const [balance,setBalance] = useState('--') as any;
     useEffect(() => {
@@ -48,8 +42,8 @@ const AppChainWrapper = (props:any) => {
         }
         //setLoading(true);
         (async () => {
-            const { data:{ free } }  = await api.query.system.account(activeAccount) as any;
-            const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
+            console.log(api.getBlockHash())
+            const balance  = await api.fetchBalances(activeAccount,symbol);
             setBalance(balance);
         })()
     },[activeAccount, api]);

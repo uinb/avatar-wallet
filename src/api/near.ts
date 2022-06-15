@@ -212,7 +212,7 @@ class NearCore extends Near {
         })
     }
     async getAppChains(accountId){
-        const {networkId} = this.near.config;
+        const {networkId} = this.near?.config;
         const account = await this.near.account(accountId);
         const contractId = networkId === 'testnet' ? testnetConfig.oct.registryContractId: mainnetConfig.oct.registryContractId;
         const contract:any = new Contract(

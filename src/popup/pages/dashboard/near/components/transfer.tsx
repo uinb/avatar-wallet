@@ -45,11 +45,11 @@ const Transfer = () => {
         setSendError('');
     }
     const navigator = useNavigate();
-    useEffect(() => {
-        if(!activeAccount){
-            navigator('/dashboard');
-        }
-    }, [activeAccount, navigator])
+    // useEffect(() => {
+    //     if(!activeAccount){
+    //         navigator('/dashboard');
+    //     }
+    // }, [activeAccount, navigator])
     const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
         dispatch(setTempTransferInfomation(state))
@@ -73,10 +73,10 @@ const Transfer = () => {
     const filterdTokens = useMemo(() => balances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord)), [balances, searchWord]);
 
     useEffect(() => {
-        if(!filterdTokens.length){
-            navigator('/dashboard');  
-            return  
-        }
+        // if(!filterdTokens.length){
+        //     navigator('/dashboard');  
+        //     return  
+        // }
         setInputState(state => ({
             ...state,
             contractId: filterdTokens[0].contractId, 
