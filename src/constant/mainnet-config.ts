@@ -14,9 +14,22 @@ const config = {
         octTokenContractId: "f5cfbc74057c610c8ef151a439252680ac68c6dc.factory.bridge.near",
         registryContractId: "octopus-registry.near",
     },
-    fusotao:{
-        node: 'wss://binnode.brandy.fusotao.org'
-    } 
+    atocha:{
+        nodeId:"wss://gateway.mainnet.octopus.network/atocha/jungxomf4hdcfocwcalgoiz64g9avjim",
+        symbol:"ATO"
+    },
+    myriad:{
+        nodeId:"wss://gateway.mainnet.octopus.network/myriad/a4cb0a6e30ff5233a3567eb4e8cb71e0",
+        symbol:"MYRIA"
+    },
+    deip:{
+        nodeId:"wss://gateway.mainnet.octopus.network/deip/b9e1ipeh3ejw2znrb4s2xd4tlf6gynq0",
+        symbol:"DEIP"
+    },
+    debionetwork:{
+        nodeId:"wss://gateway.mainnet.octopus.network/debionetwork/ae48005a0c7ecb4053394559a7f4069e",
+        symbol:"DBIO"
+    }
 }
 
 export default config
