@@ -38,10 +38,10 @@ const Transfer = () => {
     const [sendError, setSendError] = useState('');
     const near = useNear(networkId)
     const handleInputChange = (e) => {
-        setInputState({
+        setInputState(state => ({
             ...state,
             [e.target.name]: e.target.value
-        })
+        }))
         setSendError('');
     }
     const navigator = useNavigate();
@@ -82,7 +82,7 @@ const Transfer = () => {
             contractId: filterdTokens[0].contractId, 
             symbol: filterdTokens[0].symbol
         }))
-    },[filterdTokens, navigator])
+    },[navigator])
 
     const handleChangeToken = (item :any) => {
         setInputState(state => ({
