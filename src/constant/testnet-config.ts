@@ -53,8 +53,8 @@ const config = {
         symbol:"DEIP"
     },
     "atocha":{
-        nodeId:"ATO",
-        symbol:"wss://gateway.testnet.octopus.network/atocha/yevqd2d4jhm0dqakaj4hkbyjjfg6ukbu"
+        nodeId:"wss://gateway.testnet.octopus.network/atocha/yevqd2d4jhm0dqakaj4hkbyjjfg6ukbu",
+        symbol:"ATO",
     },
     "uniqueone-appchain":{
         nodeId:"wss://gateway.testnet.octopus.network/uniqueone/e83rnqoi4hr65cwx46a83u6a7a970dgq",
