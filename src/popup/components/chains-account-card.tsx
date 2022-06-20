@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, forwardRef} from 'react';
 import Grid from '@material-ui/core/Grid';
 import {useTheme} from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -13,23 +13,24 @@ import {formatLongAddress} from '../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
 import {Link} from 'react-router-dom';
 
-const MenuContent:any = (props:any) => {
+const MenuContent:any = forwardRef((props:any, ref:any) => {
     const {items = [], handleItemClick} = props as {items: Array<any>, handleItemClick: any};
     return (
-        items.map((item:any, index:number) => (
-            item.link ? (
-                <MenuItem 
-                    key={index} 
-                    component={Link}
-                    to={item.link}
-                >{item.label}</MenuItem> 
-            ) : (
-                <MenuItem key={index} onClick={() => handleItemClick(item.value)}>{item.label}</MenuItem> 
-            )
-        ))
+        <div ref={ref}>
+            {items.map((item:any, index:number) => (
+                item.link ? (
+                    <MenuItem 
+                        key={index} 
+                        component={Link}
+                        to={item.link}
+                    >{item.label}</MenuItem> 
+                ) : (
+                    <MenuItem key={index} onClick={() => handleItemClick(item.value)}>{item.label}</MenuItem> 
+                )
+            ))}
+        </div>
     )
-}
-
+})
 
 const ChainAccountCard = (props:any) => {
     const {config, operations, handleAccountItemClick, accounts, activeAccount, handleOperateClick} = props;

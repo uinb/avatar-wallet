@@ -1,3 +1,5 @@
+import '@polkadot/wasm-crypto/initWasmAsm';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
 import React, {Fragment} from 'react';
 import ReactDOM from 'react-dom/client';
 import Popup from './popup';
@@ -7,6 +9,8 @@ import { Provider } from 'react-redux';
 import { persistStore } from "reduxjs-toolkit-persist";
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import keyring from '@polkadot/ui-keyring';
+
 
 const theme:ThemeOptions  = createTheme({
   palette:{
@@ -157,14 +161,23 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-root.render(
-  <Fragment>
-    <ThemeProvider theme={theme}>
-      <Provider store={store}>
-        <PersistGate loading={<Loading />} persistor={persistStore(store)}>
-          <Popup />
-        </PersistGate>
-      </Provider>
-    </ThemeProvider>
-  </Fragment>
-);
+
+(async () => {
+  const result = await cryptoWaitReady();
+  await keyring.loadAll({type: 'sr25519', ss58Format:  42})
+  if(result){
+    root.render(
+      <Fragment>
+        <ThemeProvider theme={theme}>
+          <Provider store={store}>
+            <PersistGate loading={<Loading />} persistor={persistStore(store)}>
+              <Popup />
+            </PersistGate>
+          </Provider>
+        </ThemeProvider>
+      </Fragment>
+    );
+  }
+})()
+
+
