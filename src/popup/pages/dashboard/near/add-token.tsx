@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import { HeaderWithBack } from '../../../components/header';
 import Content from '../../../components/layout-content';
 import Card from '@material-ui/core/Card';
-import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Switch from '@material-ui/core/Switch';
@@ -16,8 +14,6 @@ interface BalanceProps {
   icon: string;
 }
 const AddToken = (props: any) => {
-  const [activeTab, setActiveTab] = useState('assets');
-  const [ftBalances] = useState<Array<BalanceProps>>([]);
   const [state, setState] = useState(false);
 
   const handleChange = (e) => {
