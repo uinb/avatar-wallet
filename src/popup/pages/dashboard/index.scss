@@ -43,3 +43,9 @@
         //flex: 1 1 auto;
     }
 }
+.flex-no-wrap{
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    
+}
