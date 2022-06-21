@@ -42,7 +42,6 @@ export const network = createSlice({
     },
     setNetwork(state, {payload = ''}){
       state.networkId = payload;
-      localStorage.setItem('networkId', payload)
     },
     changeNetwork(state,{payload}){
       state.networkOption.map(option =>{

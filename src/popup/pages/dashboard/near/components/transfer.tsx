@@ -7,11 +7,10 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
 import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
-import {selectAccountBlances, selectActiveAccount, setTempTransferInfomation} from '../../../../../reducer/near';
+import {selectAccountBlances, selectActiveAccountByNetworkId, setTempTransferInfomation} from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
-import { Near } from '../../../../../api';
 import {utils} from 'near-api-js';
 import {parseTokenAmount} from '../../../../../utils';
 import { useNavigate } from 'react-router-dom';
@@ -25,20 +24,24 @@ import ListItem from '@material-ui/core/ListItem';
 import { Typography } from '@material-ui/core';
 import {TokenProps} from '../../../../../constant/near-types';
 import nearIcon from '../../../../../img/near.svg';
+import { selectNetwork } from '../../../../../reducer/network';
+import useNear from '../../../../../hooks/useNear';
 
 
 const Transfer = () => {
-    const activeAccount = useAppSelector(selectActiveAccount);
+    const networkId = useAppSelector(selectNetwork)
+    const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
     const [state, setInputState] = useState({contractId: '', symbol: '', receiver:'', amount: '', sender: activeAccount})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     const dispatch = useAppDispatch();
     const [searchWord, setSearchWord] = useState('');
     const [sendError, setSendError] = useState('');
+    const near = useNear(networkId)
     const handleInputChange = (e) => {
-        setInputState({
+        setInputState(state => ({
             ...state,
             [e.target.name]: e.target.value
-        })
+        }))
         setSendError('');
     }
     const navigator = useNavigate();
@@ -47,18 +50,18 @@ const Transfer = () => {
             navigator('/dashboard');
         }
     }, [activeAccount, navigator])
-    const balances = useAppSelector(selectAccountBlances);
+    const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
         dispatch(setTempTransferInfomation(state))
         if(state.contractId === 'near'){
-            const result = await Near.transferNear({...state, amount: utils.format.parseNearAmount(state.amount)});
+            const result = await near.transferNear({...state, amount: utils.format.parseNearAmount(state.amount)});
             if(result.status){
                 navigator('/transfer-success');
             }else{
                 setSendError(result.msg);
             }
         }else{
-            const result = await Near.ftTransfer({...state, amount: parseTokenAmount(state.amount, 18)});
+            const result = await near.ftTransfer({...state, amount: parseTokenAmount(state.amount, 18)});
             if(result.status){
                 navigator('/transfer-success');
             }else{
@@ -79,7 +82,7 @@ const Transfer = () => {
             contractId: filterdTokens[0].contractId, 
             symbol: filterdTokens[0].symbol
         }))
-    },[filterdTokens, navigator])
+    },[navigator])
 
     const handleChangeToken = (item :any) => {
         setInputState(state => ({

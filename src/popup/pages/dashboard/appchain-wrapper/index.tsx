@@ -3,7 +3,7 @@ import {withTheme} from '@material-ui/core/styles';
 import AccountCard from '../../../components/chains-account-card';
 import { appChainsConfig } from '../../../../constant/chains';
 import { selectChain, selectAppChain, selectNetwork } from '../../../../reducer/network';
-import { useAppSelector } from '../../../../app/hooks';
+import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -11,8 +11,11 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
-import {useMemo} from 'react';
-
+import {useEffect, useMemo,useState} from 'react';
+import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
+import { useNavigate } from 'react-router-dom';
+import useAppChain from '../../../../hooks/useAppChain';
+import {selectConfig} from '../../../../utils';
 
 
 const AppChainWrapper = (props:any) => {
@@ -20,18 +23,59 @@ const AppChainWrapper = (props:any) => {
     const chain = useAppSelector(selectChain(networkId));
     const config  = appChainsConfig[chain];
     const appChain = useAppSelector(selectAppChain(networkId, chain));
-    const handleAccountItemClick = () => {
+    const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
+    const dispatch = useAppDispatch();
+    const navigator = useNavigate();
+    const handleAccountItemClick = (account:string) => {
+        dispatch(setActiveAccount({account: account, networkId}))
+    }
+    const networkConfig = useMemo(() => {
+        if(!networkId || !chain){
+            return {} as any
+        }
+        return selectConfig(chain, networkId);
+    },[chain, networkId])
+    const {symbol='', nodeId=''} = networkConfig;
+    const api = useAppChain(nodeId);
+    useEffect(() => {
+        if(!api){
+            return;
+        }
+        console.log(api.getBlockHash())
+    },[api])
+    // const tokensList = networkConfig[networkIdKey][chain]['tokens'];
+    const [balance,setBalance] = useState('--') as any;
+    useEffect(() => {
+        if(!api || !activeAccount || !symbol){
+            return;
+        }
+        //setLoading(true);
+        (async () => {
+            const balance = await api.fetchBalances(activeAccount, symbol);
+            setBalance(balance);
+        })()
+    },[activeAccount, api, symbol]);
 
+    const handleOperateClick = (type:string) => {
+        if(type === 'forgetAccount'){
+            const result = keyring.forgetAccount(activeAccount);
+            console.log(result);
+            navigator('/dashboard', {replace: false})
+        }else if(type === 'exportAccount'){
+            const account = keyring.getPairs().find(item => item.address === activeAccount);
+            const result = keyring.backupAccount(account, '')
+            console.log(result);
+        }
     }
 
-    const handleOperateClick = () => {
-
-    }
 
     const address = useMemo(() => {
-        return keyring.getPairs()?.map(item => item.address)
-    }, []);
-    console.log(address);
+        const accounts = keyring.getPairs()?.map(item => item.address);
+        if(!activeAccount && accounts.length){
+            dispatch(setActiveAccount({account: accounts[0], networkId}))
+        }
+        return accounts
+    }, [dispatch, activeAccount, networkId]);
 
     /* useEffect(() => {
         (async() => {
@@ -70,9 +114,9 @@ const AppChainWrapper = (props:any) => {
                         handleOperateClick={handleOperateClick}
                         config={config}
                         operations={operations}
-                        activeAccount={''}
+                        activeAccount={activeAccount}
                     />
-                    <Grid className="mt4">
+                    <Grid className="mt4 akakakak">
                         <Card className="mt2">
                             <ListItem disableGutters dense>
                                 <ListItemAvatar>
@@ -84,7 +128,7 @@ const AppChainWrapper = (props:any) => {
                                         <Avatar style={{height: 32, width:32}}>{appChain.appchain_metadata?.fungible_token_metadata?.symbol.slice(0,1)}</Avatar>
                                     )}
                                 </ListItemAvatar>
-                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`}/>
+                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={balance}/>
                             </ListItem>
                         </Card> 
                     </Grid>
@@ -95,6 +139,4 @@ const AppChainWrapper = (props:any) => {
         </Grid>
     )
 }
-
-
 export default withTheme(AppChainWrapper)

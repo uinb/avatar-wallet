@@ -164,7 +164,7 @@ const root = ReactDOM.createRoot(
 
 (async () => {
   const result = await cryptoWaitReady();
-  keyring.loadAll({type: 'sr25519', ss58Format:  42})
+  await keyring.loadAll({type: 'sr25519', ss58Format:  42})
   if(result){
     root.render(
       <Fragment>

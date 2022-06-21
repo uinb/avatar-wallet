@@ -7,7 +7,7 @@ const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
 const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
 const bs58 = require('bs58');
 
-class NearCore extends Near{
+class NearCore extends Near {
     near;
     networkId;
     constructor(config){
@@ -26,24 +26,26 @@ class NearCore extends Near{
     async importAccount(seeds){
         const { helperUrl, keyStore, networkId } = this.near?.config;
         const {secretKey, publicKey} = parseSeedPhrase(seeds);
-        const {data} = await axios.get(`${helperUrl}/publicKey/${publicKey}/accounts`);
-        if(data.length){
+        return axios.get(`${helperUrl}/publicKey/${publicKey}/accounts`).then(async ({data}) => {
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
             await keyStore.setKey(networkId, data[0], keyPair);
             return null
-        }else{
+        }).catch(async (e) => {
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
             const address = Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex')
             await keyStore.setKey(networkId, address, keyPair);
             return null
-        }
+        });
     }
-    async getAccounts(){
-        const {keyStore, networkId} = this.near.config;
-        const accounts = await keyStore.getAccounts(networkId);
-        return accounts;
+    getAccounts(){
+        const {keyStore, networkId} = this.config;
+        return keyStore.getAccounts(networkId).then(resp => {
+            return resp;
+        }).catch(e => {
+            return [];
+        });
     }
     async forgetAccount(accountId){
         const {keyStore, networkId} = this.near.config;
@@ -66,14 +68,13 @@ class NearCore extends Near{
     async fetchFTContract(){
         const {ftPriceUrl =''} = this.near.config;
         if(ftPriceUrl){
-            const {data} = await axios.get(ftPriceUrl)
-            if(data){
+            return axios.get(ftPriceUrl).then(({data}) => {
                 return data;
-            }else{
+            }).catch(e => {
                 return {}
-            }
+            })
         }
-        return {}
+        return {};
     }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);
