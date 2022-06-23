@@ -226,8 +226,9 @@ module.exports = function (webpackEnv) {
             // changing JS code would still trigger a refresh.
           ]
         : paths.appIndexJs],
-      content: './src/content/index.tsx',
+      content: './src/content/index.js',
       background: './src/background/index.js',
+      inPageScript: './src/content/in-page-script.js'
     },
     output: {
       // The build folder.
@@ -237,12 +238,12 @@ module.exports = function (webpackEnv) {
       // There will be one main bundle, and one file per asynchronous chunk.
       // In development, it does not produce real files.
       filename: isEnvProduction
-        ? 'static/js/[name].js'
-        : isEnvDevelopment && 'static/js/[name].bundle.js',
+        ? '[name].js'
+        : isEnvDevelopment && '[name].bundle.js',
       // There are also additional JS chunk files if you use code splitting.
       chunkFilename: isEnvProduction
-        ? 'static/js/[name].chunk.js'
-        : isEnvDevelopment && 'static/js/[name].chunk.js',
+        ? '[name].chunk.js'
+        : isEnvDevelopment && '[name].chunk.js',
       assetModuleFilename: 'static/media/[name][ext]',
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.

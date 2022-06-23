@@ -1,18 +1,6 @@
-/* global chrome */
+const extension = require('extensionizer');
 
-/* chrome.runtime.onInstalled.addListener(function() {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function(){
-        chrome.declarativeContent.onPageChanged.addRules([{
-            conditions: [
-                new chrome.declarativeContent.PageStateMatcher({pageUrl: {}}),
-            ],
-            actions: [
-                new window.chrome.declarativeContent.showPageAction()
-            ]
-        }])
-    })
-}) */
-
-chrome?.runtime?.onInstalled?.addListener(function () {
+extension.runtime.onInstalled?.addListener(function () {
+    console.log(extension);
     console.log("插件已被安装");
 });
