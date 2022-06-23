@@ -10,6 +10,8 @@ import { persistStore } from "reduxjs-toolkit-persist";
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import keyring from '@polkadot/ui-keyring';
+import {SnackbarProvider} from 'notistack';
+import Notifier from './popup/components/snackbar';
 
 
 const theme:ThemeOptions  = createTheme({
@@ -161,6 +163,23 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+const SnackbarProviderComponent = (props:any) => {
+  return (
+    <SnackbarProvider 
+      autoHideDuration={3000} 
+      preventDuplicate={true} 
+      hideIconVariant={true}
+      dense={true}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'center'
+      }}
+    >
+      {props.children}
+    </SnackbarProvider>
+  )
+}
+
 
 (async () => {
   const result = await cryptoWaitReady();
@@ -171,7 +190,10 @@ const root = ReactDOM.createRoot(
         <ThemeProvider theme={theme}>
           <Provider store={store}>
             <PersistGate loading={<Loading />} persistor={persistStore(store)}>
-              <Popup />
+              <SnackbarProviderComponent >
+                <Notifier/>
+                <Popup />
+              </SnackbarProviderComponent>
             </PersistGate>
           </Provider>
         </ThemeProvider>

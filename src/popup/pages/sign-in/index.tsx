@@ -10,9 +10,10 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppSelector, useAppDispatch} from '../../../app/hooks';
 import {selectPwd} from '../../../reducer/auth';
 import Logo from '../../components/logo';
+import {enqueueSnackbar} from '../../../reducer/snackbar';
 
 const SignIn = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
@@ -20,8 +21,17 @@ const SignIn = () => {
     const [inputError, setInputError] = useState('');
     const navigate = useNavigate();
     const pwd = useAppSelector(selectPwd);
+    const dispatch = useAppDispatch();
     const handleSignIn = () => {
         if(inputPwd === pwd){
+            dispatch(enqueueSnackbar({
+                message: 'Login Success',
+                options:{
+                    key:'loginSuccess',
+                    variant: 'success'
+                }
+
+            }))
             navigate('/dashboard')
         }
         setInputError('invalid password !!')
