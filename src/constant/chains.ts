@@ -50,7 +50,7 @@ export default {
         inactiveLogo: nearGray,
         name:'near',
         primary: '#000000',
-        background: '#000000',
+        background: '#FFF',
         icon: nearIcon
     },
 } as {
