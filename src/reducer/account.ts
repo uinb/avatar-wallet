@@ -1,4 +1,4 @@
-import { createSlice, createSelector} from '@reduxjs/toolkit';
+import { createSlice, createSelector,  Reducer} from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 
 interface StateProps {
@@ -8,7 +8,8 @@ interface StateProps {
   },
   activeAccount: {
     [network: string]: string
-  }
+  },
+  balacne: string
 }
 
 const initialState: StateProps = {
@@ -16,9 +17,9 @@ const initialState: StateProps = {
   accounts:{},
   activeAccount: {
 
-  }
+  },
+  balacne:'--'
 }
-
 
 export const account = createSlice({
   name:'account',
@@ -34,7 +35,7 @@ export const account = createSlice({
     }
   },
   extraReducers: (builder) => {
-    
+
   }
 })
 
@@ -44,4 +45,4 @@ export const selectAccountsByNetworkId = (networkId:string) =>  createSelector(s
 export const selectActiveAccountByNetworkId = (networkId:string) =>  createSelector(selectRootState, state => state.activeAccount[networkId] || '')
 
 
-export default account.reducer;
+export default account.reducer as Reducer<typeof initialState>;

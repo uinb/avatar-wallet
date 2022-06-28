@@ -11,13 +11,12 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
-import {useEffect, useMemo,useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
 import useAppChain from '../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../utils';
 import {Link} from 'react-router-dom';
-
 
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
@@ -49,12 +48,13 @@ const AppChainWrapper = (props:any) => {
         });
     },[chain,networkConfig]);
     const [tokenList,setTokenList] = useState(tokens_list) as any;
+
     const [balance,setBalance] = useState('--') as any;
+
     useEffect(() => {
         if(!api || !activeAccount || !symbol){
-            return;
+            return 
         }
-        //setLoading(true);
         (async () => {
             const balance = await api.fetchBalances(activeAccount, symbol);
             setBalance(balance);
@@ -130,8 +130,8 @@ const AppChainWrapper = (props:any) => {
                             <ListItem disableGutters dense component={Link} to={"/total-assets/"+symbol.toLowerCase()}>
                                 <ListItemAvatar>
                                     {appChain.appchain_metadata?.fungible_token_metadata?.icon ? (
-                                        <Avatar style={{height: 32, width:32, background: 'transparent'}}>
-                                        <img src={appChain.appchain_metadata?.fungible_token_metadata?.icon} alt="" width="100%"/>
+                                        <Avatar style={{height: 32, width:32, background: 'transparent', filter: 'grayscale(1)'}}>
+                                            <img src={appChain.appchain_metadata?.fungible_token_metadata?.icon} alt="" width="100%" style={{filter: 'grayscale(1)'}}/>
                                         </Avatar>
                                     ): (
                                         <Avatar style={{height: 32, width:32}}>{appChain.appchain_metadata?.fungible_token_metadata?.symbol.slice(0,1)}</Avatar>

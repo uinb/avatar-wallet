@@ -6,26 +6,28 @@ import authReducer from '../reducer/auth';
 import networkReducer from '../reducer/network';
 import nearReducer from '../reducer/near';
 import accountReducer from '../reducer/account';
+import snackbarReducer from '../reducer/snackbar';
 
 const persistConfig = {
   key: 'avatar-wallet',
   storage: storage,
   stateReconciler: autoMergeLevel2,
-  whitelist: ['auth', 'network', 'near']
+  whitelist: ['auth', 'network', 'near', 'account']
 };
 
 const rootReducers = combineReducers({
   auth: authReducer,
   network: networkReducer,
   near: nearReducer,
-  account: accountReducer
+  account: accountReducer,
+  snackbar: snackbarReducer
 })
 
 const _persistedReducer = persistReducer<any,AnyAction>(persistConfig, rootReducers);
 
 export const store = configureStore({
   reducer: _persistedReducer,
-  middleware: (getDefaultMiddleware: any) => {
+  middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [
@@ -53,4 +55,3 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 export interface ActionReducer<T, V extends Action = Action> {
   (state: T | undefined, action: V): T;
 }
-

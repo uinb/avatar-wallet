@@ -10,6 +10,8 @@ import { persistStore } from "reduxjs-toolkit-persist";
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import keyring from '@polkadot/ui-keyring';
+import {SnackbarProvider} from 'notistack';
+import Notifier from './popup/components/snackbar';
 
 
 const theme:ThemeOptions  = createTheme({
@@ -145,7 +147,35 @@ const theme:ThemeOptions  = createTheme({
       root: {
         minWidth: 42
       }
-    }
+    },
+    MuiListItemText:{
+      root:{
+        fontSize:'1rem',
+        fontWeight:500,
+        lineHeight:'1.333rem'
+      },
+      secondary:{
+        fontSize:'0.75rem',
+        fontWeight:400,
+        lineHeight:'1.125rem'
+      }
+    },
+    MuiSwitch:{
+      root:{
+        height:'1.25rem !important',
+        width:'2.25rem',
+        padding:0,
+        backgroundColor:'#EEEEEE !important',
+        borderRadius:'1.625rem !important'
+      },
+      track:{
+        backgroundColor:'#EEEEEE',
+        opacity:1
+      },
+      thumb:{
+        height:'1rem !important',
+      }
+    },
   }
 })
 
@@ -161,6 +191,23 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+const SnackbarProviderComponent = (props:any) => {
+  return (
+    <SnackbarProvider 
+      autoHideDuration={3000} 
+      preventDuplicate={true} 
+      hideIconVariant={true}
+      dense={true}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'center'
+      }}
+    >
+      {props.children}
+    </SnackbarProvider>
+  )
+}
+
 
 (async () => {
   const result = await cryptoWaitReady();
@@ -171,7 +218,10 @@ const root = ReactDOM.createRoot(
         <ThemeProvider theme={theme}>
           <Provider store={store}>
             <PersistGate loading={<Loading />} persistor={persistStore(store)}>
-              <Popup />
+              <SnackbarProviderComponent >
+                <Notifier/>
+                <Popup />
+              </SnackbarProviderComponent>
             </PersistGate>
           </Provider>
         </ThemeProvider>

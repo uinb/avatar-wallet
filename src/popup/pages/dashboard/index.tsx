@@ -6,9 +6,11 @@ import { Typography } from '@material-ui/core';
 import { withTheme } from '@material-ui/core';
 import NearCore from './near';
 import { useAppSelector, useAppDispatch } from '../../../app/hooks';
-import { selectNetwork, selectAppChains, setChain, selectChain} from '../../../reducer/network';
+import { selectNetwork, selectAppChains, setChain, selectChain, fetchAppChains} from '../../../reducer/network';
 import Avatar from '@material-ui/core/Avatar';
 import AppChainCore from './appchain-wrapper';
+import cn from 'classnames'
+import { useEffect } from 'react';
 
 
 const Dashboard = (props:any) => {
@@ -20,6 +22,13 @@ const Dashboard = (props:any) => {
     const handleChangeChain = (chain:string) => {
         dispatch(setChain({networkId, chain}));
     }
+
+    useEffect(() => {
+        if(!networkId) {
+            return;
+        }
+        dispatch(fetchAppChains({networkId}))
+    },[networkId, dispatch])
     
     return (
         <Grid>
@@ -28,7 +37,7 @@ const Dashboard = (props:any) => {
                 <Grid className="chainList">
                     {Object.entries(chains).map(([key, item]: [string, any]) => {
                         return (
-                            <div className="chainItem" key={key} >
+                            <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={key} >
                                 <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === key ? 'block' : 'none'}}></span>
                                 <Typography color="primary" variant='caption' className="icon" onClick={() => handleChangeChain(key)} style={{backgroundColor: activeChain === key ? item.background : theme.palette.background.paper}}>
                                 <img src={activeChain === key ? item.logo : item.inactiveLogo} alt="" width="18"/>
@@ -38,7 +47,7 @@ const Dashboard = (props:any) => {
                     })}
                     {appChains?.map((item) => {
                         return (
-                            <div className="chainItem" key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
+                            <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
                                 <Avatar className="img">
                                     {item.appchain_metadata.fungible_token_metadata.icon ? (
                                         <img src={activeChain === item.appchain_id ? item.appchain_metadata.fungible_token_metadata.icon : item.appchain_metadata.fungible_token_metadata.icon} alt="" width="100%"/>

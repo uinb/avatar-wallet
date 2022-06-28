@@ -4,6 +4,7 @@ import { web3FromSource,web3Accounts } from '@polkadot/extension-dapp';
 import {parseTokenAmount} from "../utils/index"
 import Big from 'big.js';
 Big.PE = 100;
+
 class AppChains extends ApiPromise {
     constructor(config){
         super({...config});

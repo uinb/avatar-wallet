@@ -65,11 +65,11 @@ const Settings = () => {
       <HeaderWithBack back="/dashboard" />
       <Content>
         <div className='set-options' onClick={handleLanguageOpen}>
-          <img src={IconLanguage} height="20" alt=""/>
+          <img src={IconLanguage} height="20" alt="" />
           <span>Language</span>
         </div>
         <div className='set-options mt-1-5' onClick={handlePwdOpen}>
-          <img src={IconLock} height="22"  alt=""/>
+          <img src={IconLock} height="22" alt="" />
           <span>Password</span>
         </div>
         <Dialog

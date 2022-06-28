@@ -7,12 +7,14 @@ const config = {
         explorerUrl: "https://explorer.testnet.near.org",
         headers:{},
         ftPriceUrl:'https://dev-indexer.ref-finance.com//list-token-price',
-        nftFetchUrl:'https://testnet-api.kitwallet.app/account/{requestAccount}/likelyNFTs'
+        nftFetchUrl:'https://testnet-api.kitwallet.app/account/{requestAccount}/likelyNFTs',
+        ftFetchUrl: 'https://testnet-api.kitwallet.app/account/{requestAccount}/likelyTokens'
     },
     oct:{
         explorerUrl: "https://explorer.testnet.oct.network",
         octTokenContractId: "oct.beta_oct_relay.testnet",
         registryContractId: "registry.test_oct.testnet",
+        bridgeId:'dev.dev_oct_relay.testnet'
     },
     fusotao:{
         netwoekId: 'testnet',

@@ -54,6 +54,7 @@
     "mini-css-extract-plugin": "^2.4.5",
     "near-api-js": "^0.44.2",
     "near-seed-phrase": "^0.2.0",
+    "notistack": "^1.0.10",
     "postcss": "^8.4.4",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",
@@ -90,7 +91,7 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.js CI=false",
     "test": "node scripts/test.js"
   },
   "eslintConfig": {

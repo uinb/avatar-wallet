@@ -12,6 +12,7 @@ import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import {formatLongAddress} from '../../utils';
 import FileCopy from '@material-ui/icons/FileCopy';
 import {Link} from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 const MenuContent:any = forwardRef((props:any, ref:any) => {
     const {items = [], handleItemClick} = props as {items: Array<any>, handleItemClick: any};
@@ -53,6 +54,7 @@ const ChainAccountCard = (props:any) => {
         handleOperateClick(value)
         setOperationAnchorEl(null)
     }
+    const {enqueueSnackbar} = useSnackbar();
     return (
         <Paper style={{padding: theme.spacing(2),background: config?.primary ? config?.primary : theme.palette.primary.main, color: theme.palette.primary.contrastText}}>
             <Grid container justifyContent='space-between'>
@@ -63,7 +65,7 @@ const ChainAccountCard = (props:any) => {
                     </Grid>
                     <CopyToClipboard 
                         text={activeAccount}
-                        onCopy={() => {console.log('copied!')}}
+                        onCopy={() => {enqueueSnackbar('copied!', {variant:'success'})}}
                     >
                         <Typography variant="caption" className="mt2">{formatLongAddress(activeAccount)} <FileCopy color="inherit" fontSize="inherit"/></Typography>
                     </CopyToClipboard>
