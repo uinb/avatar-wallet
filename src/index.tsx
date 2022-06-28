@@ -147,6 +147,47 @@ const theme:ThemeOptions  = createTheme({
       root: {
         minWidth: 42
       }
+    },
+    MuiListItemText:{
+      root:{
+        fontSize:'1rem',
+        fontWeight:500,
+        lineHeight:'1.333rem'
+      },
+      secondary:{
+        fontSize:'0.75rem',
+        fontWeight:400,
+        lineHeight:'1.125rem'
+      }
+    },
+    MuiSwitch:{
+      root:{
+        height:'1.25rem !important',
+        width:'2.25rem',
+        padding:0,
+        backgroundColor:'#EEEEEE !important',
+        borderRadius:'1.625rem !important'
+      },
+      track:{
+        backgroundColor:'#EEEEEE',
+        opacity:1
+      },
+      thumb:{
+        height:'1rem !important',
+      }
+    },
+    MuiButtonBase:{
+      root:{
+        padding:' 2px !important' ,
+        margin:0 ,
+        height:'1rem !important',
+        width:'1rem !important',
+      }
+    },
+    MuiIconButton:{
+      root:{
+        height:'1rem !important'
+      }
     }
   }
 })
