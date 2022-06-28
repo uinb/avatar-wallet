@@ -15,6 +15,7 @@ import Transfer from './pages/dashboard/near/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 import AddToken  from './pages/dashboard/near/add-token'
 import Bridge from './pages/bridge'
+import TokenDetail from './pages/dashboard/near/token-detail'
 
 const Popup = () => {
     return (
@@ -35,6 +36,7 @@ const Popup = () => {
                     <Route path="/transfer/:chain" element={<Transfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                     <Route path="/bridge/:from/:to" element={<Bridge />} />
+                    <Route path="/token-detail/:tokenId" element={<TokenDetail />} />
                 </Routes>
             </HashRouter>
         </Grid>
