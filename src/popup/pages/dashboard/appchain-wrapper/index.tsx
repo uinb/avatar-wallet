@@ -11,7 +11,7 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
-import {useEffect, useMemo,useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
 import useAppChain from '../../../../hooks/useAppChain';
@@ -37,19 +37,12 @@ const AppChainWrapper = (props:any) => {
     },[chain, networkId])
     const {symbol='', nodeId=''} = networkConfig;
     const api = useAppChain(nodeId);
-    useEffect(() => {
-        if(!api){
-            return;
-        }
-        console.log(api.getBlockHash())
-    },[api])
-    // const tokensList = networkConfig[networkIdKey][chain]['tokens'];
     const [balance,setBalance] = useState('--') as any;
+
     useEffect(() => {
         if(!api || !activeAccount || !symbol){
-            return;
+            return 
         }
-        //setLoading(true);
         (async () => {
             const balance = await api.fetchBalances(activeAccount, symbol);
             setBalance(balance);
@@ -76,13 +69,6 @@ const AppChainWrapper = (props:any) => {
         }
         return accounts
     }, [dispatch, activeAccount, networkId]);
-
-    /* useEffect(() => {
-        (async() => {
-            const result = await Near.fetchContractTokens();
-            console.log('tokens',result);
-        })()
-    },[]) */
 
     const operations = [
         {
@@ -121,8 +107,8 @@ const AppChainWrapper = (props:any) => {
                             <ListItem disableGutters dense>
                                 <ListItemAvatar>
                                     {appChain.appchain_metadata?.fungible_token_metadata?.icon ? (
-                                        <Avatar style={{height: 32, width:32, background: 'transparent'}}>
-                                        <img src={appChain.appchain_metadata?.fungible_token_metadata?.icon} alt="" width="100%"/>
+                                        <Avatar style={{height: 32, width:32, background: 'transparent', filter: 'grayscale(1)'}}>
+                                            <img src={appChain.appchain_metadata?.fungible_token_metadata?.icon} alt="" width="100%" style={{filter: 'grayscale(1)'}}/>
                                         </Avatar>
                                     ): (
                                         <Avatar style={{height: 32, width:32}}>{appChain.appchain_metadata?.fungible_token_metadata?.symbol.slice(0,1)}</Avatar>

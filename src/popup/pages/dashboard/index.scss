@@ -12,11 +12,16 @@
             margin: 16px 0;
             align-items: center;
             justify-content: center;
+            &.active{
+                .img{
+                    filter: grayscale(0);
+                }
+            }
 
             .img{
                 width: 32px;
                 height: 32px;
-                mask: url('../../../img/near.svg') 0 0/32px 32px;
+                filter: grayscale(0.8);
             }
             
             .activeBar{
