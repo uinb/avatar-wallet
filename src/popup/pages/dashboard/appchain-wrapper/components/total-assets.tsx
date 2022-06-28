@@ -1,9 +1,8 @@
-import React, {useState, useMemo, useEffect} from 'react';
 import Grid from "@material-ui/core/Grid";
 import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import { selectChain, selectAppChain, selectNetwork } from '../../../../../reducer/network';
-import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
+import { useAppSelector} from '../../../../../app/hooks';
 import Avatar from '@material-ui/core/Avatar';
 import "./total-assets.scss"
 import { useNavigate,useLocation } from 'react-router-dom';
@@ -11,7 +10,6 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles,createStyles,Theme } from '@material-ui/core/styles';
-import {Link} from 'react-router-dom';
 import receive from "../../../../../img/receive.svg"
 import send from "../../../../../img/send.svg"
 const useStyles = makeStyles((theme: Theme) => 

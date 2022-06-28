@@ -1,7 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import {formatBalance} from '@polkadot/util';
 import { web3FromSource,web3Accounts } from '@polkadot/extension-dapp';
-import {parseTokenAmount} from "../utils/index"
 import Big from 'big.js';
 Big.PE = 100;
 
@@ -19,8 +18,8 @@ class AppChains extends ApiPromise {
         }
         const res=[];
         const splits = num.toString().split(".");
-        splits[0].split("").reverse().map(function(item,i){
-            if(i%3 == 0 && i!=0){ res.push(","); }
+        splits[0].split("").reverse().forEach(function(item,i){
+            if(i%3 === 0 && i!==0){ res.push(","); }
             res.push(item);
         });
         return res.reverse().join("")+(splits?.length>1 ? "."+splits[1] : "");
@@ -56,10 +55,10 @@ class AppChains extends ApiPromise {
     inputLimit(prices:any,precision:any){
         let price = String(prices);
         let priceVal = price.replace(/[^\d.]/g, "");
-        if(priceVal.split(".").length-1 > 1 || (priceVal[1] == '0' && priceVal[0] == '0')){
+        if(priceVal.split(".").length-1 > 1 || (priceVal[1] === '0' && priceVal[0] === '0')){
             priceVal = priceVal.substr(0,priceVal.length - 1);
         }
-        if(priceVal[1] && priceVal[1] != '.' && priceVal[0] == '0'){
+        if(priceVal[1] && priceVal[1] !== '.' && priceVal[0] === '0'){
             priceVal = priceVal.substr(1,priceVal.length - 1);
         }
         if(priceVal.includes(".")){
@@ -86,7 +85,7 @@ class AppChains extends ApiPromise {
     async fetchTokenBalance(account:string,symbol:string,tokenId:string,tokenModule:any, tokenMethod:any){
         console.log("api -- ",this)
         
-        if(tokenModule == "token" && tokenMethod == "balances"){
+        if(tokenModule === "token" && tokenMethod === "balances"){
             return this.query.token.balances([tokenId,account]).then((resp: any) => {
                 const { balance } = resp;
                 const res = formatBalance(balance, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
@@ -118,14 +117,15 @@ class AppChains extends ApiPromise {
     }
     async transfer(account:string,amount:string){
         const transfer = this.tx.balances.transfer(account,this.addPrecision(amount,18));
+        console.log(transfer)
         const accountsAll = await web3Accounts() as any;
         console.log("account  -- > ", accountsAll)
         const [sender] = await accountsAll.filter((item:any) => {
             return item.address === account;
         });
-		const injector = await web3FromSource(sender?.meta.source);
+		await web3FromSource(sender?.meta.source);
         return ""
-        const txHash = await transfer.signAndSend(sender.address, { nonce: -1,signer: injector.signer },({ events = [],status }) => {
+        /* const txHash = await transfer.signAndSend(sender.address, { nonce: -1,signer: injector.signer },({ events = [],status }) => {
             console.log(`Current status is ${status.type}`);
             if (status.isInBlock) {
                 console.log(`Transaction included at blockHash ${status.asInBlock}`);
@@ -145,18 +145,20 @@ class AppChains extends ApiPromise {
                 });
             }
         });
-        return txHash;
+        return txHash; */
     }
     async transferToken(account:string,amount:string){
         const transfer = this.tx.balances.transfer(account,this.addPrecision(amount,18));
+        console.log(transfer)
         const accountsAll = await web3Accounts() as any;
         console.log("account  -- > ", accountsAll)
         const [sender] = await accountsAll.filter((item:any) => {
             return item.address === account;
         });
 		const injector = await web3FromSource(sender?.meta.source);
+        console.log(injector);
         return ""
-        const txHash = await transfer.signAndSend(sender.address, { nonce: -1,signer: injector.signer },({ events = [],status }) => {
+        /* const txHash = await transfer.signAndSend(sender.address, { nonce: -1,signer: injector.signer },({ events = [],status }) => {
             console.log(`Current status is ${status.type}`);
             if (status.isInBlock) {
                 console.log(`Transaction included at blockHash ${status.asInBlock}`);
@@ -176,7 +178,7 @@ class AppChains extends ApiPromise {
                 });
             }
         });
-        return txHash;
+        return txHash; */
     }
 }
 

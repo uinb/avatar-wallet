@@ -12,9 +12,7 @@ import {selectActiveAccountByNetworkId} from '../../../../../reducer/account';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
-import {utils} from 'near-api-js';
 import {parseTokenAmount} from '../../../../../utils';
-import { useNavigate } from 'react-router-dom';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import SearchIcon from '@material-ui/icons/Search';
@@ -69,7 +67,7 @@ const Transfer = () => {
         }))
         setSendError('');
     }
-    const navigator = useNavigate();
+    //const navigator = useNavigate();
     // useEffect(() => {
     //     if(!activeAccount){
     //         navigator('/dashboard');

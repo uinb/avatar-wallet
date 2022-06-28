@@ -39,7 +39,6 @@ const Popup = () => {
                     <Route path="/appchain-transfer/:chain" element={<AppchainTransfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                     <Route path="/bridge/:from/:to" element={<Bridge />} />
-                    <Route path="/token-detail/:tokenId" element={<TokenDetail />} />
                     <Route path="/total-assets/:chain" element={<TotalAssets />} />
                 </Routes>
             </HashRouter>

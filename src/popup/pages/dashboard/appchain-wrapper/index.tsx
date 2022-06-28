@@ -46,7 +46,7 @@ const AppChainWrapper = (props:any) => {
                 balance:"--"
             }
         });
-    },[chain,networkConfig]);
+    },[networkConfig]);
     const [tokenList,setTokenList] = useState(tokens_list) as any;
 
     const [balance,setBalance] = useState('--') as any;
