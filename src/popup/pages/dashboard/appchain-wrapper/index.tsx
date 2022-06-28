@@ -16,6 +16,7 @@ import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../redu
 import { useNavigate } from 'react-router-dom';
 import useAppChain from '../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../utils';
+import {Link} from 'react-router-dom';
 
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
@@ -36,6 +37,18 @@ const AppChainWrapper = (props:any) => {
     },[chain, networkId])
     const {symbol='', nodeId=''} = networkConfig;
     const api = useAppChain(nodeId);
+    let tokens_list = useMemo(()=>{
+        return networkConfig['tokens'].filter((token:any,index:any) => {
+            return index !== 0;
+        }).map((item:any) => {
+            return {
+                ...item,
+                balance:"--"
+            }
+        });
+    },[networkConfig]);
+    const [tokenList,setTokenList] = useState(tokens_list) as any;
+
     const [balance,setBalance] = useState('--') as any;
 
     useEffect(() => {
@@ -45,8 +58,19 @@ const AppChainWrapper = (props:any) => {
         (async () => {
             const balance = await api.fetchBalances(activeAccount, symbol);
             setBalance(balance);
+            
         })()
     },[activeAccount, api, symbol]);
+
+    useEffect(()=>{
+        if(!api || !activeAccount || !symbol || !tokens_list.length){
+            return;
+        }
+        (async ()=>{
+            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, symbol, tokens_list, networkConfig.tokenModule, networkConfig.tokenMethod)
+            setTokenList(tokensInfo);
+        })()
+    },[api,activeAccount,symbol,networkConfig,tokens_list])
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -101,9 +125,9 @@ const AppChainWrapper = (props:any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <Grid className="mt4 akakakak">
+                    <Grid className="mt4">
                         <Card className="mt2">
-                            <ListItem disableGutters dense>
+                            <ListItem disableGutters dense component={Link} to={"/total-assets/"+symbol.toLowerCase()}>
                                 <ListItemAvatar>
                                     {appChain.appchain_metadata?.fungible_token_metadata?.icon ? (
                                         <Avatar style={{height: 32, width:32, background: 'transparent', filter: 'grayscale(1)'}}>
@@ -113,10 +137,26 @@ const AppChainWrapper = (props:any) => {
                                         <Avatar style={{height: 32, width:32}}>{appChain.appchain_metadata?.fungible_token_metadata?.symbol.slice(0,1)}</Avatar>
                                     )}
                                 </ListItemAvatar>
-                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={balance}/>
+                                <ListItemText primary={`${balance} ${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={balance+" $"}/>
                             </ListItem>
                         </Card> 
                     </Grid>
+                    {
+                        tokens_list.map((tokens:any,index:any)=>(
+                            <Grid className="">
+                                <Card className="mt2">
+                                    <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
+                                        <ListItemAvatar>
+                                            <Avatar style={{height: 32, width:32, background: 'transparent'}}>
+                                                <img src={tokens.logo} alt="" width="100%"/>
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${tokenList[index].balance} ${tokens?.symbol}`} secondary={tokenList[index].balance+" $"}/>
+                                    </ListItem>
+                                </Card> 
+                            </Grid>
+                        ))
+                    }
                 </>
             ) : (
                 <NullAccountWrapper chain="appchains"/>
