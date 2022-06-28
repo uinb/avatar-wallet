@@ -1,7 +1,7 @@
 import React from 'react';
 import './popup.scss'
 import SignUp from './pages/sign-up';
-import SignIn from './pages/sigh-in';
+import SignIn from './pages/sign-in';
 import {HashRouter, Route, Routes} from 'react-router-dom';
 import Dashboard from './pages/dashboard';
 import AddCustom from './pages/add-custom';
