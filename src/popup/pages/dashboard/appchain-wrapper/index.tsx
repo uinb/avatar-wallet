@@ -17,7 +17,6 @@ import { useNavigate } from 'react-router-dom';
 import useAppChain from '../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../utils';
 
-
 const AppChainWrapper = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));

@@ -3,8 +3,9 @@ import axios from 'axios';
 import Big from 'big.js';
 import mainnetConfig from '../constant/mainnet-config';
 import testnetConfig from '../constant/testnet-config';
-const {parseSeedPhrase, generateSeedPhrase} = require('near-seed-phrase')
-const {connect, keyStores, Near, KeyPair, Contract} = nearAPI;
+import { NEAR_MAX_GAS } from '../constant';
+const {parseSeedPhrase, generateSeedPhrase } = require('near-seed-phrase')
+const {connect, keyStores, Near, KeyPair, Contract, utils} = nearAPI;
 const bs58 = require('bs58');
 
 class NearCore extends Near {
@@ -81,6 +82,49 @@ class NearCore extends Near {
         }
         return {};
     }
+    async fetchFTMetadata(accountId, contractId){
+        const account = await this.near.account(accountId);
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['ft_metadata'],
+                changeMethods: [],
+            }
+        )
+        return contract.ft_metadata().then(resp => {
+            return resp;
+        }).catch(error => {
+            return {}
+        });
+    }
+    async fetchFTBalancesContract(accountId:string){
+        const {ftFetchUrl = ''} = this.near.config;
+        const [base, path] = ftFetchUrl?.split('{requestAccount}');
+        if(ftFetchUrl){
+            return axios.get(`${base}${accountId}${path}`).then(async ({data}) => {
+                const metaRequest = data.map(item => this.fetchFTMetadata(accountId, item))
+                const metaResult = await Promise.all(metaRequest);
+                return data.reduce((all, item, index) => {
+                    if(Object.keys(metaResult[index]).length){
+                        return {
+                            ...all, 
+                            [item]: {
+                                ...metaResult[index],
+                                contractId: item,
+                                decimal: metaResult[index].decimals
+                            }
+                        }
+                    }else{
+                        return all;
+                    }
+                }, {});
+            }).catch(e => {
+                return {}
+            })
+        }
+        return {};
+    }
     async contractBalanceOf(accountId, contractId){
         const account = await this.near.account(accountId);
         const contract:any = new Contract(
@@ -113,23 +157,27 @@ class NearCore extends Near {
         return {...metadata, tokens}
     }
     async fetchFtBalance(accountId){
+        const newTokenBalances = await this.fetchFTBalancesContract(accountId);
         const tokens = await this.fetchFTContract();
-        const request = Object.keys(tokens).map(address => {
+        const requestTokens = {...newTokenBalances, ...tokens};
+        const request = Object.keys(requestTokens).map(address => {
             return this.contractBalanceOf(accountId, address);
         })
 
         const value = await Promise.all(request);
-        const refactorTokensBalance = Object.keys(tokens).map((token: string, index:number) => ({
-            ...tokens[token], 
-            ...value[index],
-            balance: new Big(value[index].balance).div(new Big(10).pow(tokens[token].decimal)).toNumber(),
-            usdValue: new Big(value[index].balance).div(new Big(10).pow(tokens[token].decimal)).times(tokens[token].price).toNumber(),
-            contractId: token
-        }))
+        const refactorTokensBalance = Object.keys(requestTokens).map((token: string, index:number) => {
+            return ({
+                ...requestTokens[token], 
+                ...value[index],
+                balance: new Big(value[index].balance).div(new Big(10).pow(requestTokens[token].decimal || 18)).toNumber(),
+                usdValue: new Big(value[index].balance).div(new Big(10).pow(requestTokens[token].decimal) || 18).times(requestTokens[token].price || 0).toNumber(),
+                contractId: token
+            })
+        })
 
         return {
             balances: refactorTokensBalance,
-            tokens
+            tokens:requestTokens
         }
     }
     async fetchNFTBalance(accountId){
@@ -174,20 +222,20 @@ class NearCore extends Near {
                 changeMethods: ["ft_transfer", 'storage_deposit'],
             }
         )
-        /* const approveResult = await contract.storage_deposit({
+        const approveResult = await contract.storage_deposit({
             args:{
                 account_id: sender, 
             },
             amount: utils.format.parseNearAmount('0.00125')
         })
-        console.log(approveResult); */
-        //const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
+        console.log(approveResult, viewApproveAmount)
         return contract.ft_transfer(
             {
                 receiver_id: receiver, 
                 amount
             },
-            "300000000000000",
+            NEAR_MAX_GAS,
             1
         ).then(resp => {
             return {
@@ -216,9 +264,9 @@ class NearCore extends Near {
             }
         })
     }
-    async getAppChains(accountId){
+    async getAppChains(){
         const {networkId} = this.near.config;
-        const account = await this.near.account(accountId);
+        const account = await this.near.account(networkId === 'testnet' ? 'testnet': 'near');
         const contractId = networkId === 'testnet' ? testnetConfig.oct.registryContractId: mainnetConfig.oct.registryContractId;
         const contract:any = new Contract(
             account,
@@ -242,18 +290,110 @@ class NearCore extends Near {
         } || {networkId, chains: []}
     }
 
-    async fetchContractTokens(){
-        const account = await this.near.account('lindawu8134.testnet');
+    async fetchContractTokens(contractId:string){
+        const {networkId} = this.config;
+        return this.near.account(networkId === 'testnet' ? 'testnet' : 'near').then((account) => {
+            const contract:any = new Contract(
+                account,
+                contractId,
+                {
+                    viewMethods: ['get_near_fungible_tokens'],
+                    changeMethods: [],
+                }
+            )
+            return contract.get_near_fungible_tokens().then(resp => {
+                console.log('fetch contract token',resp);
+                return resp;
+            })
+        }).catch((e) => {
+            return []
+        });;
+    }
+    async approveContract(payload:any){
+        const {accountId, contractId, amount, receiver} = payload;
+        const account = await this.near.account(accountId);
         const contract:any = new Contract(
             account,
-            'fusotao.registry.test_oct.testnet',
+            contractId,
             {
-                viewMethods: ['get_near_fungible_tokens'],
-                changeMethods: [],
+                viewMethods: ['storage_balance_of'],
+                changeMethods: ['storage_deposit', 'burn_wrapped_appchain_token']
             }
         )
-        const result = await contract.get_near_fungible_tokens();
-        console.log(result)
+        return contract.burn_wrapped_appchain_token(
+            {
+                receiver_id: receiver, 
+                amount: amount
+            },
+            new Big(3).times(10 ** 14).toFixed(),
+        ).then(async resp => {
+            return true;
+        }).catch(error => {
+            return false
+        })
+    }
+    
+
+    async toBridge(accountId: string, contractId:string = 'dev.dev_oct_relay.testnet'){
+        const account = await this.near.account(accountId);
+        const contract = new Contract(
+            account,
+            contractId,
+            {
+              viewMethods: ['get_bridge_token', 'get_num_appchains', 'get_appchain', 'get_appchains', 'get_native_token'],
+              changeMethods: ['burn_native_token']
+            }
+        );
+        console.log(contract)
+    }
+
+    async bridgeNativeToken(payload:any){
+        const {accountId, receiver, amount, appChainContract} = payload;
+        const account = await this.near.account(accountId);
+        //const approveResult = await this.approveContract({accountId, contractId: appChainContract, amount, receiver});
+        const contract:any = new Contract(
+            account,
+            appChainContract,
+            {
+                viewMethods: [''],
+                changeMethods: ['burn_wrapped_appchain_token']
+            }
+        )
+        return contract.burn_wrapped_appchain_token(
+            {
+                receiver_id: receiver, 
+                amount: amount
+            },
+            new Big(3).times(10 ** 14).toFixed(),
+        ).then(async resp => {
+            return true;
+        }).catch(error => {
+            return false
+        })
+    }
+
+    async bridgeTokenTransfer(payload){
+        const {accountId, contractId, amount, bridgeId, appchain, from} = payload;
+        const account = await this.near.account(accountId);
+        
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+              viewMethods: ['ft_balance_of'],
+              changeMethods: ['ft_transfer_call']
+            }
+        );
+        const result = await contract.ft_transfer_call(
+            {
+                receiver_id: bridgeId,
+                amount,
+                msg: `lock_token,${appchain},${from}`,
+            },
+            NEAR_MAX_GAS,
+            1
+        );
+        console.log(result);
     }
 }
 export default NearCore;

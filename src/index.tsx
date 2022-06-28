@@ -176,19 +176,6 @@ const theme:ThemeOptions  = createTheme({
         height:'1rem !important',
       }
     },
-    MuiButtonBase:{
-      root:{
-        padding:' 2px !important' ,
-        margin:0 ,
-        height:'1rem !important',
-        width:'1rem !important',
-      }
-    },
-    MuiIconButton:{
-      root:{
-        height:'1rem !important'
-      }
-    }
   }
 })
 

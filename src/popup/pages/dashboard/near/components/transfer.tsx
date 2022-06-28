@@ -7,7 +7,7 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
 import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
-import {selectAccountBlances, selectActiveAccountByNetworkId, setTempTransferInfomation} from '../../../../../reducer/near';
+import {selectAccountBlances, selectNearActiveAccountByNetworkId, setTempTransferInfomation} from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -38,7 +38,7 @@ interface TransferProps{
 
 const Transfer = () => {
     const networkId = useAppSelector(selectNetwork)
-    const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
+    const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId));
     const [state, setInputState] = useState({contractId: '', symbol: '', receiver:'', amount: '', sender: activeAccount})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     const dispatch = useAppDispatch();

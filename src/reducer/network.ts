@@ -1,5 +1,7 @@
-import { createSlice, createSelector} from '@reduxjs/toolkit';
+import { createSlice, createSelector, createAsyncThunk} from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
+import {newNear} from '../api';
+
 
 interface StateProps {
   loading: boolean,
@@ -33,6 +35,16 @@ const initialState: StateProps = {
 }
 
 
+export const fetchAppChains = createAsyncThunk(
+  '/network/fetch-appchains',
+  async (params:any, ThunkAPI) => {
+    const {networkId} = params;
+    const near = await newNear(networkId);
+    return near.getAppChains();
+  }
+)
+
+
 export const network = createSlice({
   name:'network',
   initialState,
@@ -63,11 +75,25 @@ export const network = createSlice({
     }
   },
   extraReducers: (builder) => {
-    
+    builder.addCase(fetchAppChains.pending, (state) => {
+      state.loading = true;
+    }).addCase(fetchAppChains.fulfilled, (state, {payload}) => {
+      const {networkId, chains} = payload;
+      console.log(chains);
+      if(state.appChains[networkId]){
+        state.appChains[networkId] = chains;
+      }else{
+        state.appChains = {
+          ...state.appChains, 
+          [networkId]: chains
+        }
+      }
+      state.loading = false;
+    })
   }
 })
 
-export const {setChain,addNetwork,setNetwork,changeNetwork,setAppChains}  = network.actions;
+export const {setChain, addNetwork, setNetwork, changeNetwork, setAppChains}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
 export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
 export const selectNetworkList = createSelector(selectRootState, state => state.networkOption); 

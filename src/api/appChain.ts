@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import {formatBalance} from '@polkadot/util';
+import { formatBalance } from '@polkadot/util'
 
 class AppChains extends ApiPromise {
     constructor(config){
