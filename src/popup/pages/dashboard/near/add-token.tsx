@@ -8,11 +8,7 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Switch from '@material-ui/core/Switch';
 import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
-interface BalanceProps {
-  symbol: string;
-  balance: string,
-  icon: string;
-}
+
 const AddToken = (props: any) => {
   const [state, setState] = useState(false);
 
