@@ -27,6 +27,14 @@ import nearIcon from '../../../../../img/near.svg';
 import { selectNetwork } from '../../../../../reducer/network';
 import useNear from '../../../../../hooks/useNear';
 
+interface TransferProps{
+    balance: string,
+    symbol: string,
+    icon: string,
+    contractId: string,
+    usdValue?:string,
+}
+
 
 const Transfer = () => {
     const networkId = useAppSelector(selectNetwork)
@@ -47,9 +55,8 @@ const Transfer = () => {
     const navigator = useNavigate();
     useEffect(() => {
         if(!activeAccount){
-            navigator('/dashboard');
         }
-    }, [activeAccount, navigator])
+    }, [activeAccount])
     const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
         dispatch(setTempTransferInfomation(state))
@@ -69,20 +76,29 @@ const Transfer = () => {
             }
         }
     }
-    const selectToken = useMemo(() => balances.find((item:TokenProps) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[balances, state.symbol])
-    const filterdTokens = useMemo(() => balances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord)), [balances, searchWord]);
+    const filterdTokens = useMemo(() => {
+        if(!balances.length){
+            return [] as Array<TransferProps>;
+        }
+        return balances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord))
+    }, [balances, searchWord]);
+    const selectToken = useMemo(() => {
+        if(!filterdTokens.length){
+            return {} as TransferProps;
+        }
+        return state.symbol ? filterdTokens.find((item:TokenProps) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) : filterdTokens[0];
+    },[filterdTokens, state.symbol])
 
     useEffect(() => {
-        if(!filterdTokens.length){
-            navigator('/dashboard');  
+        if(!Object.keys(selectToken).length){
             return  
         }
         setInputState(state => ({
             ...state,
-            contractId: filterdTokens[0].contractId, 
-            symbol: filterdTokens[0].symbol
+            contractId: selectToken.contractId, 
+            symbol: selectToken.symbol
         }))
-    },[navigator])
+    },[selectToken])
 
     const handleChangeToken = (item :any) => {
         setInputState(state => ({
@@ -107,6 +123,9 @@ const Transfer = () => {
     }
 
     const sendDisabled = useMemo(() => {
+        if(!Object.keys(selectToken).length){
+            return true;
+        }
         return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.balance))
     },[state, selectToken])
     return (

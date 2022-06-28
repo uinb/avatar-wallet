@@ -14,6 +14,7 @@ import CreateSuccess from './components/createSuccess';
 import SetNearAccount from './components/setNearAcccount';
 import keyring from '@polkadot/ui-keyring';
 import useNear from '../../../hooks/useNear';
+
 /* import BN from 'bn.js';
 import axios from 'axios'; */
 

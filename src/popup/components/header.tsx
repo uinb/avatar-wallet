@@ -159,7 +159,7 @@ export const DashboardHeader = () => {
                 <Box className={classes.fnTab} onClick={handleClickOpen}><FiberManualRecord color="primary" fontSize="inherit"/> &nbsp;{selectedValue} <ArrowDropDown color="action"/></Box>
                 <Box className={cn(classes.fnTab, 'ml1', classes.link)} component={Link} to="/bridge">Bridge</Box>
                 <NetworkDialog networkList={networkList} selectedValue={selectedValue} open={open} onClose={handleClose} />
-                <IconButton className={cn(classes.iconButton, 'ml1')} component={Link} to="/">
+                <IconButton className={cn(classes.iconButton, 'ml1')} component={Link} to="/settings">
                     <Settings fontSize='inherit'/>
                 </IconButton>
             </Grid>

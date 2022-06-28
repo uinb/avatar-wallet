@@ -6,6 +6,7 @@ import authReducer from '../reducer/auth';
 import networkReducer from '../reducer/network';
 import nearReducer from '../reducer/near';
 import accountReducer from '../reducer/account';
+import snackbarReducer from '../reducer/snackbar';
 
 const persistConfig = {
   key: 'avatar-wallet',
@@ -18,7 +19,8 @@ const rootReducers = combineReducers({
   auth: authReducer,
   network: networkReducer,
   near: nearReducer,
-  account: accountReducer
+  account: accountReducer,
+  snackbar: snackbarReducer
 })
 
 const _persistedReducer = persistReducer<any,AnyAction>(persistConfig, rootReducers);

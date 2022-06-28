@@ -26,10 +26,15 @@ class NearCore extends Near {
     async importAccount(seeds){
         const { helperUrl, keyStore, networkId } = this.near?.config;
         const {secretKey, publicKey} = parseSeedPhrase(seeds);
+        const address = Buffer.from(bs58.decode(publicKey.split(':')[1])).toString('hex')
         return axios.get(`${helperUrl}/publicKey/${publicKey}/accounts`).then(async ({data}) => {
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
-            await keyStore.setKey(networkId, data[0], keyPair);
+            if(data.length){
+                await keyStore.setKey(networkId, data[0], keyPair);
+            }else{
+                await keyStore.setKey(networkId, address, keyPair);
+            }
             return null
         }).catch(async (e) => {
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
