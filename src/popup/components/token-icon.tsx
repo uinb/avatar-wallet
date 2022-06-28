@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 
 
 const TokenIcon = (props:any) => {
-    const {icon, symbol='', size = 24, ...restProps} = props;
+    const {icon, symbol='', size = 24, showSymbol=true, ...restProps} = props;
     const theme = useTheme();
     return (
         <Box style={{display: 'flex', alignItems:'center'}}>
@@ -15,7 +15,7 @@ const TokenIcon = (props:any) => {
                     <img src={icon} alt="" width="100%"/>
                 ) : symbol.slice(0, 1)}
             </Avatar>
-            {symbol ? (
+            {symbol && showSymbol ? (
                 <Typography variant='body2' color="textSecondary" className="ml1" component="span">{symbol}</Typography>
             ) : null }
         </Box>
