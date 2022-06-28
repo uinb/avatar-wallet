@@ -8,8 +8,8 @@ const useNear = (networkId:string) => {
         if(!networkId) {
             return ;
         }
-        (async() => {
-            const instance = newNear(networkId);
+        (async () => {
+            const instance = await newNear(networkId);
             console.log(instance);
             setNear(instance);
         })()

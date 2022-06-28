@@ -12,7 +12,9 @@ import CreateAccount from './pages/create-account';
 import Settings from './pages/settings';
 import EditPwd from './pages/settings/editPwd';
 import Transfer from './pages/dashboard/near/components/transfer';
+import AppchainTransfer from './pages/dashboard/appchain-wrapper/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
+import TotalAssets from './pages/dashboard/appchain-wrapper/components/total-assets'
 
 const Popup = () => {
     return (
@@ -30,7 +32,9 @@ const Popup = () => {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/edit-pwd" element={<EditPwd />} />
                     <Route path="/transfer/:chain" element={<Transfer />} />
+                    <Route path="/appchain-transfer/:chain" element={<AppchainTransfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
+                    <Route path="/total-assets/:chain" element={<TotalAssets />} />
                 </Routes>
             </HashRouter>
         </Grid>
