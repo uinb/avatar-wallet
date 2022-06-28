@@ -14,6 +14,7 @@ import EditPwd from './pages/settings/editPwd';
 import Transfer from './pages/dashboard/near/components/transfer';
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 import TokenDetail from './pages/dashboard/near/token-detail'
+import AddToken  from './pages/dashboard/near/add-token'
 
 const Popup = () => {
     return (
@@ -30,6 +31,7 @@ const Popup = () => {
                     <Route path="/create-account/:chain" element={<CreateAccount />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/edit-pwd" element={<EditPwd />} />
+                    <Route path="/add-token" element={<AddToken />} />
                     <Route path="/transfer/:chain" element={<Transfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                     <Route path="/token-detail/:tokenId" element={<TokenDetail />} />
