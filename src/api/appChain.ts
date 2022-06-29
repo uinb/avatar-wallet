@@ -107,17 +107,19 @@ class AppChains extends ApiPromise {
             });
         }
     }
-    async fetchAccountTonkenBalances(activeAccount:string, symbol:string, accounts:any, tokenModule:any,tokenMethod:any){
-        const request = accounts.map(account => this.fetchTokenBalance(activeAccount, symbol, account.code, tokenModule, tokenMethod));
+    async fetchAccountTonkenBalances(activeAccount:string, tokens:Array<any>, config:any){
+        const request = tokens.map(token => {
+            return this.fetchFTBalanceByTokenId({params: [token.code, activeAccount], config})
+        });
         const result = await Promise.all(request); 
-        const accountInfo = accounts.map((item:any,index:any)=>{
-            //item.balance = result[index]
+        const accountInfo = tokens.map((item:any,index:any)=>{
             return {
                 ...item,
                 balance: result[index]
             }
         });
         return accountInfo;
+
     }
     async transfer(account:string,amount:string){
         const transfer = this.tx.balances.transfer(account,this.addPrecision(amount,18));
@@ -183,6 +185,14 @@ class AppChains extends ApiPromise {
             }
         });
         return txHash; */
+    }
+
+    async fetchFTBalanceByTokenId({params, config}){
+        const {tokenViewModules, symbol} = config
+        const refactorParams = tokenViewModules.balance.params === 'array' ? [params] : params;
+        const result:any = await this.query[tokenViewModules.balance.module][tokenViewModules.balance.method](...refactorParams);
+        const balance = formatBalance(result?.free || result?.balance, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
+        return balance;
     }
 }
 

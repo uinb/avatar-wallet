@@ -3,7 +3,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import React, {Fragment} from 'react';
 import ReactDOM from 'react-dom/client';
 import Popup from './popup';
-import {createTheme, ThemeProvider, alpha, ThemeOptions} from '@material-ui/core';
+import {createTheme, ThemeProvider, alpha, ThemeOptions, lighten} from '@material-ui/core';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import { persistStore } from "reduxjs-toolkit-persist";
@@ -50,6 +50,7 @@ const theme:ThemeOptions  = createTheme({
     MuiMenu:{
       paper:{
         borderRadius: 16,
+        background: lighten('#f5f5f5', 0.4)
       }
     },
     MuiMenuItem:{
@@ -60,7 +61,7 @@ const theme:ThemeOptions  = createTheme({
     },
     MuiCard:{
       root:{
-        background: '#F5F5F5',
+        background: lighten('#f5f5f5', 0.1),
         boxShadow: '0 0 0'
       },
     },
@@ -75,12 +76,12 @@ const theme:ThemeOptions  = createTheme({
     },
     MuiInput:{
       root: {
-        background: "#F5F5F5",
+        background: '#F5F5F5',
         padding: '8px',
         "&:after":{
           border: '1px solid transparent'
         },
-        borderRadius: '4px !important',
+        borderRadius: '6px !important',
         "&:hover": {
           border: '1px solid #438AFD',
         },
@@ -199,7 +200,7 @@ const SnackbarProviderComponent = (props:any) => {
       hideIconVariant={true}
       dense={true}
       anchorOrigin={{
-        vertical: 'top',
+        vertical: 'bottom',
         horizontal: 'center'
       }}
     >

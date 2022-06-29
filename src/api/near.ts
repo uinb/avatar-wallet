@@ -303,7 +303,6 @@ class NearCore extends Near {
                 }
             )
             return contract.get_near_fungible_tokens().then(resp => {
-                console.log('fetch contract token',resp);
                 return resp;
             })
         }).catch((e) => {

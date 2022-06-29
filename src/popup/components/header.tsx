@@ -84,7 +84,7 @@ export const HeaderWithBack  = (props:any) => {
         if(callback){
             callback();
         }else{
-            navigator(back);
+            navigator(back, {replace: true});
         }
     }
     return (
@@ -161,9 +161,9 @@ export const DashboardHeader = () => {
 
     const handleToBridge = () => {
       if(activeChain === 'near'){
-        navigator(`/bridge/near/${appChains[0].appchain_id}`);
+        navigator(`/bridge/near/${appChains[0].appchain_id}`, {replace: true});
       }else{
-        navigator(`/bridge/${activeChain}/near`);
+        navigator(`/bridge/${activeChain}/near`, {replace: true});
       }
     }
 
