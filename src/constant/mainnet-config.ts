@@ -21,6 +21,20 @@ const config = {
         symbol:"ATO",
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
+        tokenViewModules:{
+            balance: {
+                module: 'octopusAssets',
+                method: 'account',
+                params: ''
+            }
+        },
+        tokenChangeModules:{
+            transfer: {
+                module: 'octopusAssets', 
+                method: 'transfer',
+                params: ''
+            }
+        },
         tokens:[
             {"code":0, decimal: 18, symbol: "ATO", "name":"ATO", "logo":"https://avatars.githubusercontent.com/u/92355981?s=200&v=4"},
         ]
@@ -30,6 +44,20 @@ const config = {
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
         symbol:"MYRIA",
+        tokenViewModules:{
+            balance: {
+                module: 'octopusAssets',
+                method: 'account',
+                params: ''
+            }
+        },
+        tokenChangeModules:{
+            transfer: {
+                module: 'octopusAssets', 
+                method: 'transfer',
+                params: ''
+            }
+        },
         tokens:[
             {"code":0, decimal: 18, symbol: "MYRIA", "name":"MYRIA", "logo":"https://2dverse.org/myriad/Logo_Solid.svg"},
         ]
@@ -39,6 +67,20 @@ const config = {
         tokenModule: 'assets',
         tokenMethod: 'account',
         symbol:"DEIP",
+        tokenViewModules:{
+            balance: {
+                module: 'assets',
+                method: 'account',
+                params: ''
+            }
+        },
+        tokenChangeModules:{
+            transfer: {
+                module: 'uniques', 
+                method: 'transfer',
+                params: ''
+            }
+        },
         tokens:[
             {"code":0, decimal: 18, symbol: "DEIP", "name":"DEIP", "logo":"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3QgeD0iLjg5MiIgeT0iLjkxIiB3aWR0aD0iNDMuMTYxIiBoZWlnaHQ9IjQzLjE2MSIgcng9IjIxLjU4MSIgZmlsbD0iI0Y4RkVGQSIvPjxwYXRoIGQ9Ik05LjcgMTAuNmgxNC41MzRjNi41NjcgMCAxMS44OTIgNS4zMjMgMTEuODkyIDExLjg5IDAgNi41NjgtNS4zMjQgMTEuODkyLTExLjg5MiAxMS44OTJIOS43VjEwLjZaIiBmaWxsPSJ1cmwoI2EpIi8+PGNpcmNsZSBjeD0iMjIuNDczIiBjeT0iMjIuNDkxIiByPSI0Ljg0NSIgZmlsbD0iIzAwMCIvPjxkZWZzPjxyYWRpYWxHcmFkaWVudCBpZD0iYSIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCguMjE2IDExLjY5NTUgLTExLjkyNjc3IC4yMjAyOCAyMi42OTcgMjIuNjg3KSI+PHN0b3Agb2Zmc2V0PSIuMzU5IiBzdG9wLWNvbG9yPSIjRTlGRjAwIi8+PHN0b3Agb2Zmc2V0PSIuNzYiIHN0b3AtY29sb3I9IiMyNjM4MDAiLz48c3RvcCBvZmZzZXQ9IjEiLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48L3N2Zz4="},
 
@@ -49,6 +91,20 @@ const config = {
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
         symbol:"DBIO",
+        tokenViewModules:{
+            balance: {
+                module: 'octopusAssets',
+                method: 'account',
+                params: ''
+            }
+        },
+        tokenChangeModules:{
+            transfer: {
+                module: 'octopusAssets', 
+                method: 'transfer',
+                params: ''
+            }
+        },
         tokens:[
             {"code":0, decimal: 18, symbol: "DBIO", "name":"DBIO", "logo":"http://debio.dev/debiologo.png"},
 
