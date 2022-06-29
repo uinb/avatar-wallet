@@ -137,7 +137,7 @@ const config = {
         symbol:"MYRIA",
         tokens:[
             {"code":0, decimal: 18, symbol: "MYRIA", "name":"MYRIA", "logo":"https://2dverse.org/myriad/Logo_Solid.svg"},
-            {"code":1, decimal: 18, symbol: "USDT", "name":"USDT", "logo":"https://www.fusotao.org/share/usdc.svg"},
+            {"code":1, decimal: 18, symbol: "USDC", "name":"USDC", "logo":"https://www.fusotao.org/share/usdc.svg"},
         ]
     },
     "debionetwork":{
@@ -161,7 +161,7 @@ const config = {
         symbol:"DBIO",
         tokens:[
             {"code":0, decimal: 18, symbol: "DBIO", "name":"DBIO", "logo":"http://debio.dev/debiologo.png"},
-
+            {"code":1, decimal: 18, symbol: "USDC", "name":"USDC", "logo":"https://www.fusotao.org/share/usdc.svg"},
         ]
     },
     "deip-test":{
