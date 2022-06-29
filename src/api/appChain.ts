@@ -83,8 +83,6 @@ class AppChains extends ApiPromise {
         });
     }
     async fetchTokenBalance(account:string,symbol:string,tokenId:string,tokenModule:any, tokenMethod:any){
-        console.log("api -- ",this)
-        
         if(tokenModule === "token" && tokenMethod === "balances"){
             return this.query.token.balances([tokenId,account]).then((resp: any) => {
                 const { balance } = resp;
@@ -99,7 +97,7 @@ class AppChains extends ApiPromise {
                 const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
                 return balance
             }).catch((e) => {
-                return ''
+                return '0'
             });
         }
     }

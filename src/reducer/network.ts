@@ -79,7 +79,6 @@ export const network = createSlice({
       state.loading = true;
     }).addCase(fetchAppChains.fulfilled, (state, {payload}) => {
       const {networkId, chains} = payload;
-      console.log(chains);
       if(state.appChains[networkId]){
         state.appChains[networkId] = chains;
       }else{

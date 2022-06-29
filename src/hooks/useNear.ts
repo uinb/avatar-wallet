@@ -10,7 +10,6 @@ const useNear = (networkId:string) => {
         }
         (async () => {
             const instance = await newNear(networkId);
-            console.log(instance);
             setNear(instance);
         })()
     },[networkId])

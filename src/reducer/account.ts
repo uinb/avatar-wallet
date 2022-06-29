@@ -1,4 +1,4 @@
-import { createSlice, createSelector,  Reducer} from '@reduxjs/toolkit';
+import { createSlice, createSelector,  Reducer,} from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 
 interface StateProps {
@@ -9,7 +9,6 @@ interface StateProps {
   activeAccount: {
     [network: string]: string
   },
-  balacne: string
 }
 
 const initialState: StateProps = {
@@ -18,7 +17,6 @@ const initialState: StateProps = {
   activeAccount: {
 
   },
-  balacne:'--'
 }
 
 export const account = createSlice({

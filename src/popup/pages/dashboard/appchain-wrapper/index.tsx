@@ -8,17 +8,17 @@ import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import Avatar from '@material-ui/core/Avatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
-import useAppChain from '../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../utils';
 import {Link} from 'react-router-dom';
+import TokenIcon from '../../../components/token-icon';
 
 const AppChainWrapper = (props:any) => {
+    const { api } = props;
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
     const config  = appChainsConfig[chain];
@@ -29,14 +29,14 @@ const AppChainWrapper = (props:any) => {
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
+
     const networkConfig = useMemo(() => {
         if(!networkId || !chain){
             return {} as any
         }
         return selectConfig(chain, networkId);
     },[chain, networkId])
-    const {symbol='', nodeId=''} = networkConfig;
-    const api = useAppChain(nodeId);
+
     let tokens_list = useMemo(()=>{
         return networkConfig['tokens'].filter((token:any,index:any) => {
             return index !== 0;
@@ -52,25 +52,25 @@ const AppChainWrapper = (props:any) => {
     const [balance,setBalance] = useState('--') as any;
 
     useEffect(() => {
-        if(!api || !activeAccount || !symbol){
+        if(!api || !activeAccount || !networkConfig){
+            setBalance('--')
             return 
         }
         (async () => {
-            const balance = await api.fetchBalances(activeAccount, symbol);
+            const balance = await api.fetchBalances(activeAccount, networkConfig.symbol);
             setBalance(balance);
-            
         })()
-    },[activeAccount, api, symbol]);
-
+    },[activeAccount, api, networkConfig, chain]);
     useEffect(()=>{
-        if(!api || !activeAccount || !symbol || !tokens_list.length){
+        if(!api || !activeAccount || !tokens_list.length){
             return;
         }
         (async ()=>{
-            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, symbol, tokens_list, networkConfig.tokenModule, networkConfig.tokenMethod)
+            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, networkConfig.symbol, tokens_list, networkConfig.tokenModule, networkConfig.tokenMethod)
+            console.log(tokensInfo);
             setTokenList(tokensInfo);
         })()
-    },[api,activeAccount,symbol,networkConfig,tokens_list])
+    },[api,activeAccount,networkConfig,tokens_list])
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -127,34 +127,24 @@ const AppChainWrapper = (props:any) => {
                     />
                     <Grid className="mt4">
                         <Card className="mt2">
-                            <ListItem disableGutters dense component={Link} to={"/total-assets/"+symbol.toLowerCase()}>
+                            <ListItem disableGutters dense component={Link} to={"/total-assets/" + networkConfig?.symbol.toLowerCase()}>
                                 <ListItemAvatar>
-                                    {appChain.appchain_metadata?.fungible_token_metadata?.icon ? (
-                                        <Avatar style={{height: 32, width:32, background: 'transparent', filter: 'grayscale(1)'}}>
-                                            <img src={appChain.appchain_metadata?.fungible_token_metadata?.icon} alt="" width="100%" style={{filter: 'grayscale(1)'}}/>
-                                        </Avatar>
-                                    ): (
-                                        <Avatar style={{height: 32, width:32}}>{appChain.appchain_metadata?.fungible_token_metadata?.symbol.slice(0,1)}</Avatar>
-                                    )}
-                                </ListItemAvatar>
-                                <ListItemText primary={`${balance} ${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={balance+" $"}/>
+                                    <TokenIcon showSymbol={false} icon={appChain.appchain_metadata?.fungible_token_metadata?.icon} symbol={appChain.appchain_metadata?.fungible_token_metadata?.symbol} size={32}/>
+                                </ListItemAvatar> 
+                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={`${api ? balance : '--'} $`}/>
                             </ListItem>
                         </Card> 
                     </Grid>
                     {
                         tokens_list.map((tokens:any,index:any)=>(
-                            <Grid className="">
-                                <Card className="mt2">
-                                    <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
-                                        <ListItemAvatar>
-                                            <Avatar style={{height: 32, width:32, background: 'transparent'}}>
-                                                <img src={tokens.logo} alt="" width="100%"/>
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primary={`${tokenList[index].balance} ${tokens?.symbol}`} secondary={tokenList[index].balance+" $"}/>
-                                    </ListItem>
-                                </Card> 
-                            </Grid>
+                            <Card className="mt2" key={index}>
+                                <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
+                                    <ListItemAvatar>
+                                        <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={32}/>
+                                    </ListItemAvatar>
+                                    <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '0'} ${tokens?.symbol}`} secondary={tokenList[index]?.balance+" $"}/>
+                                </ListItem>
+                            </Card> 
                         ))
                     }
                 </>

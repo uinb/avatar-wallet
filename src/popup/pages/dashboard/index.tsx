@@ -10,7 +10,9 @@ import { selectNetwork, selectAppChains, setChain, selectChain, fetchAppChains} 
 import Avatar from '@material-ui/core/Avatar';
 import AppChainCore from './appchain-wrapper';
 import cn from 'classnames'
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import useAppChain from '../../../hooks/useAppChain';
+import {selectConfig} from '../../../utils';
 
 
 const Dashboard = (props:any) => {
@@ -19,7 +21,21 @@ const Dashboard = (props:any) => {
     const networkId = useAppSelector(selectNetwork);
     const activeChain = useAppSelector(selectChain(networkId));
     const appChains = useAppSelector(selectAppChains(networkId));
+    const [appChainApi, setAppChainApi] = useState(null);
+
+    const networkConfig = useMemo(() => {
+        if(!networkId || !activeChain || activeChain === 'near'){
+            return {} as any
+        }
+        return selectConfig(activeChain, networkId);
+    },[activeChain, networkId])
+    const api = useAppChain(networkConfig?.nodeId);
+
+    useEffect(() => {
+        setAppChainApi(api)
+    },[api])
     const handleChangeChain = (chain:string) => {
+        setAppChainApi(null);
         dispatch(setChain({networkId, chain}));
     }
 
@@ -60,7 +76,7 @@ const Dashboard = (props:any) => {
                 </Grid>
                 <Grid className="chainContent">
                     {activeChain === 'near' ? <NearCore networkId={networkId} config={chains.near}/> : null}
-                    {activeChain !== 'near' ? <AppChainCore /> : null}
+                    {activeChain !== 'near' ? <AppChainCore api={appChainApi}/> : null}
                 </Grid>
             </Grid>
         </Grid>
