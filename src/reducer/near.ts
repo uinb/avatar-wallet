@@ -1,4 +1,4 @@
-import { createSlice, createSelector} from '@reduxjs/toolkit';
+import { createSlice, createSelector, } from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 import {TokenProps} from '../constant/near-types';
 import chains from '../constant/chains';
@@ -6,6 +6,7 @@ import chains from '../constant/chains';
 interface StateProps {
   loading: boolean,
   signerAccounts: Array<string>,
+  allAccounts:  Array<string>,
   activeAccount: {
     [networkId:string]: string
   },
@@ -27,13 +28,16 @@ const initialState: StateProps = {
   priceList: {},
   accountBalances: {},
   transferInfomation: {},
+  allAccounts:[]
 }
-
 
 export const near = createSlice({
   name:'near',
   initialState,
   reducers: {
+    setAllAccounts(state, {payload = []}) {
+      state.allAccounts = payload;
+    },
     setSignerAccounts(state, {payload  = []}){
         state.signerAccounts = payload;
     },
@@ -94,8 +98,9 @@ export const near = createSlice({
   }
 })
 
-export const {setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation} = near.actions;
+export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
+export const selectAllAccounts = createSelector(selectRootState, state => state.allAccounts);
 export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts);
 export const selectNearActiveAccountByNetworkId = (networkId:string) => createSelector(selectRootState, state => state.activeAccount[networkId] || '');
 export const selectPriceList = createSelector(selectRootState, state => state.priceList);
