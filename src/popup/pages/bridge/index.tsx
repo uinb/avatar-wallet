@@ -34,9 +34,9 @@ import { useSnackbar } from 'notistack';
 import { useParams, useNavigate } from 'react-router-dom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import MenuItem from '@material-ui/core/MenuItem';
-import {useTheme} from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
 import TokenIcon from '../../components/token-icon';
+import {isEmpty} from 'lodash';
 
 
 const useStyles = makeStyles(theme => ({
@@ -59,12 +59,21 @@ const useStyles = makeStyles(theme => ({
         alignItems:'center', 
         justifyContent: 'space-between', 
         background: theme.palette.background.paper, 
-        marginTop: theme.spacing(2)
+        marginTop: theme.spacing(2),
+        borderRadius: theme.spacing(0.875),
+    },
+    token:{
+        padding: theme.spacing(0.25), 
+        display:'flex', 
+        alignItems:'center', 
+        justifyContent: 'space-between', 
+        background: theme.palette.background.paper, 
+        marginTop: theme.spacing(2),
+        borderRadius: theme.spacing(0.875),
     }
 }))
 
 const Bridge = () => {
-    const theme = useTheme();
     const {from, to} =  useParams() as {from:string,to?: string};
     const [selectAppChainOpen, setSelectAppChainOpen] = useState(false);
     const networkId = useAppSelector(selectNetwork)
@@ -85,34 +94,9 @@ const Bridge = () => {
     const balancedTokens = useAppSelector(selectAccountBlances(networkId));
     const [selectedToken, setSelectedToken] = useState({}) as any;
     const [tokenAnchorEl, setTokenAnchorEl] = useState(null);
-    useEffect(() => {
-        if(!near || !activeChain || !balancedTokens.length){
-            return;
-        }
-        (async() => {
-            const result = await near.fetchContractTokens(activeChain.appchain_anchor);
-            console.log(result);
-            const originToken = [
-                {
-                    metadata: activeChain?.appchain_metadata?.fungible_token_metadata,
-                    contract_account: activeChain.appchain_owner,
-                    bridging_state: 'Active',
-                }
-            ]
-            const allTokens = originToken.concat(result).map(item => ({...item, tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol)?.contractId}));
-            setNearCrossTokens(allTokens);
-        })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[near, activeChain])
-    useEffect(() => {
-        if(!appChains.length){
-            return ;
-        }
-        setActiveChain(appChains.find(chain => chain.appchain_id.toLowerCase().startsWith(from === 'near' ? to : from)))
-    },[appChains, from, to])
-
-
-    const [balance, setBalance] = useState('--')
+    const [balance, setBalance] = useState('0')
+    const [selectAccountOpen, setSelectAccountOpen] = useState(false);
+    const [accountSide, setAccountSide] = useState('')
     const chainConfig = useMemo(() => {
         if(!networkId || !activeChain){
             return;
@@ -120,8 +104,39 @@ const Bridge = () => {
         const config  = selectConfig(activeChain.appchain_id, networkId);
         return config
     },[activeChain, networkId])
-    const {nodeId = ""} = chainConfig;
-    const api = useAppChain(nodeId);
+    const chainTokens = useMemo(() => {
+        return chainConfig.tokens || []
+    },[chainConfig])
+    const api = useAppChain(chainConfig.nodeId);
+    useEffect(() => {
+        if(!near || !activeChain || !balancedTokens.length || !chainTokens.length){
+            return;
+        }
+        (async() => {
+            const result = await near.fetchContractTokens(activeChain.appchain_anchor);
+            const originToken = [
+                {
+                    metadata: activeChain?.appchain_metadata?.fungible_token_metadata,
+                    contract_account: activeChain.appchain_owner,
+                    bridging_state: 'Active',
+                }
+            ]
+
+            const allTokens = originToken.concat(result).map(item => ({...item, tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol)?.contractId}));
+            const validTokens = allTokens.filter(token => chainTokens.find(item => item.symbol === token?.metadata?.symbol)).map(item => ({
+                ...chainTokens.find((token:any) => item?.metadata?.symbol ===  token?.symbol),
+                ...item, 
+            }))
+            setNearCrossTokens(validTokens);
+        })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[near, activeChain, chainTokens])
+    useEffect(() => {
+        if(!appChains.length){
+            return ;
+        }
+        setActiveChain(appChains.find(chain => chain.appchain_id.toLowerCase().startsWith(from === 'near' ? to : from)))
+    },[appChains, from, to])
 
     useEffect(() => {
         if(!nearCrossTokens.length){
@@ -129,21 +144,41 @@ const Bridge = () => {
         }
         setSelectedToken(nearCrossTokens[0]);
     },[nearCrossTokens])
+
+    const isNativeToken = useMemo(() => {
+        if(isEmpty(selectedToken) || isEmpty(activeChain)){
+            return false
+        }
+        if(selectedToken.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol){
+            return true
+        }
+        return false
+    },[selectedToken, activeChain])
     useEffect(() => {
-        if(!Object.keys(selectedToken).length || !from || !api || !near || !nearActiveAccount || !appChainActiveAccount){
+        if(from === 'near' || isEmpty(selectedToken) || !api || !appChainActiveAccount){
+            return ;
+        }
+        (async () => {
+            if(isNativeToken){
+                const balance = await api.fetchBalances(appChainActiveAccount, selectedToken?.symbol);
+                setBalance(balance);
+            }else{
+                const balance = await api.fetchFTBalanceByTokenId({params:[selectedToken?.code, appChainActiveAccount], config: chainConfig});
+                setBalance(balance);
+            }
+        })()
+    },[appChainActiveAccount, api, from, nearActiveAccount, selectedToken, chainConfig, isNativeToken])
+
+    useEffect(() => {
+        if(from !== 'near' || isEmpty(selectedToken) || !formState.from) {
             return 
         }
         (async () => {
-            if(from !== 'near'){
-                const balance = await api.fetchBalances(appChainActiveAccount, selectedToken.metadata.symbol);
-                setBalance(balance);
-            }else{
-                const result:any = await near.contractBalanceOf(nearActiveAccount, selectedToken.tokenContractId);
-                const decimalValue = decimalTokenAmount(result.balance, result.decimals, 4); 
-                setBalance(decimalValue);
-            }
+            const result:any = await near.contractBalanceOf(formState.from, selectedToken.contract_account);
+            const decimalValue = decimalTokenAmount(result.balance, result.decimals, 4); 
+            setBalance(decimalValue);
         })()
-    },[appChainActiveAccount, api, from, nearActiveAccount, selectedToken, near])
+    },[near, from, selectedToken, formState.from])
 
 
     const handleSearch = (e) => {
@@ -184,6 +219,7 @@ const Bridge = () => {
     }
 
     const handleChangeToken = (item:any) => {
+        console.log(item);
         setSelectedToken(item)
         setTokenAnchorEl(null)
     }
@@ -292,8 +328,7 @@ const Bridge = () => {
         return from === 'near' ? nearSignerAccounts : nearAllAccounts
     },[nearSignerAccounts, nearAllAccounts, from])
 
-    const [selectAccountOpen, setSelectAccountOpen] = useState(false);
-    const [accountSide, setAccountSide] = useState('')
+    
     useEffect(() => {
         if(!nearAccounts.length){
             return ;
@@ -409,7 +444,7 @@ const Bridge = () => {
                             {Number(balance) > 0 ? <Button color="primary" variant='text' size="small" onClick={handleMax}  style={{minWidth: 'auto'}}>All</Button> : null}
                         </span>
                     </InputLabel>
-                    <div style={{display:'flex', alignItems:'center', background: theme.palette.background.paper, marginTop: theme.spacing(2)}}>
+                    <Grid className={classes.token}>
                         <Input 
                             name="amount"
                             fullWidth 
@@ -418,29 +453,29 @@ const Bridge = () => {
                             type="number"
                             value={formState.amount}
                         />
-                        <Grid>
+                        <Box>
                             <Box className={classes.tokenItem} onClick={(e:any) => setTokenAnchorEl(e.currentTarget)}>
-                                <TokenIcon icon={selectedToken?.metadata?.icon} symbol={selectedToken?.metadata?.symbol} />
+                                <TokenIcon icon={selectedToken?.logo} symbol={selectedToken?.symbol} />
                                 <ArrowDropDown color="action" fontSize="small" className="ml1"/>
                             </Box>
                             <Menu open={Boolean(tokenAnchorEl)} anchorEl={tokenAnchorEl} onClose={() => setTokenAnchorEl(null)}>
                                 {nearCrossTokens.map(item => {
                                     return (
                                         <MenuItem 
-                                            key={item.contract_account} 
+                                            key={item?.symbol} 
                                             value={item.contract_account} 
                                             classes={{
                                                 root: classes.tokenItem
                                             }}
                                             onClick={() => handleChangeToken(item)}
                                         >
-                                            <TokenIcon icon={item?.metadata?.icon} symbol={item?.metadata?.symbol}></TokenIcon>
+                                            <TokenIcon icon={item?.logo} symbol={item?.symbol}></TokenIcon>
                                         </MenuItem>
                                     )
                                 })}
                             </Menu>
-                        </Grid>
-                    </div>
+                        </Box>
+                    </Grid>
                 </Box>
                 <Button 
                     color="primary" 

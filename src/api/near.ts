@@ -136,11 +136,17 @@ class NearCore extends Near {
             }
         )
         const ftMetadata = await contract.ft_metadata();
-        const balance = await contract.ft_balance_of({account_id: accountId});
-        return {
-            ...ftMetadata, 
-            balance
-        }
+        return contract.ft_balance_of({account_id: accountId}).then(resp => {
+            return {
+                ...ftMetadata, 
+                balance:resp
+            }
+        }).catch(e => {
+            return {
+                ...ftMetadata, 
+                balance:'0'
+            }
+        });
     }
     async NFTtMetadata(accountId, contractId){
         const account = await this.near.account(accountId);
