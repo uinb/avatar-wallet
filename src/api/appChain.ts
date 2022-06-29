@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import {formatBalance} from '@polkadot/util';
 import { web3FromSource,web3Accounts } from '@polkadot/extension-dapp';
+import keyring from '@polkadot/ui-keyring';
 import Big from 'big.js';
 Big.PE = 100;
 
@@ -10,6 +11,11 @@ class AppChains extends ApiPromise {
     }
     getBlockHash(){
         return this.genesisHash.toHex()
+    }
+
+    getAccounts(){
+        const accounts = keyring.getPairs()?.map(item => item.address);
+        return accounts
     }
     internationalizationNumbernum (n:any){
         const num = String(n);

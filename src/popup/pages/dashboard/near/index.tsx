@@ -12,7 +12,7 @@ import Avatar from '@material-ui/core/Avatar';
 import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import {setSignerAccounts, /* selectSignerAccount,  */selectNearActiveAccountByNetworkId, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
+import {setSignerAccounts, setAllAccounts, selectNearActiveAccountByNetworkId, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Big from 'big.js';
 import {selectNetwork} from '../../../../reducer/network';
@@ -70,6 +70,7 @@ const NearCoreComponent = (props: any) => {
         }
         (async () => {
             const accountsState = await near.fetchAccountsState(accounts);
+            dispatch(setAllAccounts(accounts));
             dispatch(setSignerAccounts(Object.keys(accountsState).filter((account) => !accountsState[account])))
         })()
     },[accounts, dispatch, near])

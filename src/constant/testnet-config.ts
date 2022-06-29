@@ -48,7 +48,6 @@ const config = {
         symbol:"BARE",
         tokens:[
             {"code":0, decimal: 18, symbol: "BARE", "name":"BARE", "logo":""},
-
         ]
     },
     "discovol":{
@@ -98,7 +97,6 @@ const config = {
         symbol:"ATO",
         tokens:[
             {"code":0, decimal: 18, symbol: "ATO", "name":"ATO", "logo":"https://avatars.githubusercontent.com/u/92355981?s=200&v=4"},
-
         ]
     },
     "uniqueone-appchain":{
@@ -108,7 +106,6 @@ const config = {
         symbol:"UNET",
         tokens:[
             {"code":0, decimal: 18, symbol: "UNET", "name":"UNET", "logo":"https://files.unique.one/images/unet.png"},
-
         ]
     }
     
