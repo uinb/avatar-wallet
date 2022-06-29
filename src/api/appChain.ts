@@ -191,9 +191,10 @@ class AppChains extends ApiPromise {
         const {tokenViewModules, symbol} = config
         const refactorParams = tokenViewModules.balance.params === 'array' ? [params] : params;
         const result:any = await this.query[tokenViewModules.balance.module][tokenViewModules.balance.method](...refactorParams);
-        const balance = formatBalance(result?.free || result?.balance, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
+        const balance = formatBalance(result?.free || result?.balance, { forceUnit: symbol, withSi: true, withUnit: false },18);
         return balance;
     }
+
 }
 
 

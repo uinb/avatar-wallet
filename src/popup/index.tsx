@@ -16,7 +16,7 @@ import AppchainTransfer from './pages/dashboard/appchain-wrapper/components/tran
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 import AddToken  from './pages/dashboard/near/add-token'
 import Bridge from './pages/bridge'
-import TotalAssets from './pages/dashboard/appchain-wrapper/components/total-assets'
+import TotalAssets from './pages/dashboard/appchain-wrapper/components/total-assets';
 
 
 const Popup = () => {
