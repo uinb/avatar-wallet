@@ -142,7 +142,7 @@ const AppChainWrapper = (props:any) => {
                                     <ListItemAvatar>
                                         <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={32}/>
                                     </ListItemAvatar>
-                                    <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '0'} ${tokens?.symbol}`} secondary={tokenList[index]?.balance+" $"}/>
+                                    <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} ${tokens?.symbol}`} secondary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} $`}/>
                                 </ListItem>
                             </Card> 
                         ))

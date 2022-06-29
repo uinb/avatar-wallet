@@ -9,14 +9,14 @@ const TokenIcon = (props:any) => {
     const {icon, symbol='', size = 24, showSymbol=true, ...restProps} = props;
     const theme = useTheme();
     return (
-        <Box style={{display: 'flex', alignItems:'center'}}>
+        <Box style={{display: 'flex', alignItems:'center', flexWrap: 'nowrap'}}>
             <Avatar style={{width: size, height: size, background: icon ? "none" : theme.palette.primary.main, fontSize: 12}} {...restProps}>
                 {icon ? (
                     <img src={icon} alt="" width="100%"/>
                 ) : symbol.slice(0, 1)}
             </Avatar>
             {symbol && showSymbol ? (
-                <Typography variant='body2' color="textSecondary" className="ml1" component="span">{symbol}</Typography>
+                <Typography variant='body2' color="textSecondary" className="ml1" component="span">{symbol.toUpperCase()}</Typography>
             ) : null }
         </Box>
     )

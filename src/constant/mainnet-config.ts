@@ -18,7 +18,8 @@ const config = {
     },
     atocha:{
         nodeId:"wss://gateway.mainnet.octopus.network/atocha/jungxomf4hdcfocwcalgoiz64g9avjim",
-        symbol:"ATO"
+        symbol:"ATO",
+        tokens: []
     },
     myriad:{
         nodeId:"wss://gateway.mainnet.octopus.network/myriad/a4cb0a6e30ff5233a3567eb4e8cb71e0",

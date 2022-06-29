@@ -14,7 +14,6 @@ import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
 import { useAppSelector } from '../../../app/hooks';
 import { selectAppChains, selectNetwork } from '../../../reducer/network';
 import { useMemo } from 'react';
@@ -23,7 +22,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import nearIcon from '../../../img/near.svg';
-import {selectNearActiveAccountByNetworkId, selectAccountBlances } from '../../../reducer/near';
+import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts } from '../../../reducer/near';
 import { selectActiveAccountByNetworkId as selectAppChainActiveAccount } from '../../../reducer/account';
 import { selectConfig, toDecimals, decimalTokenAmount} from '../../../utils';
 import useAppChain from '../../../hooks/useAppChain';
@@ -53,6 +52,14 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         flexWrap: 'nowrap',
         alignItems:'center'
+    },
+    chain:{
+        padding: theme.spacing(1.25), 
+        display:'flex', 
+        alignItems:'center', 
+        justifyContent: 'space-between', 
+        background: theme.palette.background.paper, 
+        marginTop: theme.spacing(2)
     }
 }))
 
@@ -84,6 +91,7 @@ const Bridge = () => {
         }
         (async() => {
             const result = await near.fetchContractTokens(activeChain.appchain_anchor);
+            console.log(result);
             const originToken = [
                 {
                     metadata: activeChain?.appchain_metadata?.fungible_token_metadata,
@@ -153,7 +161,6 @@ const Bridge = () => {
     }
 
     const handleInputChange = (e) => {
-        console.log(e.target.name, e.target.value)
         setFormState((state) => ({
             ...state,
             [e.target.name]: e.target.value
@@ -270,25 +277,87 @@ const Bridge = () => {
         return Object.entries(formState).some(([key, value]) => key === 'amount' ? !Boolean(Number(value) > 0) : !value) || (Number(formState.amount) > Number(balance) || loading)
     },[formState, selectedToken, balance, loading])
 
+    const appChainAccounts = useMemo(() => {
+        if(!api){
+            return [];
+        }
+
+        return api.getAccounts();
+    },[api])
+
+    const nearSignerAccounts = useAppSelector(selectSignerAccount);
+    const nearAllAccounts = useAppSelector(selectAllAccounts)
+
+    const nearAccounts = useMemo(() => {
+        return from === 'near' ? nearSignerAccounts : nearAllAccounts
+    },[nearSignerAccounts, nearAllAccounts, from])
+
+    const [selectAccountOpen, setSelectAccountOpen] = useState(false);
+    const [accountSide, setAccountSide] = useState('')
+    useEffect(() => {
+        if(!nearAccounts.length){
+            return ;
+        }
+        setFormState(state => ({
+            ...state,
+            from: from === 'near' ? nearAccounts[0] : state.from,
+            target: to === 'near' ? nearAccounts[0] : state.target
+        }))
+    },[nearAccounts, from, to])
+    useEffect(() => {
+        if(!appChainAccounts.length){
+            return ;
+        }
+        setFormState(state => ({
+            ...state,
+            from: !state.from ? from !== 'near' ? appChainAccounts[0] : state.from : state.from,
+            target: !state.from ? to !== 'near' ? appChainAccounts[0] : state.target : state.target
+        }))
+    },[appChainAccounts, from, to])
+
+    const handleSetAccountSide = (side: string) => {
+        setAccountSide(side);
+        setSelectAccountOpen(true)
+    }
+
+    const handleChangeAccount = (item:string) => {
+        setFormState(state => ({
+            ...state, 
+            from: accountSide === 'from' ? item : state.from,
+            target: accountSide === 'target' ? item : state.target
+        }))
+        setSelectAccountOpen(false)
+    }
+
+    const accounts = useMemo(() => {
+        if(!accountSide){
+            return [];
+        }
+        if(accountSide === 'from') {
+            return from === 'near' ?  nearAccounts : appChainAccounts;
+        }else{
+            return to === 'near' ?  nearAccounts : appChainAccounts;
+        }
+    }, [accountSide, from, to, nearAccounts, appChainAccounts])
+
+    const handleAccountSelectClose = () => {
+        setAccountSide('');
+        setSelectAccountOpen(false)
+    }
 
     return (
         <Grid>
             <HeaderWithBack back="/dashboard" title="Bridge"/>
             <Content>
-                <Box className="mt2" onClick={() => setSelectAppChainOpen(true)}>
+                <Box className="mt2">
                     <InputLabel className="tl">Appchains</InputLabel>
-                    <Input 
-                        fullWidth className="mt2" 
-                        name="symbol"
-                        value={activeChain?.appchain_id?.toUpperCase() || ''}
-                        disabled
-                        startAdornment={
-                            <Grid style={{marginRight: 8}}>
-                                <TokenIcon icon={activeChain?.appchain_metadata?.fungible_token_metadata?.icon || ''} size={28}/>
-                            </Grid>
-                        }
-                        endAdornment={<ArrowDropDown color="action" fontSize="small"/>}
-                    />
+                    <Grid 
+                        onClick={() => setSelectAppChainOpen(true)}
+                        className={classes.chain}
+                    >
+                        <TokenIcon icon={activeChain?.appchain_metadata?.fungible_token_metadata?.icon} symbol={activeChain?.appchain_id} size={32}/>
+                        <ArrowDropDown color="action" fontSize="small" className="ml1"/>
+                    </Grid>
                 </Box>
                 <Card className='mt3 py2'>
                     <Box>
@@ -302,6 +371,11 @@ const Bridge = () => {
                                 <Grid style={{marginRight: 8}}>
                                     <TokenIcon icon={from === 'near' ? nearIcon : activeChain?.appchain_metadata?.fungible_token_metadata?.icon}/>
                                 </Grid>
+                            }
+                            endAdornment={
+                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('from')}>
+                                    change
+                                </Button>
                             }
                         />
                     </Box>
@@ -319,13 +393,11 @@ const Bridge = () => {
                                     <TokenIcon icon={to === 'near' ? nearIcon : activeChain?.appchain_metadata?.fungible_token_metadata?.icon}/>
                                 </Grid>
                             }
-                           /*  endAdornment={
-                                !formState.target ? (
-                                    <Grid style={{marginRight: 8}} className="flex items-center">
-                                        To Add
-                                    </Grid>
-                                ) : null
-                            } */
+                            endAdornment={
+                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('target')}>
+                                    change
+                                </Button>
+                            }
                         />
                     </Box>
                 </Card>
@@ -402,7 +474,6 @@ const Bridge = () => {
                                     <ListItemAvatar>
                                         <TokenIcon icon={item?.appchain_metadata?.fungible_token_metadata?.icon} symbol={item?.appchain_id} size={32} />
                                     </ListItemAvatar>
-                                    <ListItemText primary={`${item.appchain_id}`}/>
                                 </ListItem>
                             </Card> 
                            )) : <Typography color="primary" align="center">No Result</Typography>
@@ -410,8 +481,20 @@ const Bridge = () => {
                     </Grid>
                 </DialogContent>
             </Dialog>
+
+            <Dialog open={selectAccountOpen} onClose={handleAccountSelectClose}>
+                <DialogTitle>
+                    Select Account
+                </DialogTitle>
+                <DialogContent>
+                    {accounts?.map((item:any, index:number) => (
+                        <MenuItem key={index} onClick={() => handleChangeAccount(item)}>{item}</MenuItem> 
+                    ))}
+                </DialogContent>
+            </Dialog>
         </Grid>
     )
 }
+
 
 export default Bridge;
