@@ -1,6 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
 import {formatBalance} from '@polkadot/util';
-import { web3FromSource,web3Accounts } from '@polkadot/extension-dapp';
 import keyring from '@polkadot/ui-keyring';
 import Big from 'big.js';
 Big.PE = 100;
@@ -121,70 +120,42 @@ class AppChains extends ApiPromise {
         return accountInfo;
 
     }
-    async transfer(account:string,amount:string){
-        const transfer = this.tx.balances.transfer(account,this.addPrecision(amount,18));
-        console.log(transfer)
-        const accountsAll = await web3Accounts() as any;
-        console.log("account  -- > ", accountsAll)
-        const [sender] = await accountsAll.filter((item:any) => {
-            return item.address === account;
-        });
-		await web3FromSource(sender?.meta.source);
-        return ""
-        /* const txHash = await transfer.signAndSend(sender.address, { nonce: -1,signer: injector.signer },({ events = [],status }) => {
-            console.log(`Current status is ${status.type}`);
-            if (status.isInBlock) {
-                console.log(`Transaction included at blockHash ${status.asInBlock}`);
-            } else if (status.isFinalized) {
-                console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
-                events.forEach(({ phase, event: { data, method, section } }) => {
-                    console.log(`\t' ${phase}: ${section}.${method}:: ${data}`);
-                    if(section == 'system'){
-                        let success = null;
-                        if(method == 'ExtrinsicSuccess'){
-                            success = true;
-                        }else if(method == 'ExtrinsicFailed'){
-                            success = false;
-                        }
-                        // callback(success);
-                    }
-                });
+    async transfer(account:string, to:string, amount:string, callback:any){
+        const transfer = await this.tx.balances.transfer(to,amount);
+        const signer = keyring.getPair(account);
+        await signer.unlock('');
+        const txHash = await transfer.signAndSend(signer, {nonce: -1}, (res) => {
+            if (res.isFinalized) {
+                callback({status:1})
+                // window.location.reload();
+            } else if (res.isError) {
+                console.error(res);
             }
+        }).catch(err => {
+            callback({status:0,error:err})
+            console.log('error', err);
         });
-        return txHash; */
+        return txHash;
     }
-    async transferToken(account:string,amount:string){
-        const transfer = this.tx.balances.transfer(account,this.addPrecision(amount,18));
-        console.log(transfer)
-        const accountsAll = await web3Accounts() as any;
-        console.log("account  -- > ", accountsAll)
-        const [sender] = await accountsAll.filter((item:any) => {
-            return item.address === account;
-        });
-		const injector = await web3FromSource(sender?.meta.source);
-        console.log(injector);
-        return ""
-        /* const txHash = await transfer.signAndSend(sender.address, { nonce: -1,signer: injector.signer },({ events = [],status }) => {
-            console.log(`Current status is ${status.type}`);
-            if (status.isInBlock) {
-                console.log(`Transaction included at blockHash ${status.asInBlock}`);
-            } else if (status.isFinalized) {
-                console.log(`Transaction finalized at blockHash ${status.asFinalized}`);
-                events.forEach(({ phase, event: { data, method, section } }) => {
-                    console.log(`\t' ${phase}: ${section}.${method}:: ${data}`);
-                    if(section == 'system'){
-                        let success = null;
-                        if(method == 'ExtrinsicSuccess'){
-                            success = true;
-                        }else if(method == 'ExtrinsicFailed'){
-                            success = false;
-                        }
-                        // callback(success);
-                    }
-                });
+    async transferToken(account:string, params:any, config:any, callback:any){
+        const {tokenChangeModules} = config;
+        const refactorParams = tokenChangeModules.transfer.params === 'array' ? [params] : params;
+        const transfer:any = await this.tx[tokenChangeModules.transfer.module][tokenChangeModules.transfer.method](...refactorParams);
+        console.log(transfer);
+        const signer = keyring.getPair(account);
+        await signer.unlock('');
+        const txHash = await transfer.signAndSend(signer, {nonce: -1}, (res) => {
+            if (res.isFinalized) {
+                callback({status:1})
+                // window.location.reload();
+            } else if (res.isError) {
+                console.error(res);
             }
+        }).catch(err => {
+            callback({status:0,error:err})
+            console.log('error', err);
         });
-        return txHash; */
+        return txHash;
     }
 
     async fetchFTBalanceByTokenId({params, config}){

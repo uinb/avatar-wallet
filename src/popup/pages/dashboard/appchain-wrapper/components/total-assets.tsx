@@ -1,8 +1,11 @@
 import Grid from "@material-ui/core/Grid";
+import {useEffect, useMemo, useState} from 'react';
 import Box from '@material-ui/core/Box';
+import {selectConfig} from '../../../../../utils';
 import Card from '@material-ui/core/Card';
-import { selectChain, selectAppChain, selectNetwork } from '../../../../../reducer/network';
+import { selectChain, selectNetwork } from '../../../../../reducer/network';
 import { useAppSelector} from '../../../../../app/hooks';
+import useAppChain from '../../../../../hooks/useAppChain';
 import Avatar from '@material-ui/core/Avatar';
 import "./total-assets.scss"
 import { useNavigate,useLocation } from 'react-router-dom';
@@ -10,6 +13,7 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles,createStyles,Theme } from '@material-ui/core/styles';
+import {selectActiveAccountByNetworkId} from '../../../../../reducer/account';
 import receive from "../../../../../img/receive.svg"
 import send from "../../../../../img/send.svg"
 const useStyles = makeStyles((theme: Theme) => 
@@ -31,13 +35,40 @@ const useStyles = makeStyles((theme: Theme) =>
 const TotalAssets = (props:any)=>{
   const networkId = useAppSelector(selectNetwork);
   const chain = useAppSelector(selectChain(networkId));
-  const appChain = useAppSelector(selectAppChain(networkId, chain));
-  const classes = useStyles();
-  const navigate = useNavigate()
+  // const appChain = useAppSelector(selectAppChain(networkId, chain));
+  const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
+  const networkConfig = useMemo(() => {
+      if(!networkId || !chain){
+          return {} as any
+      }
+      return selectConfig(chain, networkId);
+  },[chain, networkId])
   const location = useLocation();
   const symbol = location.pathname.split("/").pop();
+  const {nodeId=''} = networkConfig;
+  const api = useAppChain(nodeId);
+  const [balance,setBalance] = useState('--') as any;
+  const [selectToken = {}] = networkConfig.tokens.filter((item:any)=>{
+    return item.symbol === symbol.toUpperCase();
+  });
+  useEffect(() => {
+      if(!api || !activeAccount || !symbol){
+          return 
+      }
+      (async () => {
+          let balance = '';
+          if(selectToken.code === 0){
+            balance = await api.fetchBalances(activeAccount, symbol);
+          }else{
+            balance = await api.fetchTokenBalance(activeAccount, symbol, selectToken.code, networkConfig.tokenModule, networkConfig.tokenMethod);
+          }
+          setBalance(balance);
+      })()
+  },[activeAccount, api, symbol, selectToken, networkConfig]);
+
+  const classes = useStyles();
+  const navigate = useNavigate()
   const handelSend = ()=>{
-    console.log("/appchain-transfer/"+symbol)
     navigate("/appchain-transfer/"+symbol);
   }
   const handelReceive= ()=>{
@@ -50,13 +81,13 @@ const TotalAssets = (props:any)=>{
             <Grid>
               <Card className='center'>
                 <Avatar className={classes.large}>
-                  <img src={appChain.appchain_metadata?.fungible_token_metadata?.icon} alt="" width="100%"/>
+                  <img src={selectToken?.logo} alt="" width="100%"/>
                 </Avatar>
                 <Typography variant="h5" gutterBottom className={classes.colorTitle}>
-                  98,485,748.8875 NEAR
+                  {balance} {symbol.toUpperCase()}
                 </Typography>
                 <Typography variant="subtitle1" gutterBottom className={classes.colorFont}>
-                  1,696,909,453.331625 USD
+                  {balance} USD
                 </Typography>
               </Card>
             </Grid>

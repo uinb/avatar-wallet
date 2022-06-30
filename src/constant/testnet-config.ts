@@ -36,7 +36,7 @@ const config = {
             transfer: {
                 module: 'token', 
                 method: 'transfer',
-                params: 'array'
+                params: ''
             }
         },
         tokens:[
@@ -50,6 +50,7 @@ const config = {
         nodeId:"wss://gateway.testnet.octopus.network/barnacle0918/j8xz59egu4h8y814qnunm0cqfrq09lrw",
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
+        tokenTransferMethod:'transfer',
         symbol:"BAR",
         tokenViewModules:{
             balance: {
@@ -73,6 +74,7 @@ const config = {
         nodeId:"wss://gateway.testnet.octopus.network/barnacle-evm/wj1hhcverunusc35jifki19otd4od1n5",
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
+        tokenTransferMethod:'transfer',
         symbol:"BARE",
         tokenViewModules:{
             balance: {
@@ -192,6 +194,7 @@ const config = {
         nodeId:"wss://gateway.testnet.octopus.network/atocha/yevqd2d4jhm0dqakaj4hkbyjjfg6ukbu",
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
+        tokenTransferMethod:'transfer',
         symbol:"ATO",
         tokenViewModules:{
             balance: {
@@ -215,6 +218,7 @@ const config = {
         nodeId:"wss://gateway.testnet.octopus.network/uniqueone/e83rnqoi4hr65cwx46a83u6a7a970dgq",
         tokenModule: 'octopusAssets',
         tokenMethod: 'account',
+        tokenTransferMethod:'transfer',
         symbol:"UNET",
         tokenViewModules:{
             balance: {

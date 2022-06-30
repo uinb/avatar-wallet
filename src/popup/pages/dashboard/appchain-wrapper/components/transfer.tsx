@@ -6,13 +6,11 @@ import Input from '@material-ui/core/Input';
 import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
-import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
-import {selectAccountBlances, setTempTransferInfomation} from '../../../../../reducer/near';
+import { useAppSelector } from '../../../../../app/hooks';
 import {selectActiveAccountByNetworkId} from '../../../../../reducer/account';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
-import {parseTokenAmount} from '../../../../../utils';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import SearchIcon from '@material-ui/icons/Search';
@@ -21,17 +19,20 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItem from '@material-ui/core/ListItem';
 import { Typography } from '@material-ui/core';
-import {TokenProps} from '../../../../../constant/near-types';
 import { selectNetwork,selectChain } from '../../../../../reducer/network';
-import useNear from '../../../../../hooks/useNear';
 import useAppChain from '../../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../../utils';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { useSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
 
 
 
 const Transfer = () => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
+    const [loading, setLoading] = useState(false);
+    const { enqueueSnackbar } = useSnackbar();
     const networkConfig = useMemo(() => {
         if(!networkId || !chain){
             return {} as any
@@ -40,10 +41,20 @@ const Transfer = () => {
     },[chain, networkId])
     const {symbol='', nodeId=''} = networkConfig;
     const api = useAppChain(nodeId);
+    let tokens_list = useMemo(()=>{
+        return networkConfig['tokens'].filter((token:any,index:any) => {
+            return index !== 0;
+        }).map((item:any) => {
+            return {
+                ...item,
+                balance:"--"
+            }
+        });
+    },[networkConfig]);
+    const [tokenList,setTokenList] = useState(tokens_list) as any;
     const [balance,setBalance] = useState('--') as any;
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
-
-    console.log("id -- ",networkId,"active -- ",activeAccount)
+    const [allList,setAllList] = useState([]) as any;
     useEffect(() => {
         if(!api || !activeAccount || !symbol){
             return;
@@ -54,12 +65,26 @@ const Transfer = () => {
             setBalance(api.inputLimit(balance));
         })()
     },[activeAccount, api, symbol]);
-    const [state, setInputState] = useState({contractId: '', symbol: '', receiver:'', amount: '', sender: activeAccount})
+    useEffect(()=>{
+        if(!api || !activeAccount || !symbol || !tokens_list.length){
+            return;
+        }
+        (async ()=>{
+            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig);
+            setTokenList(tokensInfo);
+        })()
+    },[api,symbol,activeAccount,networkConfig,tokens_list])
+    useEffect(()=>{
+        const firstAccount = [networkConfig['tokens'][0]];
+        firstAccount[0].balance = balance;
+        const all = firstAccount.concat(tokenList);
+        setAllList(all);
+    },[balance, networkConfig, tokenList])
+    const [state, setInputState] = useState({ symbol: '', receiver:'', amount: ''})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
-    const dispatch = useAppDispatch();
+    // const dispatch = useAppDispatch();
     const [searchWord, setSearchWord] = useState('');
     const [sendError, setSendError] = useState('');
-    const near = useNear(networkId)
     const handleInputChange = (e) => {
         setInputState(state => ({
             ...state,
@@ -67,51 +92,60 @@ const Transfer = () => {
         }))
         setSendError('');
     }
-    //const navigator = useNavigate();
+    const navigator = useNavigate();
     // useEffect(() => {
     //     if(!activeAccount){
     //         navigator('/dashboard');
     //     }
     // }, [activeAccount, navigator])
-    const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
-        dispatch(setTempTransferInfomation(state))
-        if(state.contractId === 'tao'){
-            const result = await api.transfer(activeAccount,state.amount);
-            console.log(" --- - > >? > ?..>>",result)
-            if(result.status){
-                // navigator('/transfer-success');
-            }else{
-                setSendError(result.msg);
-            }
+        setLoading(true);
+        if(state.symbol === symbol){
+            const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,18),(response:any)=>{
+                setLoading(false);
+                if(response.status === 1){
+                    enqueueSnackbar('Send transaction Success!', { variant: 'success' });
+                    navigator('/dashboard');
+                }else{
+                    enqueueSnackbar(response.error, { variant: 'error' });
+                }
+            });
+            console.log(resultTxHash)
         }else{
-            const result = await near.ftTransfer(activeAccount, parseTokenAmount(state.amount, 18));
-            if(result.status){
-                // navigator('/transfer-success');
-            }else{
-                setSendError(result.msg);
-            }
+            const resultHash = await api.transferToken(activeAccount,
+                [
+                    Number(selectToken.code),
+                    state.receiver,
+                    api.addPrecision(state.amount,18)
+                ],networkConfig,
+                (response:any) => {
+                    setLoading(false);
+                    if(response.status === 1){
+                        enqueueSnackbar('Send transaction Success!', { variant: 'success' });
+                        navigator('/dashboard');
+                    }else{
+                        enqueueSnackbar(response.error, { variant: 'error' });
+                    }
+            })
+            console.log(resultHash)
         }
     }
-    const selectToken = useMemo(() => balances.find((item:TokenProps) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[balances, state.symbol])
-    const filterdTokens = useMemo(() => balances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord)), [balances, searchWord]);
-
-    // useEffect(() => {
-    //     if(!filterdTokens.length){
-    //         //navigator('/dashboard');  
-    //         return  
-    //     }
-    //     setInputState(state => ({
-    //         ...state,
-    //         contractId: filterdTokens[0].contractId, 
-    //         symbol: filterdTokens[0].symbol
-    //     }))
-    // },[])
+    const selectToken = useMemo(() => allList.find((item:any) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[allList, state.symbol])
+    const filterdTokens = useMemo(() => allList.filter((item: any) => item.symbol.toLowerCase().includes(searchWord)), [allList, searchWord]);
+    useEffect(() => {
+        if(!filterdTokens.length){
+            //navigator('/dashboard');  
+            return  
+        }
+        setInputState(state => ({
+            ...state,
+            symbol: filterdTokens[0].symbol
+        }))
+    },[filterdTokens])
 
     const handleChangeToken = (item :any) => {
         setInputState(state => ({
             ...state, 
-            contractId: item.contractId,
             symbol: item.symbol,
             amount: ''
         }))
@@ -126,14 +160,13 @@ const Transfer = () => {
     const handleMax = () => {
         setInputState({
             ...state, 
-            amount: balance
+            amount: selectToken.balance
         })
     }
 
     const sendDisabled = useMemo(() => {
-      console.log((Object.entries(state)))
-        return Object.entries(state).some(([key, value]) => {console.log(value); return !value}) || Boolean(Number(state.amount) > Number(balance))
-    },[state, balance])
+        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(balance)) || loading
+    },[state, balance,loading])
     return (
         <Grid>
             <HeaderWithBack back="/dashboard"/>
@@ -149,7 +182,7 @@ const Transfer = () => {
                             startAdornment={
                                 <Grid style={{marginRight: 8}}>
                                     <Avatar style={{width: 28, height: 28}}>
-                                        <img src={selectToken?.icon || networkConfig.icon} alt="" width="100%"/>
+                                        <img src={selectToken?.logo} alt="" width="100%"/>
                                     </Avatar>
                                 </Grid>
                             }
@@ -176,7 +209,7 @@ const Transfer = () => {
                             />
                     </Box>
                     <Box className="mt4">
-                        <InputLabel className="flex justify-between items-center"><span>Amount</span> <span>available: <Typography color="textPrimary" component="span" variant='body2'>{balance || 0} {symbol.toUpperCase()}</Typography></span></InputLabel>
+                        <InputLabel className="flex justify-between items-center"><span>Amount</span> <span>available: <Typography color="textPrimary" component="span" variant='body2'>{selectToken?.balance || 0} {selectToken?.symbol.toUpperCase()}</Typography></span></InputLabel>
                         <Input 
                             name="amount"
                             fullWidth className="mt2" 
@@ -187,7 +220,7 @@ const Transfer = () => {
                         />
                     </Box>
                 </Grid>
-                <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send</Button>
+                <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send&nbsp;{loading ? <CircularProgress size={20} color="inherit"/> : null}</Button>
                 {sendError ? <Typography color="error" variant='body2' className="mt2">{sendError}</Typography> : null}
             </Content>
             <Dialog open={selectTokenOpen} onClose={() => setSelectTokenOpen(false)}>
@@ -206,20 +239,20 @@ const Transfer = () => {
                     </Grid>
                     <Grid className="mt2" style={{maxHeight: '300px', overflow: 'scroll', paddingBottom: 16}}>
                         {
-                           filterdTokens.length ? filterdTokens.map((item, index) => (
+                           filterdTokens.length ? filterdTokens.map((item:any) => (
                             <Card className="mt2" key={item.symbol} onClick={() => handleChangeToken(item)}>
                                 <ListItem disableGutters dense>
                                     <ListItemAvatar>
                                         <Avatar style={{height: 32, width:32}}>
-                                            {item?.icon ? (
-                                                <img src={item?.icon} alt="" width="100%"/>
+                                            {item?.logo ? (
+                                                <img src={item?.logo} alt="" width="100%"/>
                                             ): (
                                                 item.symbol.slice(0,1)
                                             )}
                                             
                                         </Avatar>
                                     </ListItemAvatar>
-                                    <ListItemText primary={`${Number(item?.balance || 0).toFixed(4)} ${item?.symbol}`} secondary={`$${Number(item?.usdValue || 0).toFixed(4)}`} />
+                                    <ListItemText primary={`${item?.balance || 0} ${item?.symbol}`} secondary={`$${item?.balance || 0}`} />
                                 </ListItem>
                             </Card> 
                            )) : <Typography color="primary" align="center">No Result</Typography>

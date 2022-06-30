@@ -3,6 +3,7 @@ import {withTheme} from '@material-ui/core/styles';
 import AccountCard from '../../../components/chains-account-card';
 import { appChainsConfig } from '../../../../constant/chains';
 import { selectChain, selectAppChain, selectNetwork } from '../../../../reducer/network';
+import {  setTokenAccount } from '../../../../reducer/account';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
@@ -24,6 +25,7 @@ const AppChainWrapper = (props:any) => {
     const config  = appChainsConfig[chain];
     const appChain = useAppSelector(selectAppChain(networkId, chain));
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
+    // const defaultAccountList = useAppSelector(tokenAccountList);
     const dispatch = useAppDispatch();
     const navigator = useNavigate();
     const handleAccountItemClick = (account:string) => {
@@ -67,10 +69,16 @@ const AppChainWrapper = (props:any) => {
         }
         (async ()=>{
             const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig)
-            console.log(tokensInfo);
             setTokenList(tokensInfo);
         })()
     },[api,activeAccount,networkConfig,tokens_list])
+
+    useEffect(()=>{
+
+        dispatch(setTokenAccount({
+            [chain]:tokenList
+        }))
+    },[tokenList,dispatch,chain]);
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
