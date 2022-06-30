@@ -101,7 +101,7 @@ const Transfer = () => {
     const handleSend = async () => {
         setLoading(true);
         if(state.symbol === symbol){
-            const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,18),(response:any)=>{
+            const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,selectToken.decimal),(response:any)=>{
                 setLoading(false);
                 if(response.status === 1){
                     enqueueSnackbar('Send transaction Success!', { variant: 'success' });
@@ -116,7 +116,7 @@ const Transfer = () => {
                 [
                     Number(selectToken.code),
                     state.receiver,
-                    api.addPrecision(state.amount,18)
+                    api.addPrecision(state.amount,selectToken.decimal)
                 ],networkConfig,
                 (response:any) => {
                     setLoading(false);
@@ -132,6 +132,7 @@ const Transfer = () => {
     }
     const selectToken = useMemo(() => allList.find((item:any) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[allList, state.symbol])
     const filterdTokens = useMemo(() => allList.filter((item: any) => item.symbol.toLowerCase().includes(searchWord)), [allList, searchWord]);
+    console.log("selectToken  -  " ,selectToken)
     useEffect(() => {
         if(!filterdTokens.length){
             //navigator('/dashboard');  

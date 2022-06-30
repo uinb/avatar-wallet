@@ -60,7 +60,8 @@ const TotalAssets = (props:any)=>{
           if(selectToken.code === 0){
             balance = await api.fetchBalances(activeAccount, symbol);
           }else{
-            balance = await api.fetchTokenBalance(activeAccount, symbol, selectToken.code, networkConfig.tokenModule, networkConfig.tokenMethod);
+            console.log()
+            balance = await api.fetchFTBalanceByTokenId({params: [selectToken.code, activeAccount], config:networkConfig})
           }
           setBalance(balance);
       })()
