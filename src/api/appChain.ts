@@ -87,25 +87,6 @@ class AppChains extends ApiPromise {
             return ''
         });
     }
-    async fetchTokenBalance(account:string,symbol:string,tokenId:string,tokenModule:any, tokenMethod:any){
-        if(tokenModule === "token" && tokenMethod === "balances"){
-            return this.query.token.balances([tokenId,account]).then((resp: any) => {
-                const { balance } = resp;
-                const res = formatBalance(balance, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
-                return res
-            }).catch((e) => {
-                return ''
-            });
-        }else{
-            return this.query[tokenModule][tokenMethod]([tokenId,account]).then((resp: any) => {
-                const { free } = resp;
-                const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
-                return balance
-            }).catch((e) => {
-                return '0'
-            });
-        }
-    }
     async fetchAccountTonkenBalances(activeAccount:string, tokens:Array<any>, config:any){
         const request = tokens.map(token => {
             return this.fetchFTBalanceByTokenId({params: [token.code, activeAccount], config})
@@ -141,7 +122,6 @@ class AppChains extends ApiPromise {
         const {tokenChangeModules} = config;
         const refactorParams = tokenChangeModules.transfer.params === 'array' ? [params] : params;
         const transfer:any = await this.tx[tokenChangeModules.transfer.module][tokenChangeModules.transfer.method](...refactorParams);
-        console.log(transfer);
         const signer = keyring.getPair(account);
         await signer.unlock('');
         const txHash = await transfer.signAndSend(signer, {nonce: -1}, (res) => {
