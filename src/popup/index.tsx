@@ -16,7 +16,7 @@ import AppchainTransfer from './pages/dashboard/appchain-wrapper/components/tran
 import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 import AddToken  from './pages/dashboard/near/add-token'
 import Bridge from './pages/bridge'
-import TotalAssets from './pages/dashboard/appchain-wrapper/components/total-assets';
+import TotalAssets from './pages/asset-page';
 
 
 const Popup = () => {
@@ -35,11 +35,11 @@ const Popup = () => {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/edit-pwd" element={<EditPwd />} />
                     <Route path="/add-token" element={<AddToken />} />
-                    <Route path="/transfer/:chain" element={<Transfer />} />
+                    <Route path="/transfer/:symbol" element={<Transfer />} />
                     <Route path="/appchain-transfer/:chain" element={<AppchainTransfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                     <Route path="/bridge/:from/:to" element={<Bridge />} />
-                    <Route path="/total-assets/:chain" element={<TotalAssets />} />
+                    <Route path="/total-assets/:symbol" element={<TotalAssets />} />
                 </Routes>
             </HashRouter>
         </Grid>

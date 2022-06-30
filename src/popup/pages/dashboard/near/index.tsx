@@ -206,7 +206,7 @@ const NearCoreComponent = (props: any) => {
                         {activeTab === 'assets' ? (
                             <Grid className="assetsList mt2">
                                 <Card className="mb1">
-                                    <ListItem component={Link} to="/transfer/near" disableGutters dense>
+                                    <ListItem component={Link} to={`/total-assets/near`} disableGutters dense>
                                         <ListItemAvatar>
                                             <Avatar style={{background: chains.near.background, height: 32, width:32}}>
                                                 <img src={chains.near.logo} alt=""/>
@@ -215,23 +215,28 @@ const NearCoreComponent = (props: any) => {
                                         <ListItemText primary={`${utils.format.formatNearAmount(balances.available, 4)} NEAR`} secondary={`$${new Big(utils.format.formatNearAmount(balances.available)).times(nearSymbolConfig?.price || 1).toFixed(4)}`} />
                                     </ListItem>
                                 </Card>
-                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map(item => (
-                                    <Card className="mt2" key={item.symbol}>
-                                        <ListItem component={Link} to="/transfer/near" disableGutters dense>
-                                            <ListItemAvatar>
-                                                <Avatar style={{height: 32, width:32}}>
-                                                    {item?.icon ? (
-                                                        <img src={item?.icon} alt=""/>
-                                                    ): (
-                                                        item.symbol.slice(0,1)
-                                                    )}
-                                                    
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText primary={`${new Big(item.balance).toFixed(4)} ${item.symbol}`} secondary={`$${new Big(item?.usdValue).toFixed(4)}`} />
-                                        </ListItem>
-                                    </Card> 
-                                )) :null}
+                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map((item:any) => {
+                                    return (
+                                        <Card className="mt2" key={item.symbol}>
+                                            <ListItem component={Link} to={`/total-assets/${item.symbol}`} disableGutters dense>
+                                                <ListItemAvatar>
+                                                    <Avatar style={{height: 32, width:32}}>
+                                                        {item?.icon ? (
+                                                            <img src={item?.icon} alt=""/>
+                                                        ): (
+                                                            item.symbol.slice(0,1)
+                                                        )}
+                                                        
+                                                    </Avatar>
+                                                </ListItemAvatar>
+                                                <ListItemText 
+                                                    primary={`${new Big(item.balance).toFixed(4)} ${item.name || item.symbol}`} 
+                                                    secondary={<Typography variant='caption' component="span">{`$${new Big(item?.usdValue).toFixed(4)}`}</Typography>} 
+                                                />
+                                            </ListItem>
+                                        </Card> 
+                                    )
+                                }) :null}
                             </Grid>
                         ) : null}
                         {activeTab === "nfts" ? (

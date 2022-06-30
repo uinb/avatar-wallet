@@ -10,7 +10,7 @@ const TokenIcon = (props:any) => {
     const theme = useTheme();
     return (
         <Box style={{display: 'flex', alignItems:'center', flexWrap: 'nowrap'}}>
-            <Avatar style={{width: size, height: size, background: icon ? "none" : theme.palette.primary.main, fontSize: 12}} {...restProps}>
+            <Avatar style={{width: size, height: size, background: icon ? "none" : theme.palette.primary.main, fontSize: size > 24 ? 20: 12}} {...restProps}>
                 {icon ? (
                     <img src={icon} alt="" width="100%"/>
                 ) : symbol.slice(0, 1)}

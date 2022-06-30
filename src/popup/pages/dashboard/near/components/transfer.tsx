@@ -23,9 +23,11 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItem from '@material-ui/core/ListItem';
 import { Typography } from '@material-ui/core';
 import {TokenProps} from '../../../../../constant/near-types';
-import nearIcon from '../../../../../img/near.svg';
 import { selectNetwork } from '../../../../../reducer/network';
 import useNear from '../../../../../hooks/useNear';
+import {useParams} from 'react-router-dom';
+import TokenIcon from '../../../../components/token-icon';
+import {isEmpty} from 'lodash';
 
 interface TransferProps{
     balance: string,
@@ -37,9 +39,10 @@ interface TransferProps{
 
 
 const Transfer = () => {
+    const {symbol} = useParams() as {symbol : string};
     const networkId = useAppSelector(selectNetwork)
     const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId));
-    const [state, setInputState] = useState({contractId: '', symbol: '', receiver:'', amount: '', sender: activeAccount})
+    const [state, setInputState] = useState({contractId: '', symbol: symbol, receiver:'', amount: '', sender: activeAccount})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     const dispatch = useAppDispatch();
     const [searchWord, setSearchWord] = useState('');
@@ -53,11 +56,6 @@ const Transfer = () => {
         setSendError('');
     }
     const navigator = useNavigate();
-    // useEffect(() => {
-    //     if(!activeAccount){
-    //         navigator('/dashboard');
-    //     }
-    // }, [activeAccount, navigator])
     const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
         dispatch(setTempTransferInfomation(state))
@@ -84,14 +82,15 @@ const Transfer = () => {
         return balances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord))
     }, [balances, searchWord]);
     const selectToken = useMemo(() => {
-        if(!filterdTokens.length){
+        if(!balances.length){
             return {} as TransferProps;
         }
-        return state.symbol ? filterdTokens.find((item:TokenProps) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) : filterdTokens[0];
-    },[filterdTokens, state.symbol])
+        return state.symbol ? balances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) || {} as any : filterdTokens[0];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[balances, state.symbol])
 
     useEffect(() => {
-        if(!Object.keys(selectToken).length){
+        if(isEmpty(selectToken)){
             return  
         }
         setInputState(state => ({
@@ -109,6 +108,7 @@ const Transfer = () => {
             amount: ''
         }))
         setSelectTokenOpen(false)
+        navigator(`/transfer/${item.symbol}`,{replace: true})
     }
 
     const handleSearch = (e) => {
@@ -143,9 +143,7 @@ const Transfer = () => {
                             onChange={handleInputChange}
                             startAdornment={
                                 <Grid style={{marginRight: 8}}>
-                                    <Avatar style={{width: 28, height: 28}}>
-                                        <img src={selectToken?.icon || nearIcon} alt="" width="100%"/>
-                                    </Avatar>
+                                    <TokenIcon icon={selectToken?.icon} size={28} symbol={selectToken.symbol} showSymbol={false}/>
                                 </Grid>
                             }
                             endAdornment={<ArrowDropDown color="action" fontSize="small"/>}
