@@ -30,7 +30,12 @@ const config = {
                 module: 'token',
                 method: 'balances',
                 params: 'array'
-            }
+            },
+            metadata: {
+                module: 'token',
+                method: 'tokens',
+                params: ''
+            },
         },
         tokenChangeModules:{
             transfer: {

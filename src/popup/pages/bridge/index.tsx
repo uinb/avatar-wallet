@@ -7,7 +7,7 @@ import Input from '@material-ui/core/Input';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import SearchIcon from '@material-ui/icons/Search';
 import Card from '@material-ui/core/Card';
@@ -97,6 +97,7 @@ const Bridge = () => {
     const [balance, setBalance] = useState('0')
     const [selectAccountOpen, setSelectAccountOpen] = useState(false);
     const [accountSide, setAccountSide] = useState('')
+
     const chainConfig = useMemo(() => {
         if(!networkId || !activeChain){
             return;
@@ -104,34 +105,32 @@ const Bridge = () => {
         const config  = selectConfig(activeChain.appchain_id, networkId);
         return config
     },[activeChain, networkId])
-    const chainTokens = useMemo(() => {
-        return chainConfig.tokens || []
-    },[chainConfig])
     const api = useAppChain(chainConfig.nodeId);
-    useEffect(() => {
-        if(!near || !activeChain || !balancedTokens.length || !chainTokens.length){
+
+    const fetchCrossTokens = useCallback(async() => {
+        if(!near || !activeChain){
             return;
         }
-        (async() => {
-            const result = await near.fetchContractTokens(activeChain.appchain_anchor);
-            console.log(result);
-            const originToken = [
-                {
-                    metadata: activeChain?.appchain_metadata?.fungible_token_metadata,
-                    contract_account: activeChain.appchain_owner,
-                    bridging_state: 'Active',
-                }
-            ]
-
-            const allTokens = originToken.concat(result).map(item => ({...item, tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol)?.contractId}));
-            const validTokens = allTokens.filter(token => chainTokens.find(item => item.symbol === token?.metadata?.symbol)).map(item => ({
-                ...chainTokens.find((token:any) => item?.metadata?.symbol ===  token?.symbol),
-                ...item, 
-            }))
-            setNearCrossTokens(validTokens);
-        })()
+        const result = await near.fetchContractTokens(activeChain.appchain_anchor);
+        const originToken = [
+            {
+                metadata: activeChain?.appchain_metadata?.fungible_token_metadata,
+                contract_account: activeChain.appchain_owner,
+                bridging_state: 'Active',
+            }
+        ]
+        const allTokens = originToken.concat(result).map(item => ({
+            ...item, 
+            ...item.metadata,
+            tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol)?.contractId,
+        }));
+        setNearCrossTokens(allTokens);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[near, activeChain, chainTokens])
+    }, [near, activeChain])
+    useEffect(() => {
+        fetchCrossTokens();
+    },[fetchCrossTokens])
+
     useEffect(() => {
         if(!appChains.length){
             return ;
@@ -155,31 +154,43 @@ const Bridge = () => {
         }
         return false
     },[selectedToken, activeChain])
-    useEffect(() => {
-        if(from === 'near' || isEmpty(selectedToken) || !api || !appChainActiveAccount){
+
+    const fetchAppChainAccountBalance = useCallback(async () => {
+        if(isEmpty(selectedToken) || !api || !appChainActiveAccount){
             return ;
         }
-        (async () => {
-            if(isNativeToken){
-                const balance = await api.fetchBalances(appChainActiveAccount, selectedToken?.symbol);
-                setBalance(balance);
-            }else{
-                const balance = await api.fetchFTBalanceByTokenId({params:[selectedToken?.code, appChainActiveAccount], config: chainConfig});
-                setBalance(balance);
-            }
-        })()
-    },[appChainActiveAccount, api, from, nearActiveAccount, selectedToken, chainConfig, isNativeToken])
-
-    useEffect(() => {
-        if(from !== 'near' || isEmpty(selectedToken) || !formState.from) {
+        if(isNativeToken){
+            const balance = await api.fetchBalances(appChainActiveAccount, selectedToken?.symbol);
+            setBalance(balance);
+        }else{
+            const balance = await api.fetchFTBalanceByTokenId({params:[selectedToken?.code, appChainActiveAccount], config: chainConfig});
+            setBalance(balance);
+        }
+    },[appChainActiveAccount, api, selectedToken, chainConfig, isNativeToken])
+    const fetchNearAccountBalance = useCallback(async () => {
+        if(isEmpty(selectedToken) || !formState.from) {
             return 
         }
-        (async () => {
-            const result:any = await near.contractBalanceOf(formState.from, selectedToken.contract_account);
-            const decimalValue = decimalTokenAmount(result.balance, result.decimals, 4); 
-            setBalance(decimalValue);
-        })()
-    },[near, from, selectedToken, formState.from])
+        const result:any = await near.contractBalanceOf(formState.from, selectedToken.contract_account);
+        const decimalValue = decimalTokenAmount(result.balance, result.decimals, 4); 
+        setBalance(decimalValue);
+    },[near, selectedToken, formState.from])
+
+
+    useEffect(() => {
+        if(from === 'near'){
+            return ;
+        }
+        fetchAppChainAccountBalance()
+    },[fetchAppChainAccountBalance, from])
+
+
+    useEffect(() => {
+        if(from !== 'near'){
+            return ;
+        }
+        fetchNearAccountBalance();
+    },[fetchNearAccountBalance, from])
 
 
     const handleSearch = (e) => {
@@ -220,19 +231,15 @@ const Bridge = () => {
     }
 
     const handleChangeToken = (item:any) => {
-        console.log(item);
         setSelectedToken(item)
         setTokenAnchorEl(null)
     }
 
     const onRedeem = async () => {
         let hexAddress = stringToHex(formState.target);
-        let isNativeToken = true;
         let assetId;
-    
-    
         if (!isNativeToken) {
-          assetId = 0;
+          assetId = selectedToken.code;
          
           if (assetId === undefined) {
             return;
@@ -240,7 +247,7 @@ const Bridge = () => {
         }
         const signer = keyring.getPair(formState.from);
         await signer.unlock('');
-        let amount = toDecimals(formState.amount, 18);
+        let amount = toDecimals(formState.amount, selectedToken.metadata.decimals);
         await (
           isNativeToken ?
           api.tx.octopusAppchain.lock(hexAddress, amount) :
@@ -269,9 +276,8 @@ const Bridge = () => {
           return;
         }
 
-        const isNativeToken = true;
-        let amount = toDecimals(formState.amount, 18);
-          
+        let amount = toDecimals(formState.amount, selectedToken.metadata.decimals);
+        
         try {
             if (isNativeToken) {
                 const result = await near.bridgeNativeToken({accountId: nearActiveAccount, contractId: octConfig.bridgeId, receiver: hexAddress, amount: amount, appchain: activeChain.appchain_id, appChainContract: activeChain.appchain_anchor});
@@ -282,14 +288,19 @@ const Bridge = () => {
                     enqueueSnackbar('Send transaction Fail!', { variant: 'error' });
                 }
             } else {
-                await near.bridgeTokenTransfer({
-                    from: hexAddress,
-                    accountId: nearActiveAccount, 
-                    contractId: '',
+                const transferToken = await near.bridgeTokenTransfer({
+                    target: hexAddress,
+                    accountId: formState.from, 
+                    contractId: selectedToken.contract_account,
                     amount: amount,
-                    bridgeId: octConfig.bridgeId,
+                    bridgeId: 'dev.dev_oct_relay.testnet',
+                    //bridgeId: activeChain.appchain_anchor,
                     appchain: activeChain.appchain_id
                 })
+                if(!transferToken){
+                    enqueueSnackbar('Transfer success', { variant: 'success' });
+                    fetchNearAccountBalance()
+                }
             }
         } catch(err) {
             console.log(err);

@@ -8,6 +8,9 @@ const {parseSeedPhrase, generateSeedPhrase } = require('near-seed-phrase')
 const {connect, keyStores, Near, KeyPair, Contract, utils} = nearAPI;
 const bs58 = require('bs58');
 
+
+const BOATLOAD_OF_GAS = new Big(3).times(10 ** 14).toFixed();
+
 class NearCore extends Near {
     near;
     networkId;
@@ -83,7 +86,8 @@ class NearCore extends Near {
         return {};
     }
     async fetchFTMetadata(accountId, contractId){
-        const account = await this.near.account(accountId);
+        const {networkId} = this.near.config;
+        const account = await this.near.account(networkId === 'testnet' ? 'testnet': 'near');
         const contract:any = new Contract(
             account,
             contractId,
@@ -126,7 +130,6 @@ class NearCore extends Near {
         return {};
     }
     async contractBalanceOf(accountId, contractId){
-        console.log(accountId, contractId);
         const account = await this.near.account(accountId);
         const contract:any = new Contract(
             account,
@@ -138,7 +141,6 @@ class NearCore extends Near {
         )
         const ftMetadata = await contract.ft_metadata();
         return contract.ft_balance_of({account_id: accountId}).then(resp => {
-            console.log('ft balances', resp)
             return {
                 ...ftMetadata, 
                 balance:resp
@@ -301,18 +303,24 @@ class NearCore extends Near {
     }
 
     async fetchContractTokens(contractId:string){
-        const {networkId} = this.config;
+        const {networkId} = this.near.config;
         return this.near.account(networkId === 'testnet' ? 'testnet' : 'near').then((account) => {
             const contract:any = new Contract(
                 account,
                 contractId,
                 {
-                    viewMethods: ['get_near_fungible_tokens'],
+                    viewMethods: ['get_near_fungible_tokens', 'get_wrapped_appchain_token'],
                     changeMethods: [],
                 }
             )
-            return contract.get_near_fungible_tokens().then(resp => {
-                return resp;
+            return contract.get_near_fungible_tokens().then(async resp => {
+                const validTokens = resp.filter(token => token.bridging_state === 'Active')
+                const request = validTokens.map((token:any) => this.fetchFTMetadata('', token.contract_account))
+                const result = await Promise.all(request);
+                return validTokens.map((item, index) => ({
+                    ...item,
+                    metadata: result[index]
+                }));
             })
         }).catch((e) => {
             return []
@@ -382,27 +390,27 @@ class NearCore extends Near {
     }
 
     async bridgeTokenTransfer(payload){
-        const {accountId, contractId, amount, bridgeId, appchain, from} = payload;
+        const {accountId, contractId, amount, bridgeId, appchain, target} = payload;
+        console.log(accountId, contractId, amount, bridgeId, appchain, target);
         const account = await this.near.account(accountId);
-        
         const contract:any = new Contract(
             account,
             contractId,
             {
               viewMethods: ['ft_balance_of'],
-              changeMethods: ['ft_transfer_call']
+              changeMethods: ['ft_transfer', 'ft_transfer_call']
             }
         );
         const result = await contract.ft_transfer_call(
             {
                 receiver_id: bridgeId,
                 amount,
-                msg: `lock_token,${appchain},${from}`,
-            },
-            NEAR_MAX_GAS,
-            1
+                msg: `lock_token,${appchain},${target}`,
+              },
+              BOATLOAD_OF_GAS,
+              1
         );
-        console.log(result);
+        return result
     }
 }
 export default NearCore;
