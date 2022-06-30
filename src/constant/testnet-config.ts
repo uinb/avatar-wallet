@@ -36,7 +36,7 @@ const config = {
             transfer: {
                 module: 'token', 
                 method: 'transfer',
-                params: 'array'
+                params: ''
             }
         },
         tokens:[

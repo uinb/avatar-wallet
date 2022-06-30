@@ -22,12 +22,17 @@ import { Typography } from '@material-ui/core';
 import { selectNetwork,selectChain } from '../../../../../reducer/network';
 import useAppChain from '../../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../../utils';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { useSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
 
 
 
 const Transfer = () => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
+    const [loading, setLoading] = useState(false);
+    const { enqueueSnackbar } = useSnackbar();
     const networkConfig = useMemo(() => {
         if(!networkId || !chain){
             return {} as any
@@ -65,7 +70,7 @@ const Transfer = () => {
             return;
         }
         (async ()=>{
-            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig.tokenModule, networkConfig.tokenMethod);
+            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig);
             setTokenList(tokensInfo);
         })()
     },[api,symbol,activeAccount,networkConfig,tokens_list])
@@ -87,25 +92,42 @@ const Transfer = () => {
         }))
         setSendError('');
     }
-    //const navigator = useNavigate();
+    const navigator = useNavigate();
     // useEffect(() => {
     //     if(!activeAccount){
     //         navigator('/dashboard');
     //     }
     // }, [activeAccount, navigator])
     const handleSend = async () => {
-        console.log(state)
-
+        setLoading(true);
         if(state.symbol === symbol){
-            const result = await api.transfer(activeAccount,state.amount);
-            console.log(" --- - > >? > ?..>>",result)
-            if(result.status){
-                // navigator('/transfer-success');
-            }else{
-                setSendError(result.msg);
-            }
+            const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,18),(response:any)=>{
+                setLoading(false);
+                if(response.status === 1){
+                    enqueueSnackbar('Send transaction Success!', { variant: 'success' });
+                    navigator('/dashboard');
+                }else{
+                    enqueueSnackbar(response.error, { variant: 'error' });
+                }
+            });
+            console.log(resultTxHash)
         }else{
-
+            const resultHash = await api.transferToken(activeAccount,
+                [
+                    Number(selectToken.code),
+                    state.receiver,
+                    api.addPrecision(state.amount,18)
+                ],networkConfig,
+                (response:any) => {
+                    setLoading(false);
+                    if(response.status === 1){
+                        enqueueSnackbar('Send transaction Success!', { variant: 'success' });
+                        navigator('/dashboard');
+                    }else{
+                        enqueueSnackbar(response.error, { variant: 'error' });
+                    }
+            })
+            console.log(resultHash)
         }
     }
     const selectToken = useMemo(() => allList.find((item:any) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[allList, state.symbol])
@@ -143,8 +165,8 @@ const Transfer = () => {
     }
 
     const sendDisabled = useMemo(() => {
-        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(balance))
-    },[state, balance])
+        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(balance)) || loading
+    },[state, balance,loading])
     return (
         <Grid>
             <HeaderWithBack back="/dashboard"/>
@@ -198,7 +220,7 @@ const Transfer = () => {
                         />
                     </Box>
                 </Grid>
-                <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send</Button>
+                <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send&nbsp;{loading ? <CircularProgress size={20} color="inherit"/> : null}</Button>
                 {sendError ? <Typography color="error" variant='body2' className="mt2">{sendError}</Typography> : null}
             </Content>
             <Dialog open={selectTokenOpen} onClose={() => setSelectTokenOpen(false)}>

@@ -69,7 +69,6 @@ const AppChainWrapper = (props:any) => {
         }
         (async ()=>{
             const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig)
-            console.log(tokensInfo);
             setTokenList(tokensInfo);
         })()
     },[api,activeAccount,networkConfig,tokens_list])

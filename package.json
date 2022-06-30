@@ -8,7 +8,6 @@
     "@material-ui/icons": "^4.11.3",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@polkadot/api": "^8.6.2",
-    "@polkadot/extension-dapp": "^0.44.1",
     "@polkadot/keyring": "^9.4.1",
     "@polkadot/ui-keyring": "^2.4.1",
     "@polkadot/util-crypto": "^9.4.1",
