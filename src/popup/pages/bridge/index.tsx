@@ -122,7 +122,7 @@ const Bridge = () => {
         const allTokens = originToken.concat(result).map(item => ({
             ...item, 
             ...item.metadata,
-            tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol)?.contractId,
+            tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain?.appchain_metadata?.fungible_token_metadata.symbol)?.contractId,
         }));
         setNearCrossTokens(allTokens);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,7 +149,7 @@ const Bridge = () => {
         if(isEmpty(selectedToken) || isEmpty(activeChain)){
             return false
         }
-        if(selectedToken.symbol === activeChain.appchain_metadata.fungible_token_metadata.symbol){
+        if(selectedToken.symbol === activeChain.appchain_metadata?.fungible_token_metadata?.symbol){
             return true
         }
         return false
@@ -160,7 +160,7 @@ const Bridge = () => {
             return ;
         }
         if(isNativeToken){
-            const balance = await api.fetchBalances(appChainActiveAccount, selectedToken?.symbol);
+            const balance = await api.fetchBalances(appChainActiveAccount, chainConfig);
             setBalance(balance);
         }else{
             const balance = await api.fetchFTBalanceByTokenId({params:[selectedToken?.code, appChainActiveAccount], config: chainConfig});
@@ -171,7 +171,7 @@ const Bridge = () => {
         if(isEmpty(selectedToken) || !formState.from) {
             return 
         }
-        const result:any = await near.contractBalanceOf(formState.from, selectedToken.contract_account);
+        const result:any = await near.contractBalanceOf(formState.from, selectedToken.tokenContractId);
         const decimalValue = decimalTokenAmount(result.balance, result.decimals, 4); 
         setBalance(decimalValue);
     },[near, selectedToken, formState.from])
@@ -255,7 +255,7 @@ const Bridge = () => {
         ).signAndSend(signer, {nonce: -1}, (res) => {
             if (res.isFinalized) {
                 enqueueSnackbar('Send transaction Success!', { variant: 'success' });
-                window.location.reload();
+                fetchAppChainAccountBalance();
                 setLoading(false);
             } else if (res.isError) {
                 console.error(res);
@@ -467,7 +467,7 @@ const Bridge = () => {
                         />
                         <Box>
                             <Box className={classes.tokenItem} onClick={(e:any) => setTokenAnchorEl(e.currentTarget)}>
-                                <TokenIcon icon={selectedToken?.logo} symbol={selectedToken?.symbol} />
+                                <TokenIcon icon={isNativeToken ? activeChain?.appchain_metadata?.fungible_token_metadata?.icon: selectedToken?.logo} symbol={selectedToken?.symbol} />
                                 <ArrowDropDown color="action" fontSize="small" className="ml1"/>
                             </Box>
                             <Menu open={Boolean(tokenAnchorEl)} anchorEl={tokenAnchorEl} onClose={() => setTokenAnchorEl(null)}>
@@ -481,7 +481,7 @@ const Bridge = () => {
                                             }}
                                             onClick={() => handleChangeToken(item)}
                                         >
-                                            <TokenIcon icon={item?.logo} symbol={item?.symbol}></TokenIcon>
+                                            <TokenIcon icon={item?.logo || item.icon} symbol={item?.symbol}></TokenIcon>
                                         </MenuItem>
                                     )
                                 })}
