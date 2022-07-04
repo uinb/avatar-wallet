@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import {selectConfig} from '../../../../utils';
 import {Link} from 'react-router-dom';
 import TokenIcon from '../../../components/token-icon';
+import { saveAs } from 'file-saver';
 
 const AppChainWrapper = (props:any) => {
     const { api } = props;
@@ -82,13 +83,13 @@ const AppChainWrapper = (props:any) => {
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
-            const result = keyring.forgetAccount(activeAccount);
-            console.log(result);
-            navigator('/dashboard', {replace: false})
+            keyring.forgetAccount(activeAccount);
+            navigator('/dashboard', {replace: true})
         }else if(type === 'exportAccount'){
             const account = keyring.getPairs().find(item => item.address === activeAccount);
             const result = keyring.backupAccount(account, '')
-            console.log(result);
+            const blob = new Blob([JSON.stringify(result)], { type: 'application/json; charset=utf-8' });
+            saveAs(blob, `${activeAccount}.json`);
         }
     }
 

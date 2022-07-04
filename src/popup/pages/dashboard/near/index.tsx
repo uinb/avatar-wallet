@@ -24,6 +24,14 @@ import useNear from '../../../../hooks/useNear';
 import TokenIcon from '../../../components/token-icon';
 import nearIcon from '../../../../img/near.svg';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { useSnackbar } from 'notistack';
+import { darken, makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+
 
  
 interface BalanceProps {
@@ -40,6 +48,16 @@ interface NFTMetadataProps{
     [key:string] :any
 }
 
+const useStyles = makeStyles((theme) => ({
+    styledCard: {
+        background: darken(theme.palette.background.default, 0.8),
+        padding: theme.spacing(1.25),
+        wordBreak: 'break-all',
+        color: theme.palette.text.secondary, 
+        marginTop: theme.spacing(1.5)
+    }
+}))
+
 const NearCoreComponent = (props: any) => {
     const {config} = props;
     const networkId = useAppSelector(selectNetwork)
@@ -52,7 +70,7 @@ const NearCoreComponent = (props: any) => {
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const nearSymbolConfig = useAppSelector(selectNearConfig);
-
+    const classes = useStyles();
     useEffect(() => {
         if(!near){
             return ;
@@ -181,13 +199,22 @@ const NearCoreComponent = (props: any) => {
         }
     ]
 
+    const [exportAccountValue, setExportAccountValue] = useState('');
     const handleOperateClick = async (type:string) => {
         if(type === 'forgetAccount'){
             await near.forgetAccount(activeAccount);
             dispatch(setActiveAccount({networkId, account: ''}));
+        }else if(type === 'exportAccount'){
+            const result = await near.exportAccount(activeAccount);
+            console.log(result);
+            if(result){
+                setExportAccountValue(result)
+                setExportAccountOpen(true)
+            }
         }
     }
-
+    const [exportAccountOpen,  setExportAccountOpen] = useState(false);
+    const {enqueueSnackbar} = useSnackbar();
     return (
         <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
             {accounts.length ? (
@@ -266,7 +293,23 @@ const NearCoreComponent = (props: any) => {
             ) : (
                 <NullAccountWrapper chain="near"/>
             )}
-            
+            <Dialog open={exportAccountOpen} onClose={() => { setExportAccountOpen(false); setExportAccountValue('')}}>
+                <DialogTitle>
+                    View secretKey
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant='caption' color="textSecondary">请不要分享你的私钥！任何获得你私钥的人也将获得你的账户的完整访问权限。</Typography>
+                    <Card classes={{root: classes.styledCard}}>
+                        <CopyToClipboard 
+                            text={exportAccountValue}
+                            onCopy={() => {enqueueSnackbar('copied!', {variant:'success'})}}
+                        >
+                            <Typography>{exportAccountValue}</Typography>
+                        </CopyToClipboard>
+                    </Card>
+                    <Button className="mt2" onClick={() => { setExportAccountOpen(false); setExportAccountValue('')}} fullWidth color="primary" variant='contained'>Close</Button>
+                </DialogContent>
+            </Dialog>
         </Grid>
     )
 }
