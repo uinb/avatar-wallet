@@ -7,12 +7,12 @@ import { withTheme } from '@material-ui/core';
 import NearCore from './near';
 import { useAppSelector, useAppDispatch } from '../../../app/hooks';
 import { selectNetwork, selectAppChains, setChain, selectChain, fetchAppChains} from '../../../reducer/network';
-import Avatar from '@material-ui/core/Avatar';
 import AppChainCore from './appchain-wrapper';
 import cn from 'classnames'
 import { useEffect, useMemo, useState } from 'react';
 import useAppChain from '../../../hooks/useAppChain';
 import {selectConfig} from '../../../utils';
+import TokenIcon from '../../components/token-icon';
 
 
 const Dashboard = (props:any) => {
@@ -64,11 +64,13 @@ const Dashboard = (props:any) => {
                     {appChains?.map((item) => {
                         return (
                             <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
-                                <Avatar className="img">
-                                    {item.appchain_metadata.fungible_token_metadata.icon ? (
-                                        <img src={activeChain === item.appchain_id ? item.appchain_metadata.fungible_token_metadata.icon : item.appchain_metadata.fungible_token_metadata.icon} alt="" width="100%"/>
-                                    ) : item.appchain_id.substr(0,1).toUpperCase()}
-                                </Avatar>
+                                <TokenIcon 
+                                    icon={item.appchain_metadata?.fungible_token_metadata?.icon || ''} 
+                                    symbol={item.appchain_id} 
+                                    size={32}
+                                    showSymbol={false}
+                                    className="img"
+                                />
                                 <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === item.appchain_id ? 'block' : 'none'}}></span>
                             </div>
                         )
