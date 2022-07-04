@@ -59,7 +59,7 @@ const AppChainWrapper = (props:any) => {
             return 
         }
         (async () => {
-            const balance = await api.fetchBalances(activeAccount, networkConfig.symbol);
+            const balance = await api.fetchBalances(activeAccount, networkConfig);
             setBalance(balance);
         })()
     },[activeAccount, api, networkConfig, chain]);

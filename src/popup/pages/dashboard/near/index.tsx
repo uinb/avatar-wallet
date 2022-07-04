@@ -8,8 +8,6 @@ import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import Avatar from '@material-ui/core/Avatar';
-import chains from '../../../../constant/chains';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import {setSignerAccounts, setAllAccounts, selectNearActiveAccountByNetworkId, setActiveAccount, setPriceList,  setBalancesForAccount, setNearBalanceForAccount, selectNearConfig} from '../../../../reducer/near';
@@ -23,6 +21,10 @@ import axios from 'axios'; */
 import AccountsCard from '../../../components/chains-account-card';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import useNear from '../../../../hooks/useNear';
+import TokenIcon from '../../../components/token-icon';
+import nearIcon from '../../../../img/near.svg';
+import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
+
  
 interface BalanceProps {
     decimal: number;
@@ -187,7 +189,7 @@ const NearCoreComponent = (props: any) => {
     }
 
     return (
-        <Grid component="div" className="px1 mt1">
+        <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
             {accounts.length ? (
                 <>
                     <AccountsCard 
@@ -198,67 +200,66 @@ const NearCoreComponent = (props: any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <Grid>
+                    <Grid style={{height: 'calc(100vh - 100px)'}}>
                         <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => setActiveTab(value)}>
                             <Tab label="Assets" value="assets"/>
                             <Tab label="NFTs" value="nfts"/>
                         </Tabs>
-                        {activeTab === 'assets' ? (
-                            <Grid className="assetsList mt2">
-                                <Card className="mb1">
-                                    <ListItem component={Link} to={`/total-assets/near`} disableGutters dense>
-                                        <ListItemAvatar>
-                                            <Avatar style={{background: chains.near.background, height: 32, width:32}}>
-                                                <img src={chains.near.logo} alt=""/>
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.available, 4)} NEAR`} secondary={`$${new Big(utils.format.formatNearAmount(balances.available)).times(nearSymbolConfig?.price || 1).toFixed(4)}`} />
-                                    </ListItem>
-                                </Card>
-                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map((item:any) => {
-                                    return (
-                                        <Card className="mt2" key={item.symbol}>
-                                            <ListItem component={Link} to={`/total-assets/${item.symbol}`} disableGutters dense>
-                                                <ListItemAvatar>
-                                                    <Avatar style={{height: 32, width:32}}>
-                                                        {item?.icon ? (
-                                                            <img src={item?.icon} alt=""/>
-                                                        ): (
-                                                            item.symbol.slice(0,1)
-                                                        )}
-                                                        
-                                                    </Avatar>
-                                                </ListItemAvatar>
-                                                <ListItemText 
-                                                    primary={`${new Big(item.balance).toFixed(4)} ${item.name || item.symbol}`} 
-                                                    secondary={<Typography variant='caption' component="span">{`$${new Big(item?.usdValue).toFixed(4)}`}</Typography>} 
-                                                />
-                                            </ListItem>
-                                        </Card> 
-                                    )
-                                }) :null}
-                            </Grid>
-                        ) : null}
-                        {activeTab === "nfts" ? (
-                            <Grid className="assetsList mt2">
-                                {Object.entries(nftBalances).length ? Object.entries(nftBalances).map(([contract, {tokens = [], ...restProps}]) => {
-                                    return (
-                                        <Grid container spacing={2}>
-                                            <Grid item sm={6} md={6} lg={6}>
-                                                {tokens.map(token => (
-                                                    <Grid key={token?.title}>
-                                                        <Box>
-                                                            <img src={`${restProps.base_uri}/${token.metadata.media}`} alt="" width="134px" height="134px" style={{borderRadius: 8}}/>
-                                                        </Box>
-                                                        <Typography variant="caption" color="primary" className="mt1" component='div'>{token.metadata.title}</Typography>
-                                                    </Grid>
-                                                ))}
+                        <AutoSizer>
+                            {({width, height}) => {
+                                return (
+                                    <div style={{overflowY: 'scroll', height: height, width: width}}>
+                                        {activeTab === 'assets' ? (
+                                            <Grid className="assetsList mt2">
+                                                <Card className="mb1">
+                                                    <ListItem component={Link} to={`/total-assets/near`} disableGutters dense>
+                                                        <ListItemAvatar>
+                                                            <TokenIcon icon={nearIcon} symbol='near' size={28} showSymbol={false}/>
+                                                        </ListItemAvatar>
+                                                        <ListItemText primary={`${utils.format.formatNearAmount(balances.available, 4)} NEAR`} secondary={`$${new Big(utils.format.formatNearAmount(balances.available)).times(nearSymbolConfig?.price || 1).toFixed(4)}`} />
+                                                    </ListItem>
+                                                </Card>
+                                                {ftBalances.length ? ftBalances.filter(item => Number(item.balance) > 0 && item.symbol !== 'near').map((item:any) => {
+                                                    return (
+                                                        <Card className="mt2" key={item.symbol}>
+                                                            <ListItem component={Link} to={`/total-assets/${item.symbol}`} disableGutters dense>
+                                                                <ListItemAvatar>
+                                                                    <TokenIcon icon={item?.icon} symbol={item.symbol} size={28} showSymbol={false}/>
+                                                                </ListItemAvatar>
+                                                                <ListItemText 
+                                                                    primary={`${new Big(item.balance).toFixed(4)} ${item.name || item.symbol}`} 
+                                                                    secondary={<Typography variant='caption' component="span">{`$${new Big(item?.usdValue).toFixed(4)}`}</Typography>} 
+                                                                />
+                                                            </ListItem>
+                                                        </Card> 
+                                                    )
+                                                }) :null}
                                             </Grid>
-                                        </Grid>
-                                    )
-                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="left">No Collections</Typography>)}
-                            </Grid>
-                        ) : null}
+                                        ) : null}
+                                        {activeTab === "nfts" ? (
+                                            <Grid className="assetsList mt2">
+                                                {Object.entries(nftBalances).length ? Object.entries(nftBalances).map(([contract, {tokens = [], ...restProps}]) => {
+                                                    return (
+                                                        <Grid container spacing={2}>
+                                                            <Grid item sm={6} md={6} lg={6}>
+                                                                {tokens.map(token => (
+                                                                    <Grid key={token?.title}>
+                                                                        <Box>
+                                                                            <img src={`${restProps.base_uri}/${token.metadata.media}`} alt="" width="134px" height="134px" style={{borderRadius: 8}}/>
+                                                                        </Box>
+                                                                        <Typography variant="caption" color="primary" className="mt1" component='div'>{token.metadata.title}</Typography>
+                                                                    </Grid>
+                                                                ))}
+                                                            </Grid>
+                                                        </Grid>
+                                                    )
+                                                }) : (<Typography variant="caption" color="primary" className="mt1" component='div' align="left">No Collections</Typography>)}
+                                            </Grid>
+                                        ) : null}
+                                    </div>
+                                )
+                            }}
+                        </AutoSizer>
                     </Grid>
                 </>
                 

@@ -78,10 +78,13 @@ class AppChains extends ApiPromise {
         let x = n.pow(decimals||18),y = new Big(number);
         return y.times(x).toString();
     }
-    async fetchBalances(account:string, symbol: string){
+    async fetchBalances(account:string, config: any){
+        const {symbol} = config;
+        const tokenMeta = config.tokens.find(item => item.symbol === symbol);
+        const {decimal = 18} = tokenMeta;
         return this.query.system.account(account).then((resp: any) => {
             const { free } = resp?.data;
-            const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, 18);
+            const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
             return balance
         }).catch((e) => {
             return ''
@@ -139,10 +142,12 @@ class AppChains extends ApiPromise {
     }
 
     async fetchFTBalanceByTokenId({params, config}){
-        const {tokenViewModules, symbol} = config
+        const {tokenViewModules, symbol, tokens} = config;
+        const tokenMeta = tokens.find(item => item.symbol === symbol);
+        const {decimal = 18} = tokenMeta;
         const refactorParams = tokenViewModules.balance.params === 'array' ? [params] : params;
         const result:any = await this.query[tokenViewModules.balance.module][tokenViewModules.balance.method](...refactorParams);
-        const balance = formatBalance(result?.free || result?.balance, { forceUnit: symbol, withSi: true, withUnit: false },18);
+        const balance = formatBalance(result?.free || result?.balance, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
         return balance;
     }
 

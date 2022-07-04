@@ -117,8 +117,7 @@ const config = {
         },
         symbol:"DISC",
         tokens:[
-            {"code":0, decimal: 18, symbol: "DISC", "name":"DISC", "logo":"https://discovol.co/web3/assets/favicon.ico"},
-
+            {"code":0, decimal: 14, symbol: "DISC", "name":"DISC", "logo":"https://discovol.co/web3/assets/favicon.ico"},
         ]
     },
     "myriad":{
