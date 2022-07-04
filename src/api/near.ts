@@ -56,9 +56,16 @@ class NearCore extends Near {
             return [];
         });
     }
+
     async forgetAccount(accountId){
         const {keyStore, networkId} = this.near.config;
         await keyStore.removeKey(networkId, accountId);
+    }
+    
+    async exportAccount(accountId){
+        const {keyStore, networkId} = this.near.config;
+        const result = await keyStore.getKey(networkId, accountId);
+        return `ed25519:${result.secretKey}`;
     }
 
     generateKeyPair(){
