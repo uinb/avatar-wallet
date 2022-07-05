@@ -7,7 +7,7 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
 import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
-import {selectAccountBlances, selectNearActiveAccountByNetworkId, setTempTransferInfomation} from '../../../../../reducer/near';
+import {selectAccountBlances, selectNearActiveAccountByNetworkId, selectSignerAccount, setTempTransferInfomation, selectAllAccounts} from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -30,6 +30,7 @@ import {useParams} from 'react-router-dom';
 import TokenIcon from '../../../../components/token-icon';
 import {isEmpty} from 'lodash';
 import {useSnackbar} from 'notistack';
+import MenuItem from '@material-ui/core/MenuItem';
 
 interface TransferProps{
     balance: string,
@@ -44,16 +45,18 @@ const Transfer = () => {
     const {symbol} = useParams() as {symbol : string};
     const networkId = useAppSelector(selectNetwork)
     const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId));
-    const [state, setInputState] = useState({contractId: '', symbol: symbol, receiver:'', amount: '', sender: activeAccount})
+    const [formState, setFormState] = useState({contractId: '', symbol: symbol, receiver:'', amount: '', sender: activeAccount})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     const dispatch = useAppDispatch();
     const [searchWord, setSearchWord] = useState('');
     const [sendError, setSendError] = useState('');
     const near = useNear(networkId)
     const [loading, setLoading] = useState(false);
+    const [selectAccountOpen, setSelectAccountOpen] = useState(false);
+    const [accountSide, setAccountSide] = useState('')
     const {enqueueSnackbar} = useSnackbar()
     const handleInputChange = (e) => {
-        setInputState(state => ({
+        setFormState(state => ({
             ...state,
             [e.target.name]: e.target.value
         }))
@@ -63,22 +66,22 @@ const Transfer = () => {
     const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
         setLoading(true);
-        dispatch(setTempTransferInfomation(state))
-        if(state.contractId === 'near'){
-            const result = await near.transferNear({...state, amount: utils.format.parseNearAmount(state.amount)});
+        dispatch(setTempTransferInfomation(formState))
+        if(formState.contractId === 'near'){
+            const result = await near.transferNear({...formState, amount: utils.format.parseNearAmount(formState.amount)});
             if(result.status){
                 navigator('/transfer-success');
-                enqueueSnackbar('send success', {variant:'success'});
+                enqueueSnackbar('send success', {variant:'success'})
                 setLoading(false);
             }else{
                 setSendError(result.msg);
                 setLoading(false);
             }
         }else{
-            const result = await near.ftTransfer({...state, amount: parseTokenAmount(state.amount, 18)});
+            const result = await near.ftTransfer({...formState, amount: parseTokenAmount(formState.amount, 18)});
             if(result.status){
                 navigator('/transfer-success');
-                enqueueSnackbar('send success', {variant:'success'});
+                enqueueSnackbar('send success', {variant:'success'})
                 setLoading(false);
             }else{
                 setSendError(result.msg);
@@ -96,15 +99,15 @@ const Transfer = () => {
         if(!balances.length){
             return {} as TransferProps;
         }
-        return state.symbol ? balances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) || {} as any : filterdTokens[0];
+        return formState.symbol ? balances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === formState.symbol.toLowerCase()) || {} as any : filterdTokens[0];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[balances, state.symbol])
+    },[balances, formState.symbol])
 
     useEffect(() => {
         if(isEmpty(selectToken)){
             return  
         }
-        setInputState(state => ({
+        setFormState(state => ({
             ...state,
             contractId: selectToken.contractId, 
             symbol: selectToken.symbol
@@ -112,7 +115,7 @@ const Transfer = () => {
     },[selectToken])
 
     const handleChangeToken = (item :any) => {
-        setInputState(state => ({
+        setFormState(state => ({
             ...state, 
             contractId: item.contractId,
             symbol: item.symbol,
@@ -128,18 +131,53 @@ const Transfer = () => {
 
 
     const handleMax = () => {
-        setInputState({
+        setFormState(state => ({
             ...state, 
             amount: selectToken.balance
-        })
+        }))
     }
 
     const sendDisabled = useMemo(() => {
         if(!Object.keys(selectToken).length){
             return true;
         }
-        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.balance)) || loading
-    },[state, selectToken, loading])
+        return Object.entries(formState).some(([key, value]) => !value) || Boolean(Number(formState.amount) > Number(selectToken?.balance)) || loading
+    },[formState, selectToken, loading])
+
+    const handleSetAccountSide = (side: string) => {
+        setAccountSide(side);
+        setSelectAccountOpen(true)
+    }
+
+    const handleChangeAccount = (item:string) => {
+        setFormState(state => ({
+            ...state, 
+            sender: accountSide === 'from' ? item : state.sender,
+            reciever: accountSide === 'target' ? item : state.receiver
+        }))
+        setSelectAccountOpen(false)
+    }
+
+    const signerAccounts = useAppSelector(selectSignerAccount);
+    const allAccounts = useAppSelector(selectAllAccounts);
+
+    const accounts = useMemo(() => {
+        if(!accountSide){
+            return [];
+        }
+        if(accountSide === 'from') {
+            return signerAccounts;
+        }else{
+            return allAccounts;
+        }
+    }, [accountSide, signerAccounts, allAccounts])
+
+    console.log(accounts)
+
+    const handleAccountSelectClose = () => {
+        setAccountSide('');
+        setSelectAccountOpen(false)
+    }
     return (
         <Grid>
             <HeaderWithBack back="/dashboard"/>
@@ -150,7 +188,7 @@ const Transfer = () => {
                         <Input 
                             fullWidth className="mt2" 
                             name="symbol"
-                            value={state.symbol.toUpperCase()}
+                            value={formState.symbol.toUpperCase()}
                             onChange={handleInputChange}
                             startAdornment={
                                 <Grid style={{marginRight: 8}}>
@@ -165,8 +203,13 @@ const Transfer = () => {
                         <Input 
                             name="sender"
                             fullWidth className="mt2" 
-                            value={state.sender}
+                            value={formState.sender}
                             disabled
+                            endAdornment={
+                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('from')}>
+                                    change
+                                </Button>
+                            }
                         />
                     </Box>
                     <Box className="mt4">
@@ -174,19 +217,24 @@ const Transfer = () => {
                         <Input 
                             name="receiver"
                             fullWidth className="mt2" 
-                            value={state.receiver}
+                            value={formState.receiver}
                             placeholder="target address"
                             onChange={handleInputChange}
-                            />
+                            endAdornment={
+                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('target')}>
+                                    change
+                                </Button>
+                            }
+                        />
                     </Box>
                     <Box className="mt4">
-                        <InputLabel className="flex justify-between items-center"><span>Amount</span> <span>available: <Typography color="textPrimary" component="span" variant='body2'>{Number(selectToken?.balance || 0).toFixed(4)} {state.symbol.toUpperCase()}</Typography></span></InputLabel>
+                        <InputLabel className="flex justify-between items-center"><span>Amount</span> <span>available: <Typography color="textPrimary" component="span" variant='body2'>{Number(selectToken?.balance || 0).toFixed(4)} {formState.symbol.toUpperCase()}</Typography></span></InputLabel>
                         <Input 
                             name="amount"
                             fullWidth className="mt2" 
                             onChange={handleInputChange}
                             placeholder="Amount"
-                            value={state.amount}
+                            value={formState.amount}
                             endAdornment={<Button color="primary" variant='text' size="small" onClick={handleMax}  style={{minWidth: 'auto'}}>All</Button>}
                         />
                     </Box>
@@ -237,6 +285,16 @@ const Transfer = () => {
                            )) : <Typography color="primary" align="center">No Result</Typography>
                         }
                     </Grid>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={selectAccountOpen} onClose={handleAccountSelectClose}>
+                <DialogTitle>
+                    Select Account
+                </DialogTitle>
+                <DialogContent>
+                    {accounts?.map((item:any, index:number) => (
+                        <MenuItem key={index} onClick={() => handleChangeAccount(item)}>{item}</MenuItem> 
+                    ))}
                 </DialogContent>
             </Dialog>
         </Grid>
