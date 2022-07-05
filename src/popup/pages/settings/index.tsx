@@ -1,6 +1,6 @@
 import './index.scss';
 import Grid from '@material-ui/core/Grid';
-import IconLanguage from '../../../img/settings/language.svg';
+//import IconLanguage from '../../../img/settings/language.svg';
 import IconLock from '../../../img/settings/lock.svg';
 import { HeaderWithBack } from '../../components/header';
 import Content from '../../components/layout-content';
@@ -32,9 +32,9 @@ const Settings = () => {
   const pwd = useAppSelector(selectPwd);
   const navigate = useNavigate();
 
-  const handleLanguageOpen = () => {
+ /*  const handleLanguageOpen = () => {
     setLangugeOpen(true);
-  }
+  } */
   const handleLanguageClose = () => {
     setLangugeOpen(false);
   }
@@ -64,10 +64,10 @@ const Settings = () => {
     <Grid>
       <HeaderWithBack back="/dashboard" />
       <Content>
-        <div className='set-options' onClick={handleLanguageOpen}>
+        {/* <div className='set-options' onClick={handleLanguageOpen}>
           <img src={IconLanguage} height="20" alt="" />
           <span>Language</span>
-        </div>
+        </div> */}
         <div className='set-options mt-1-5' onClick={handlePwdOpen}>
           <img src={IconLock} height="22" alt="" />
           <span>Password</span>
