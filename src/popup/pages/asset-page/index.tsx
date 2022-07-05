@@ -47,7 +47,7 @@ const TotalAssets = (props:any)=>{
       }
       return networkConfig.tokens.filter((item:any)=>{
         return item.symbol === symbol.toUpperCase();
-      });
+      })[0];
     }
   },[networkConfig, balancedTokens, chain, symbol]);
   const fetchAppChainAccountBalance = useCallback(async () => {
@@ -56,7 +56,7 @@ const TotalAssets = (props:any)=>{
     }
     let balance = '';
     if(selectToken.code === 0){
-      balance = await api.fetchBalances(activeAccount, symbol);
+      balance = await api.fetchBalances(activeAccount, networkConfig);
     }else{
       balance = await api.fetchFTBalanceByTokenId({params: [selectToken.code, activeAccount], config:networkConfig})
     }
