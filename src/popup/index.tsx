@@ -17,6 +17,7 @@ import TransferSuccess from './pages/dashboard/near/components/transfer-success'
 import AddToken  from './pages/dashboard/near/add-token'
 import Bridge from './pages/bridge'
 import TotalAssets from './pages/asset-page';
+import Deposit from './pages/deposit';
 
 
 const Popup = () => {
@@ -40,6 +41,7 @@ const Popup = () => {
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                     <Route path="/bridge/:from/:to" element={<Bridge />} />
                     <Route path="/total-assets/:symbol" element={<TotalAssets />} />
+                    <Route path="/deposit/:chain/:symbol" element={<Deposit />} />
                 </Routes>
             </HashRouter>
         </Grid>
