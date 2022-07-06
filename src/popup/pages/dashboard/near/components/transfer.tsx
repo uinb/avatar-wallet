@@ -21,13 +21,15 @@ import Card from '@material-ui/core/Card';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItem from '@material-ui/core/ListItem';
-import { Typography } from '@material-ui/core';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from '@material-ui/core/Typography';
 import {TokenProps} from '../../../../../constant/near-types';
 import { selectNetwork } from '../../../../../reducer/network';
 import useNear from '../../../../../hooks/useNear';
 import {useParams} from 'react-router-dom';
 import TokenIcon from '../../../../components/token-icon';
 import {isEmpty} from 'lodash';
+import {useSnackbar} from 'notistack';
 
 interface TransferProps{
     balance: string,
@@ -48,6 +50,8 @@ const Transfer = () => {
     const [searchWord, setSearchWord] = useState('');
     const [sendError, setSendError] = useState('');
     const near = useNear(networkId)
+    const [loading, setLoading] = useState(false);
+    const {enqueueSnackbar} = useSnackbar()
     const handleInputChange = (e) => {
         setInputState(state => ({
             ...state,
@@ -58,20 +62,27 @@ const Transfer = () => {
     const navigator = useNavigate();
     const balances = useAppSelector(selectAccountBlances(networkId));
     const handleSend = async () => {
+        setLoading(true);
         dispatch(setTempTransferInfomation(state))
         if(state.contractId === 'near'){
             const result = await near.transferNear({...state, amount: utils.format.parseNearAmount(state.amount)});
             if(result.status){
                 navigator('/transfer-success');
+                enqueueSnackbar('send success', {variant:'success'});
+                setLoading(false);
             }else{
                 setSendError(result.msg);
+                setLoading(false);
             }
         }else{
             const result = await near.ftTransfer({...state, amount: parseTokenAmount(state.amount, 18)});
             if(result.status){
                 navigator('/transfer-success');
+                enqueueSnackbar('send success', {variant:'success'});
+                setLoading(false);
             }else{
                 setSendError(result.msg);
+                setLoading(false);
             }
         }
     }
@@ -127,8 +138,8 @@ const Transfer = () => {
         if(!Object.keys(selectToken).length){
             return true;
         }
-        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.balance))
-    },[state, selectToken])
+        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.balance)) || loading
+    },[state, selectToken, loading])
     return (
         <Grid>
             <HeaderWithBack back="/dashboard"/>
@@ -180,7 +191,15 @@ const Transfer = () => {
                         />
                     </Box>
                 </Grid>
-                <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send</Button>
+                <Button 
+                    color="primary" 
+                    variant="contained" 
+                    size="large" 
+                    fullWidth 
+                    className="mt4" 
+                    onClick={handleSend} 
+                    disabled={sendDisabled}
+                >Send {loading ? <CircularProgress size={20} color="inherit" className="ml1"/> : null}</Button>
                 {sendError ? <Typography color="error" variant='body2' className="mt2">{sendError}</Typography> : null}
             </Content>
             <Dialog open={selectTokenOpen} onClose={() => setSelectTokenOpen(false)}>
