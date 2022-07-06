@@ -27,6 +27,17 @@ export function fromDecimals(numStr, decimals = 18) {
     return new Big(numStr).div(Math.pow(10, decimals)).toNumber();
   }
   
-  export function toDecimals(num, decimals = 18) {
+export function toDecimals(num, decimals = 18) {
     return new Big(num).times(new Big(10).pow(decimals)).toString(10);
-  }
+}
+
+export const toUsd = (balance:string|number, price: string|number = '', fixed: number = 4) => {
+    if(!price){
+        return  '--';
+    }
+    if(Number(balance) === 0 || Number(price) === 0){
+        return 0;
+    }else{
+        return new Big(balance).times(price).toFixed(fixed)
+    }
+}

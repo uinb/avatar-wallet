@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect} from 'react';
+import React, {useState, useMemo, useEffect, useCallback} from 'react';
 import Grid from "@material-ui/core/Grid";
 import Box from '@material-ui/core/Box';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -7,7 +7,7 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
 import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
-import {selectAccountBlances, selectNearActiveAccountByNetworkId, selectSignerAccount, setTempTransferInfomation, selectAllAccounts} from '../../../../../reducer/near';
+import {selectAccountBlances, selectNearActiveAccountByNetworkId, selectSignerAccount, setTempTransferInfomation, selectAllAccounts, setNearBalanceForAccount} from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -55,6 +55,21 @@ const Transfer = () => {
     const [selectAccountOpen, setSelectAccountOpen] = useState(false);
     const [accountSide, setAccountSide] = useState('')
     const {enqueueSnackbar} = useSnackbar()
+
+    const fetchBalances = useCallback(async (accountId:string) => {
+        if(!near){
+            return;
+        }
+        const balances = await near.fetchAccountBalance(accountId);
+        dispatch(setNearBalanceForAccount({account: accountId, balance: balances}))
+    },[near, dispatch])
+    
+    useEffect(() => {
+        if(!formState.sender){
+            return ;
+        }
+        fetchBalances(formState.sender)
+    },[formState.sender, fetchBalances])
     const handleInputChange = (e) => {
         setFormState(state => ({
             ...state,
