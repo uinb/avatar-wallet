@@ -18,9 +18,6 @@ import {selectConfig} from '../../../../utils';
 import {Link} from 'react-router-dom';
 import TokenIcon from '../../../components/token-icon';
 import { saveAs } from 'file-saver';
-import { toUsd } from '../../../../utils';
-import Typography from '@material-ui/core/Typography';
-import {grey} from '@material-ui/core/colors';
 
 const AppChainWrapper = (props:any) => {
     const { api } = props;
@@ -96,7 +93,6 @@ const AppChainWrapper = (props:any) => {
         }
     }
 
-
     const address = useMemo(() => {
         const accounts = keyring.getPairs()?.map(item => item.address);
         if(!activeAccount && accounts.length){
@@ -148,22 +144,7 @@ const AppChainWrapper = (props:any) => {
                                         size={40}
                                     />
                                 </ListItemAvatar> 
-                                <ListItemText 
-                                    className='ml1'
-                                    primary={
-                                        <Typography variant="body1">
-                                            {api ? Number(balance || 0).toFixed(4) : '--' }
-                                            <Typography variant="caption" color="textSecondary" component="span" className="ml1">
-                                                {appChain.appchain_metadata?.fungible_token_metadata?.symbol}
-                                            </Typography>
-                                        </Typography>
-                                    } 
-                                    secondary={
-                                        <Typography variant='caption' component="span" style={{color: grey[500]}}>
-                                            {toUsd(balance, 0)} USD
-                                        </Typography>
-                                    } 
-                                />
+                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={`${api ? balance : '--'} $`}/>
                             </ListItem>
                         </Card> 
                     </Grid>
@@ -174,22 +155,7 @@ const AppChainWrapper = (props:any) => {
                                     <ListItemAvatar>
                                         <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
                                     </ListItemAvatar>
-                                    <ListItemText 
-                                        className='ml1'
-                                        primary={
-                                            <Typography variant="body1">
-                                                {tokenList[index]?.balance ? tokenList[index]?.balance : '--'}
-                                                <Typography variant="caption" color="textSecondary" component="span" className="ml1">
-                                                    {tokens?.symbol}
-                                                </Typography>
-                                            </Typography>
-                                        } 
-                                        secondary={
-                                            <Typography variant='caption' component="span" style={{color: grey[500]}}>
-                                                {toUsd(tokenList[index]?.balance, 0)} USD
-                                            </Typography>
-                                        } 
-                                    />
+                                    <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} ${tokens?.symbol}`} secondary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} $`}/>
                                 </ListItem>
                             </Card> 
                         ))

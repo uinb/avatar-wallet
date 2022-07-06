@@ -1,12 +1,9 @@
 import {useState, useEffect, useCallback, useMemo} from 'react';
 import Grid from '@material-ui/core/Grid';
-import {Link} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import {
@@ -15,19 +12,12 @@ import {
     selectNearActiveAccountByNetworkId, 
     setActiveAccount, 
     setPriceList,  
-    setBalancesForAccount, 
-    selectBalanesByAccount
 } from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import {selectNetwork} from '../../../../reducer/network';
-/* import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import SendIcon from '@material-ui/icons/Send';
-import axios from 'axios'; */
 import AccountsCard from '../../../components/chains-account-card';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import useNear from '../../../../hooks/useNear';
-import TokenIcon from '../../../components/token-icon';
 import nearIcon from '../../../../img/near.svg';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Dialog from '@material-ui/core/Dialog';
@@ -37,8 +27,7 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { useSnackbar } from 'notistack';
 import { darken, makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import {grey} from '@material-ui/core/colors';
-import {toUsd} from '../../../../utils';
+import TokenItem from '../../../components/token-item'
 
  
 interface BalanceProps {
@@ -72,10 +61,22 @@ const NearCoreComponent = (props: any) => {
     const near = useNear(networkId);
     const [accounts, setAccounts] = useState([]);
     const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId))
-    const balances = useAppSelector(selectBalanesByAccount(activeAccount));
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const classes = useStyles();
+    const [balances, setBalances] = useState([]);
+    const navigator = useNavigate();
+    const fetchAccountBalances = useCallback(async () => {
+        if(!near || !activeAccount){
+            return ;
+        }
+        const balances = await near.fetchAccountBalance(activeAccount);
+        setBalances(balances) 
+    },[activeAccount, near])
+
+    useEffect(() => {
+        setBalances([]);
+    },[activeAccount])
     useEffect(() => {
         if(!near){
             return ;
@@ -112,21 +113,12 @@ const NearCoreComponent = (props: any) => {
         }
     },[activeAccount, dispatch, near])
 
-
-    const fetchAccountBalances = useCallback(async (accountId:string) => {
-        if(!near || !accountId){
-            return ;
-        }
-        const balances = await near.fetchAccountBalance(accountId);
-        dispatch(setBalancesForAccount({account: activeAccount, balances}))
-    },[activeAccount, dispatch, near])
-    
-    const fetchNfts = useCallback(async (accountId:string) => {
+    const fetchNfts = useCallback(async () => {
         if(!activeAccount || !near){
             return ;
         }
         try{
-            const nftMetadata = await near.fetchNFTBalance(accountId);
+            const nftMetadata = await near.fetchNFTBalance(activeAccount);
             setNftBalances(nftMetadata)
         }catch(e){
             console.log(e)
@@ -138,46 +130,14 @@ const NearCoreComponent = (props: any) => {
     },[fetchFTPrice])
 
     useEffect(() =>{
-        if(!activeAccount){
-            return ;
-        }
-        fetchAccountBalances(activeAccount)
-        fetchNfts(activeAccount)
-    },[fetchNfts, activeAccount, fetchAccountBalances])
+        fetchAccountBalances()
+        fetchNfts()
+    },[fetchNfts, fetchAccountBalances])
 
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account, networkId}))
     }
 
-    /* useEffect(() => {
-        if(!signerAccounts.length){
-            return;
-        }
-        (async () => {
-            const {keyStore} = near.config;
-            const tempAddress = 'wulin8.near';
-            const creator = await near.account('ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
-            const keyPair = await keyStore.getKey('mainnet', 'ac17492d17dfe7b476a4f573f1d48df9178a9f455c441c9ecacfff4e90be913b');
-            const setKeyPair = KeyPair.fromString(keyPair.secretKey);
-            console.log(setKeyPair)
-            //await keyStore.setKey('mainnet', tempAddress, setKeyPair);
-            
-            await creator.functionCall({
-                contractId: "near",
-                methodName: "create_account",
-                args: {
-                    new_account_id: tempAddress,
-                    new_public_key: keyPair.publicKey.toString(),
-                },
-                gas: "300000000000000",
-                attachedDeposit: utils.format.parseNearAmount('0'),
-            });
-            const targetAccount = await near.account(tempAddress);
-            const addKeyResult = await targetAccount.addKey(keyPair.publicKey.toString());
-            console.log(addKeyResult);
-
-        })()
-    },[signerAccounts]) */
     const operations = [
         {
             label:'Create Account',
@@ -233,7 +193,7 @@ const NearCoreComponent = (props: any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <Grid style={{height: 'calc(100vh - 100px)'}}>
+                    <Grid style={{height: 'calc(100vh - 100px)',zIndex: 0}}>
                         <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => setActiveTab(value)}>
                             <Tab label="Assets" value="assets"/>
                             <Tab label="NFTs" value="nfts"/>
@@ -244,54 +204,18 @@ const NearCoreComponent = (props: any) => {
                                     <div style={{overflowY: 'scroll', height: height, width: width}}>
                                         {activeTab === 'assets' ? (
                                             <Grid className="assetsList mt2">
-                                                <Card className="mb1">
-                                                    <ListItem component={Link} to={`/total-assets/near`} disableGutters dense>
-                                                        <ListItemAvatar>
-                                                            <TokenIcon icon={nearIcon} symbol='near' size={40} showSymbol={false}/>
-                                                        </ListItemAvatar>
-                                                        <ListItemText 
-                                                            className="ml1"
-                                                            primary={
-                                                                <Typography variant="body1">
-                                                                    {Number(nearBalance.balance || 0).toFixed(4)}
-                                                                    <Typography variant="caption" color="textSecondary" component="span" className="ml1">
-                                                                        NEAR
-                                                                    </Typography>
-                                                                </Typography>
-                                                            } 
-                                                            secondary={
-                                                                <Typography variant="caption" style={{color: grey[500]}}>
-                                                                    {`${toUsd(nearBalance.balance, nearBalance.price)} USD`}
-                                                                </Typography>
-                                                            } 
-                                                        />
-                                                    </ListItem>
-                                                </Card>
+                                                <TokenItem 
+                                                    token={{icon: nearIcon, symbol: 'NEAR', balance:nearBalance.balance, price: nearBalance.price}}
+                                                    handleItemClick={() => navigator(`/total-assets/near`, {replace: true})}
+                                                />
                                                 {balances.length ? balances.filter(item => Number(item.balance) > 0 && item.symbol.toLowerCase() !== 'near').map((item:any) => {
                                                     return (
-                                                        <Card className="mt2" key={item.symbol}>
-                                                            <ListItem component={Link} to={`/total-assets/${item.symbol}`} disableGutters dense>
-                                                                <ListItemAvatar>
-                                                                    <TokenIcon icon={item?.icon} symbol={item.symbol} size={40} showSymbol={false}/>
-                                                                </ListItemAvatar>
-                                                                <ListItemText 
-                                                                    className="ml1"
-                                                                    primary={
-                                                                        <Typography variant="body1">
-                                                                            {Number(item.balance || 0).toFixed(4)}
-                                                                            <Typography variant="caption" color="textSecondary" component="span" className="ml1">
-                                                                                {item.symbol || item.name}
-                                                                            </Typography>
-                                                                        </Typography>
-                                                                    } 
-                                                                    secondary={
-                                                                        <Typography variant='caption' component="span" style={{color: grey[500]}}>
-                                                                            {item?.price ? `${toUsd(item.balance, item?.price)} USD` : "--"}
-                                                                        </Typography>
-                                                                    } 
-                                                                />
-                                                            </ListItem>
-                                                        </Card> 
+                                                        <TokenItem
+                                                            token={item}
+                                                            key={item.symbol}
+                                                            className="mt2"
+                                                            handleItemClick={() => navigator(`/total-assets/${item.symbol}`, {replace: true})}
+                                                        />
                                                     )
                                                 }) :null}
                                             </Grid>

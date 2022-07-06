@@ -3,7 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import {useTheme} from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
+import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import MoreVert from '@material-ui/icons/MoreVert';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
@@ -69,30 +69,46 @@ const ChainAccountCard = (props:any) => {
                     >
                         <Typography variant="caption" className="mt2">{formatLongAddress(activeAccount)} <FileCopy color="inherit" fontSize="inherit"/></Typography>
                     </CopyToClipboard>
-                    <Menu
+                    <Popover
                         id="account-menu"
                         anchorEl={anchorEl}
                         keepMounted
                         open={Boolean(anchorEl)}
                         onClose={() => setAnchorEl(null)}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                        }}
                     >
                         <MenuContent 
                             items={accounts.map(item => ({label: formatLongAddress(item), value: item}))}
                             handleItemClick={handleAccountClick}
                         />
-                    </Menu>
+                    </Popover>
                 </Box>
                 {operations.length ? (
                     <MoreVert onClick={handleAccountOperate}/>
                 ) : null}
-                <Menu
+                <Popover
                     id="operate-menu"
                     anchorEl={operationAnchorEl}
                     open={Boolean(operationAnchorEl)}
                     onClose={() => {setOperationAnchorEl(null)}}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }}
                 >
                     <MenuContent items={operations} handleItemClick={handleOperateItemClick}/>
-                </Menu>
+                </Popover>
             </Grid>
         </Paper>
     )

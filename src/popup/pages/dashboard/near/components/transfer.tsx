@@ -7,9 +7,14 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
 import { useAppSelector, useAppDispatch } from '../../../../../app/hooks';
-import {selectAccountBlances, selectNearActiveAccountByNetworkId, selectSignerAccount, setTempTransferInfomation, selectAllAccounts, setNearBalanceForAccount} from '../../../../../reducer/near';
+import {
+    selectNearActiveAccountByNetworkId, 
+    selectSignerAccount, 
+    setTempTransferInfomation, 
+    selectAllAccounts, 
+    setNearBalanceForAccount,
+} from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
-import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import {utils} from 'near-api-js';
 import {parseTokenAmount} from '../../../../../utils';
@@ -17,10 +22,6 @@ import { useNavigate } from 'react-router-dom';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import SearchIcon from '@material-ui/icons/Search';
-import Card from '@material-ui/core/Card';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItem from '@material-ui/core/ListItem';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import {TokenProps} from '../../../../../constant/near-types';
@@ -31,13 +32,18 @@ import TokenIcon from '../../../../components/token-icon';
 import {isEmpty} from 'lodash';
 import {useSnackbar} from 'notistack';
 import MenuItem from '@material-ui/core/MenuItem';
+import TokenItem from '../../../../components/token-item';
+import nearIcon from '../../../../../img/near.svg';
 
 interface TransferProps{
     balance: string,
     symbol: string,
     icon: string,
     contractId: string,
+    price?:string,
     usdValue?:string,
+    decimals: number,
+    decimal: number
 }
 
 
@@ -45,7 +51,7 @@ const Transfer = () => {
     const {symbol} = useParams() as {symbol : string};
     const networkId = useAppSelector(selectNetwork)
     const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId));
-    const [formState, setFormState] = useState({contractId: '', symbol: symbol, receiver:'', amount: '', sender: activeAccount})
+    const [formState, setFormState] = useState({contractId: '', symbol: symbol, target:'', amount: '', sender: activeAccount})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     const dispatch = useAppDispatch();
     const [searchWord, setSearchWord] = useState('');
@@ -55,6 +61,19 @@ const Transfer = () => {
     const [selectAccountOpen, setSelectAccountOpen] = useState(false);
     const [accountSide, setAccountSide] = useState('')
     const {enqueueSnackbar} = useSnackbar()
+    const [accountBalances, setAccountBalances] = useState([])
+    const fetchAccountBalances = useCallback(async () => {
+        if(!near || !formState.sender){
+            return ;
+        }
+        const balances = await near.fetchAccountBalance(formState.sender);
+        setAccountBalances(balances) 
+    },[formState.sender, near])
+
+    useEffect(() => {
+        fetchAccountBalances()
+    }, [fetchAccountBalances])
+
 
     const fetchBalances = useCallback(async (accountId:string) => {
         if(!near){
@@ -78,11 +97,31 @@ const Transfer = () => {
         setSendError('');
     }
     const navigator = useNavigate();
-    const balances = useAppSelector(selectAccountBlances(networkId));
+
+    const filterdTokens = useMemo(() => {
+        if(!accountBalances.length){
+            return [] as Array<TransferProps>;
+        }
+        return accountBalances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord))
+    }, [accountBalances, searchWord]);
+    const selectToken = useMemo(() => {
+        if(!accountBalances.length){
+            return {} as TransferProps;
+        }
+        return formState.symbol ? accountBalances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === formState.symbol.toLowerCase()) || {} as any : filterdTokens[0];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[accountBalances, formState.symbol, formState.sender])
+
+    const isNativeToken = useMemo(() => {
+        if(isEmpty(selectToken)){
+            return false
+        }
+        return selectToken.symbol.toLowerCase() === 'near'
+    },[selectToken])
     const handleSend = async () => {
         setLoading(true);
         dispatch(setTempTransferInfomation(formState))
-        if(formState.contractId === 'near'){
+        if(isNativeToken){
             const result = await near.transferNear({...formState, amount: utils.format.parseNearAmount(formState.amount)});
             if(result.status){
                 navigator('/transfer-success');
@@ -93,7 +132,7 @@ const Transfer = () => {
                 setLoading(false);
             }
         }else{
-            const result = await near.ftTransfer({...formState, amount: parseTokenAmount(formState.amount, 18)});
+            const result = await near.ftTransfer({...formState, amount: parseTokenAmount(formState.amount, selectToken.decimal)});
             if(result.status){
                 navigator('/transfer-success');
                 enqueueSnackbar('send success', {variant:'success'})
@@ -104,19 +143,6 @@ const Transfer = () => {
             }
         }
     }
-    const filterdTokens = useMemo(() => {
-        if(!balances.length){
-            return [] as Array<TransferProps>;
-        }
-        return balances.filter((item: TokenProps) => Number(item.balance) > 0 && item.symbol.toLowerCase().includes(searchWord))
-    }, [balances, searchWord]);
-    const selectToken = useMemo(() => {
-        if(!balances.length){
-            return {} as TransferProps;
-        }
-        return formState.symbol ? balances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === formState.symbol.toLowerCase()) || {} as any : filterdTokens[0];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[balances, formState.symbol])
 
     useEffect(() => {
         if(isEmpty(selectToken)){
@@ -165,10 +191,13 @@ const Transfer = () => {
     }
 
     const handleChangeAccount = (item:string) => {
+        if(accountSide === 'from') {
+            setAccountBalances([]);
+        }
         setFormState(state => ({
             ...state, 
             sender: accountSide === 'from' ? item : state.sender,
-            reciever: accountSide === 'target' ? item : state.receiver
+            target: accountSide === 'target' ? item : state.target
         }))
         setSelectAccountOpen(false)
     }
@@ -186,8 +215,6 @@ const Transfer = () => {
             return allAccounts;
         }
     }, [accountSide, signerAccounts, allAccounts])
-
-    console.log(accounts)
 
     const handleAccountSelectClose = () => {
         setAccountSide('');
@@ -207,7 +234,7 @@ const Transfer = () => {
                             onChange={handleInputChange}
                             startAdornment={
                                 <Grid style={{marginRight: 8}}>
-                                    <TokenIcon icon={selectToken?.icon} size={28} symbol={selectToken.symbol} showSymbol={false}/>
+                                    <TokenIcon icon={selectToken?.symbol?.toLowerCase() === 'near' ? nearIcon : selectToken?.icon} size={28} symbol={selectToken.symbol} showSymbol={false}/>
                                 </Grid>
                             }
                             endAdornment={<ArrowDropDown color="action" fontSize="small"/>}
@@ -230,9 +257,9 @@ const Transfer = () => {
                     <Box className="mt4">
                         <InputLabel className="tl">Send to</InputLabel>
                         <Input 
-                            name="receiver"
+                            name="target"
                             fullWidth className="mt2" 
-                            value={formState.receiver}
+                            value={formState.target}
                             placeholder="target address"
                             onChange={handleInputChange}
                             endAdornment={
@@ -282,21 +309,12 @@ const Transfer = () => {
                     <Grid className="mt2" style={{maxHeight: '300px', overflow: 'scroll', paddingBottom: 16}}>
                         {
                            filterdTokens.length ? filterdTokens.map((item, index) => (
-                            <Card className="mt2" key={item.symbol} onClick={() => handleChangeToken(item)}>
-                                <ListItem disableGutters dense>
-                                    <ListItemAvatar>
-                                        <Avatar style={{height: 32, width:32}}>
-                                            {item?.icon ? (
-                                                <img src={item?.icon} alt="" width="100%"/>
-                                            ): (
-                                                item.symbol.slice(0,1)
-                                            )}
-                                            
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${Number(item?.balance || 0).toFixed(4)} ${item?.symbol}`} secondary={`$${Number(item?.usdValue || 0).toFixed(4)}`} />
-                                </ListItem>
-                            </Card> 
+                               <TokenItem 
+                                className="mt2" 
+                                key={item.symbol}
+                                token={{...item, icon: item.symbol.toLowerCase() === 'near' ? nearIcon : item.icon}}
+                                handleItemClick={handleChangeToken}
+                               />
                            )) : <Typography color="primary" align="center">No Result</Typography>
                         }
                     </Grid>

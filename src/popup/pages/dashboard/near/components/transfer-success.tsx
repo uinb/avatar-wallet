@@ -34,11 +34,11 @@ const TransferSuccess = () => {
                         </Grid>
                         <Grid container justifyContent='space-between' className="mt2">
                              <Typography variant='body2'>To</Typography>
-                            <Typography variant='body2'>{formatLongAddress(transferInfomation?.receiver)}</Typography>
+                            <Typography variant='body2'>{formatLongAddress(transferInfomation?.target)}</Typography>
                         </Grid>
                         <Grid container justifyContent='space-between' className="mt2">
                              <Typography variant='body2'>Amount</Typography>
-                            <Typography variant='body2'>{transferInfomation?.amount}{transferInfomation?.symbol.toUpperCase()}</Typography>
+                            <Typography variant='body2'>{transferInfomation?.amount}&nbsp;{transferInfomation?.symbol}</Typography>
                         </Grid>
                     </Paper>
                     <Button color="primary" variant='contained' size="large" className="mt4" fullWidth  onClick={handleBack}>Go Back</Button>

@@ -57,7 +57,7 @@ export const near = createSlice({
       const refactorBalances = balances.reduce((all, current) => {
         return {
           ...all,
-          [current.symbol]: {...current, icon: current.symbol === 'wNEAR' ? chains.near.icon : current.icon}
+          [current.symbol]: {...current, icon: ['wNEAR', 'near'].includes(current.symbol.toLowerCase()) ? chains.near.icon : current.icon}
         }
       }, {})
       if(!state.accountBalances[account]){
