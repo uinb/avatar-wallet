@@ -79,7 +79,7 @@ const TotalAssets = (props:any)=>{
     }
   }
   const handelReceive= ()=>{
-    navigate("/")
+    navigate(`/deposit/${chain}/${symbol}`)
   }
 
   return (
