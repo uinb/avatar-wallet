@@ -1,5 +1,6 @@
 import { createSlice, createSelector} from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
+import moment from 'moment'
 
 interface AuthProps {
   loading: boolean,
@@ -20,16 +21,20 @@ export const auth = createSlice({
   reducers: {
     setUserPwd(state, {payload = ''}){
       state.password  = payload;
-      state.expiredTime = Date.now();
+      state.expiredTime = moment().add(1, 'Q').valueOf();
     },
+    updateExpiredTime(state){
+      state.expiredTime = moment().add(1, 'Q').valueOf();
+    }
   }, 
   extraReducers: (builder) => {
     
   }
 })
 
-export const {setUserPwd} = auth.actions;
+export const {setUserPwd, updateExpiredTime} = auth.actions;
 const selectAuthState =  (state: RootState)  => state.auth;
-export const selectPwd = createSelector(selectAuthState, state => state.password); 
+export const selectPwd = createSelector(selectAuthState, state => state.password);
+export const selectExpiredTime = createSelector(selectAuthState, state => state.expiredTime); 
 
 export default auth.reducer;

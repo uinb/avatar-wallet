@@ -18,6 +18,7 @@ import {selectConfig} from '../../../../utils';
 import {Link} from 'react-router-dom';
 import TokenIcon from '../../../components/token-icon';
 import { saveAs } from 'file-saver';
+import {isEmpty} from 'lodash'; 
 
 const AppChainWrapper = (props:any) => {
     const { api } = props;
@@ -41,6 +42,9 @@ const AppChainWrapper = (props:any) => {
     },[chain, networkId])
 
     let tokens_list = useMemo(()=>{
+        if(isEmpty(networkConfig)){
+            return []
+        }
         return networkConfig['tokens'].filter((token:any,index:any) => {
             return index !== 0;
         }).map((item:any) => {
@@ -135,7 +139,7 @@ const AppChainWrapper = (props:any) => {
                     />
                     <Grid className="mt4">
                         <Card className="mt2">
-                            <ListItem disableGutters dense component={Link} to={"/total-assets/" + networkConfig?.symbol.toLowerCase()}>
+                            <ListItem disableGutters dense component={Link} to={"/total-assets/" + networkConfig?.symbol?.toLowerCase()}>
                                 <ListItemAvatar>
                                     <TokenIcon 
                                         showSymbol={false} 
