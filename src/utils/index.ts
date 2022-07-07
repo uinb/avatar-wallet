@@ -38,6 +38,6 @@ export const toUsd = (balance:string|number, price: string|number = '', fixed: n
     if(Number(balance) === 0 || Number(price) === 0){
         return 0;
     }else{
-        return new Big(balance).times(price).toFixed(fixed)
+        return new Big(balance || 0).times(price || 0).toFixed(fixed)
     }
 }

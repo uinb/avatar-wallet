@@ -8,6 +8,8 @@ const {parseSeedPhrase, generateSeedPhrase } = require('near-seed-phrase')
 const {connect, keyStores, Near, KeyPair, Contract, utils} = nearAPI;
 const bs58 = require('bs58');
 
+//todo fetch token price from coingeco https://api.coingecko.com/api/v3/simple/price
+
 
 const BOATLOAD_OF_GAS = new Big(3).times(10 ** 14).toFixed();
 
@@ -136,7 +138,7 @@ class NearCore extends Near {
         }
         return {};
     }
-    async contractBalanceOf(accountId, contractId){
+    async contractBalanceOfAccount(accountId, contractId){
         const account = await this.near.account(accountId);
         const contract:any = new Contract(
             account,
@@ -150,7 +152,7 @@ class NearCore extends Near {
         return contract.ft_balance_of({account_id: accountId}).then(resp => {
             return {
                 ...ftMetadata, 
-                balance:resp
+                balance: new Big(resp || 0).div(new Big(10).pow(ftMetadata.decimal || 18)).toNumber()
             }
         }).catch(e => {
             console.log(e);
@@ -174,12 +176,35 @@ class NearCore extends Near {
         const tokens = await contract.nft_tokens_for_owner({account_id: accountId});
         return {...metadata, tokens}
     }
+    async nftTransfer(payload){
+        const {accountId, contractId, token_id, target} = payload;
+        console.log(accountId, contractId, token_id, target);
+        const account = await this.near.account(accountId);
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+                viewMethods: ['nft_metadata', 'nft_tokens_for_owner'],
+                changeMethods: ["nft_transfer"],
+            }
+        )
+        const result = contract.nft_transfer(
+            {
+                receiver_id: target, 
+                token_id: token_id
+            },
+            NEAR_MAX_GAS,
+            1
+        )
+        console.log(result);
+       
+    }
     async fetchFtBalance(accountId){
         const newTokenBalances = await this.fetchFTBasicMetadata(accountId);
         const tokens = await this.fetchFTContract();
         const requestTokens = {...newTokenBalances, ...tokens};
         const request = Object.keys(requestTokens).map(address => {
-            return this.contractBalanceOf(accountId, address);
+            return this.contractBalanceOfAccount(accountId, address);
         })
 
         const value = await Promise.all(request);
@@ -187,8 +212,8 @@ class NearCore extends Near {
             return ({
                 ...requestTokens[token], 
                 ...value[index],
-                balance: new Big(value[index].balance).div(new Big(10).pow(requestTokens[token].decimal || 18)).toNumber(),
-                usdValue: new Big(value[index].balance).div(new Big(10).pow(requestTokens[token].decimal) || 18).times(requestTokens[token].price || 0).toNumber(),
+                balance: value[index].balance,
+                usdValue: new Big(value[index].balance).times(requestTokens[token].price || 0).toNumber(),
                 contractId: token
             })
         })
@@ -231,7 +256,6 @@ class NearCore extends Near {
 
     async ftTransfer(payload){
         const {sender, contractId, target, amount} = payload;
-        console.log('ft transfer', sender, contractId, target, amount);
         const account = await this.near.account(sender);
         const contract:any = new Contract(
             account,
@@ -418,22 +442,32 @@ class NearCore extends Near {
         return result
     }
 
-    async fetchAccountBalance(accountId:string){
+    async fetchNearBalance(accountId:string){
+        const {networkId} = this.near.config;
         const account = await this.near.account(accountId);
-        const nearBalance = await account.getAccountBalance().then(resp => {
-            return resp
+        return account.getAccountBalance().then(resp => {
+            return {
+                symbol: 'NEAR', 
+                name: 'NEAR',
+                contractId: networkId === 'testnet' ? 'testnet' : 'near',
+                balance: utils.format.formatNearAmount(resp.available)
+            }
         }).catch(e => {
             return {
-                total: 0,
-                available: 0
+                symbol: 'NEAR', 
+                name: 'NEAR',
+                contractId: networkId === 'testnet' ? 'testnet' : 'near',
+                balance: 0
             }
         });
-        const {balances} = await this.fetchFtBalance(accountId);
+    }
+
+    async fetchAccountBalance(accountId:string){
+        const nearBalance = await this.fetchNearBalance(accountId);
+        const { balances } = await this.fetchFtBalance(accountId);
         const refactorBalances = [{
             ...balances.find(item => item.symbol.toLowerCase() === 'wnear'),
-            symbol: 'NEAR', 
-            name: 'NEAR',
-            balance: utils.format.formatNearAmount(nearBalance.available)
+            ...nearBalance
         }].concat(balances)
         return refactorBalances
     }

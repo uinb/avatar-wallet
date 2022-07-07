@@ -11,7 +11,9 @@ import {
     setAllAccounts, 
     selectNearActiveAccountByNetworkId, 
     setActiveAccount, 
-    setPriceList,  
+    setPriceList,
+    selectBalanesByAccount, 
+    setBalancesForAccount, 
 } from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import {selectNetwork} from '../../../../reducer/network';
@@ -64,19 +66,16 @@ const NearCoreComponent = (props: any) => {
     const [activeTab, setActiveTab] = useState('assets');
     const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const classes = useStyles();
-    const [balances, setBalances] = useState([]);
+    const balances = useAppSelector(selectBalanesByAccount(activeAccount));
     const navigator = useNavigate();
     const fetchAccountBalances = useCallback(async () => {
         if(!near || !activeAccount){
             return ;
         }
         const balances = await near.fetchAccountBalance(activeAccount);
-        setBalances(balances) 
-    },[activeAccount, near])
+        dispatch(setBalancesForAccount({account: activeAccount, balances}))
+    },[activeAccount, near, dispatch])
 
-    useEffect(() => {
-        setBalances([]);
-    },[activeAccount])
     useEffect(() => {
         if(!near){
             return ;

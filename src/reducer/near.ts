@@ -66,6 +66,16 @@ export const near = createSlice({
         state.accountBalances[account] = {...state.accountBalances[account], ...refactorBalances}
       }
     },
+    updateAccountBalances(state ,{payload}){
+      const {account, updateItem} = payload;
+      state.accountBalances[account] = {
+        ...state.accountBalances[account],
+        [updateItem.symbol]: {
+          ...state.accountBalances[account][updateItem.symbol],
+          balance: updateItem.balance
+        }
+      }
+    },
     setPriceList(state, {payload}){
       state.priceList = payload;
     },
@@ -98,7 +108,7 @@ export const near = createSlice({
   }
 })
 
-export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation} = near.actions;
+export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation, updateAccountBalances} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
 export const selectAllAccounts = createSelector(selectRootState, state => state.allAccounts);
 export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts);

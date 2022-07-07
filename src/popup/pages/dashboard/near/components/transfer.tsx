@@ -13,6 +13,9 @@ import {
     setTempTransferInfomation, 
     selectAllAccounts, 
     setNearBalanceForAccount,
+    setBalancesForAccount,
+    selectBalanesByAccount,
+    updateAccountBalances
 } from '../../../../../reducer/near';
 import Dialog from '@material-ui/core/Dialog';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -61,14 +64,15 @@ const Transfer = () => {
     const [selectAccountOpen, setSelectAccountOpen] = useState(false);
     const [accountSide, setAccountSide] = useState('')
     const {enqueueSnackbar} = useSnackbar()
-    const [accountBalances, setAccountBalances] = useState([])
+    const accountBalances = useAppSelector(selectBalanesByAccount(formState.sender))
+
     const fetchAccountBalances = useCallback(async () => {
         if(!near || !formState.sender){
             return ;
         }
         const balances = await near.fetchAccountBalance(formState.sender);
-        setAccountBalances(balances) 
-    },[formState.sender, near])
+        dispatch(setBalancesForAccount({account: formState.sender, balances}))
+    },[formState.sender, near, dispatch])
 
     useEffect(() => {
         fetchAccountBalances()
@@ -108,7 +112,8 @@ const Transfer = () => {
         if(!accountBalances.length){
             return {} as TransferProps;
         }
-        return formState.symbol ? accountBalances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === formState.symbol.toLowerCase()) || {} as any : filterdTokens[0];
+        const currentSymbolToken = accountBalances.filter(token => Number(token.balance) > 0).find((item:TokenProps) => item?.symbol.toLowerCase() === formState.symbol.toLowerCase())
+        return formState.symbol ?  currentSymbolToken ? currentSymbolToken : filterdTokens[0] : filterdTokens[0];
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[accountBalances, formState.symbol, formState.sender])
 
@@ -118,15 +123,28 @@ const Transfer = () => {
         }
         return selectToken.symbol.toLowerCase() === 'near'
     },[selectToken])
+
+    const refreshNearBalance = async (accountId) => {
+        const result = await near.fetchNearBalance(accountId);
+        dispatch(updateAccountBalances({account:accountId, updateItem: result}));
+    }
+    
+    const refreshFtBalance = async (accountId, contractId) => {
+        const result = await near.contractBalanceOfAccount(accountId, contractId);
+        dispatch(updateAccountBalances({account:accountId, updateItem: result}));
+    }
+
     const handleSend = async () => {
         setLoading(true);
         dispatch(setTempTransferInfomation(formState))
         if(isNativeToken){
             const result = await near.transferNear({...formState, amount: utils.format.parseNearAmount(formState.amount)});
             if(result.status){
-                navigator('/transfer-success');
                 enqueueSnackbar('send success', {variant:'success'})
+                refreshNearBalance(formState.sender)
+                refreshNearBalance(formState.target)
                 setLoading(false);
+                navigator('/transfer-success');
             }else{
                 setSendError(result.msg);
                 setLoading(false);
@@ -134,14 +152,17 @@ const Transfer = () => {
         }else{
             const result = await near.ftTransfer({...formState, amount: parseTokenAmount(formState.amount, selectToken.decimal)});
             if(result.status){
-                navigator('/transfer-success');
+                refreshFtBalance(formState.sender, formState.contractId)
+                refreshFtBalance(formState.target, formState.contractId)
                 enqueueSnackbar('send success', {variant:'success'})
+                navigator('/transfer-success');
                 setLoading(false);
             }else{
                 setSendError(result.msg);
                 setLoading(false);
             }
         }
+        
     }
 
     useEffect(() => {
@@ -191,9 +212,6 @@ const Transfer = () => {
     }
 
     const handleChangeAccount = (item:string) => {
-        if(accountSide === 'from') {
-            setAccountBalances([]);
-        }
         setFormState(state => ({
             ...state, 
             sender: accountSide === 'from' ? item : state.sender,
