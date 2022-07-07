@@ -8649,6 +8649,11 @@ react-router@6.3.0, react-router@^6.3.0:
   dependencies:
     history "^5.2.0"
 
+react-statements@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmmirror.com/react-statements/-/react-statements-1.0.2.tgz#96acf75a55a19e0c6166dad7084efb9d1275be59"
+  integrity sha512-kcZOd14dWZZesdw3wC9n5CojAN7FSsxPjnD9QQyb8VZaEHZYLNT6FrUAnobjYdoKpdLMwxuf0bsL9eDcB1uVXA==
+
 react-transition-group@^4.4.0:
   version "4.4.2"
   resolved "https://registry.npmmirror.com/react-transition-group/-/react-transition-group-4.4.2.tgz#8b59a56f09ced7b55cbd53c36768b922890d5470"

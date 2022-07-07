@@ -18,7 +18,8 @@ import {selectConfig} from '../../../../utils';
 import {Link} from 'react-router-dom';
 import TokenIcon from '../../../components/token-icon';
 import { saveAs } from 'file-saver';
-
+import {tokenAccountList} from '../../../../reducer/account';
+import { If,Default,For } from 'react-statements'
 const AppChainWrapper = (props:any) => {
     const { api } = props;
     const networkId = useAppSelector(selectNetwork);
@@ -26,7 +27,8 @@ const AppChainWrapper = (props:any) => {
     const config  = appChainsConfig[chain];
     const appChain = useAppSelector(selectAppChain(networkId, chain));
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
-    // const defaultAccountList = useAppSelector(tokenAccountList);
+    const {payload:defaultList} = useAppSelector(tokenAccountList);
+    console.log("defa -- ",defaultList)
     const dispatch = useAppDispatch();
     const navigator = useNavigate();
     const handleAccountItemClick = (account:string) => {
@@ -40,7 +42,7 @@ const AppChainWrapper = (props:any) => {
         return selectConfig(chain, networkId);
     },[chain, networkId])
 
-    let tokens_list = useMemo(()=>{
+    const tokens_list = useMemo(()=>{
         return networkConfig['tokens'].filter((token:any,index:any) => {
             return index !== 0;
         }).map((item:any) => {
@@ -50,8 +52,8 @@ const AppChainWrapper = (props:any) => {
             }
         });
     },[networkConfig]);
+    
     const [tokenList,setTokenList] = useState(tokens_list) as any;
-
     const [balance,setBalance] = useState('--') as any;
 
     useEffect(() => {
@@ -74,12 +76,23 @@ const AppChainWrapper = (props:any) => {
         })()
     },[api,activeAccount,networkConfig,tokens_list])
 
-    useEffect(()=>{
+    const nativeTokens = useMemo(()=>{
+        return networkConfig['tokens'].filter((token:any,index:any) => {
+            return index === 0;
+        }).map((item:any) => {
+            return {
+                ...item,
+                balance:balance
+            }
+        })[0];
+    },[networkConfig,balance]);
 
+    useEffect(()=>{
+        if(nativeTokens.balance === "--")return;
         dispatch(setTokenAccount({
-            [chain]:tokenList
+            [chain]:[nativeTokens,...tokenList]
         }))
-    },[tokenList,dispatch,chain]);
+    },[tokenList,dispatch,chain,nativeTokens]);
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -92,7 +105,10 @@ const AppChainWrapper = (props:any) => {
             saveAs(blob, `${activeAccount}.json`);
         }
     }
-
+    
+    const handleBalanceOperation = (symbol:string) => {
+        if(api)navigator(`/total-assets/${symbol.toLowerCase()}`)
+    }
 
     const address = useMemo(() => {
         const accounts = keyring.getPairs()?.map(item => item.address);
@@ -134,28 +150,47 @@ const AppChainWrapper = (props:any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <Grid className="mt4">
+                    <If when={api?true:false}>
+                        <>
                         <Card className="mt2">
-                            <ListItem disableGutters dense component={Link} to={"/total-assets/" + networkConfig?.symbol.toLowerCase()}>
+                            <ListItem disableGutters dense onClick={()=>handleBalanceOperation(networkConfig?.symbol)}>
                                 <ListItemAvatar>
-                                    <TokenIcon showSymbol={false} icon={appChain.appchain_metadata?.fungible_token_metadata?.icon} symbol={appChain.appchain_metadata?.fungible_token_metadata?.symbol} size={32}/>
+                                    <TokenIcon showSymbol={false} icon={appChain.appchain_metadata?.fungible_token_metadata?.icon} symbol={appChain.appchain_metadata?.fungible_token_metadata?.symbol} size={40}/>
                                 </ListItemAvatar> 
-                                <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={`${api ? balance : '--'} $`}/>
+                                <ListItemText primary={`${api ? balance : '--'} ${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={`$ ${api ? balance : '--'}`}/>
                             </ListItem>
                         </Card> 
-                    </Grid>
-                    {
-                        tokens_list.map((tokens:any,index:any)=>(
-                            <Card className="mt2" key={index}>
-                                <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
-                                    <ListItemAvatar>
-                                        <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={32}/>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} ${tokens?.symbol}`} secondary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} $`}/>
-                                </ListItem>
-                            </Card> 
-                        ))
-                    }
+                        <For of={tokens_list}>
+                            {(tokens:any,index:any) => (
+                                <Card className="mt2" key={index}>
+                                    <ListItem disableGutters dense onClick={()=>handleBalanceOperation(tokens.symbol)}>
+                                        <ListItemAvatar>
+                                            <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} ${tokens?.symbol}`} secondary={`$ ${tokenList[index]?.balance ? tokenList[index]?.balance : '--'}`}/>
+                                    </ListItem>
+                                </Card> 
+                            )}
+                        </For>
+                        </>
+                        <Default>
+                            {
+                            defaultList[chain].map((tokens:any,index:any)=>(
+                                <Card className="mt2" key={index}>
+                                    <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
+                                        <ListItemAvatar>
+                                            <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${tokens.balance} ${tokens.symbol}`} secondary={`$ ${tokens.balance}`}/>
+                                    </ListItem>
+                                </Card> 
+                                )) 
+                            }
+                        </Default>
+                        
+                    </If>
+                    
+                    
                 </>
             ) : (
                 <NullAccountWrapper chain="appchains"/>
