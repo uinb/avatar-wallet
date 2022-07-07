@@ -11,7 +11,7 @@ import Box from '@material-ui/core/Box';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
 import { useAppSelector, useAppDispatch} from '../../../app/hooks';
-import {selectPwd} from '../../../reducer/auth';
+import {selectPwd, updateExpiredTime} from '../../../reducer/auth';
 import Logo from '../../components/logo';
 import {enqueueSnackbar} from '../../../reducer/snackbar';
 
@@ -24,6 +24,7 @@ const SignIn = () => {
     const dispatch = useAppDispatch();
     const handleSignIn = () => {
         if(inputPwd === pwd){
+            dispatch(updateExpiredTime())
             dispatch(enqueueSnackbar({
                 message: 'Login Success',
                 options:{
