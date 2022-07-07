@@ -228,6 +228,7 @@ const Bridge = () => {
             from: state.target,
             target: state.from
         }))
+        setBalance('--');
     }
 
     const handleChangeToken = (item:any) => {
@@ -449,7 +450,7 @@ const Bridge = () => {
                     </Box>
                 </Card>
                 <Box className="mt4">
-                    <InputLabel className="flex justify-between items-center">
+                    <InputLabel className="flex justify-between items-center" style={{height: 30}}>
                         <span>Amount</span> 
                         <span>available: 
                             <Typography color="textPrimary" component="span" variant='body2'>{balance}</Typography>
