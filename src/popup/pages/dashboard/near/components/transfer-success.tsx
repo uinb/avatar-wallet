@@ -36,10 +36,18 @@ const TransferSuccess = () => {
                              <Typography variant='body2'>To</Typography>
                             <Typography variant='body2'>{formatLongAddress(transferInfomation?.target)}</Typography>
                         </Grid>
-                        <Grid container justifyContent='space-between' className="mt2">
-                             <Typography variant='body2'>Amount</Typography>
-                            <Typography variant='body2'>{transferInfomation?.amount}&nbsp;{transferInfomation?.symbol}</Typography>
-                        </Grid>
+                        {transferInfomation?.amount ? (
+                            <Grid container justifyContent='space-between' className="mt2">
+                                <Typography variant='body2'>Amount</Typography>
+                                <Typography variant='body2'>{transferInfomation?.amount}&nbsp;{transferInfomation?.symbol}</Typography>
+                            </Grid>
+                        ) : null}
+                        {transferInfomation.type === 'nft' ? (
+                            <Grid container justifyContent='space-between' className="mt2">
+                                <Typography variant='body2'>NFT</Typography>
+                                <Typography variant='body2'>{transferInfomation?.symbol}</Typography>
+                            </Grid>
+                        ) : null}
                     </Paper>
                     <Button color="primary" variant='contained' size="large" className="mt4" fullWidth  onClick={handleBack}>Go Back</Button>
                 </Grid>

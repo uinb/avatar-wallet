@@ -177,9 +177,8 @@ class NearCore extends Near {
         return {...metadata, tokens}
     }
     async nftTransfer(payload){
-        const {accountId, contractId, token_id, target} = payload;
-        console.log(accountId, contractId, token_id, target);
-        const account = await this.near.account(accountId);
+        const {sender, contractId, tokenId, target} = payload;
+        const account = await this.near.account(sender);
         const contract:any = new Contract(
             account,
             contractId,
@@ -188,15 +187,14 @@ class NearCore extends Near {
                 changeMethods: ["nft_transfer"],
             }
         )
-        const result = contract.nft_transfer(
+        return contract.nft_transfer(
             {
                 receiver_id: target, 
-                token_id: token_id
+                token_id: tokenId
             },
             NEAR_MAX_GAS,
             1
         )
-        console.log(result);
        
     }
     async fetchFtBalance(accountId){

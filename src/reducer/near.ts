@@ -1,7 +1,8 @@
 import { createSlice, createSelector, } from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
-import {TokenProps} from '../constant/near-types';
+import {TokenProps, NFTMetaProps} from '../constant/near-types';
 import chains from '../constant/chains';
+import {selectNetwork} from './network';
 
 interface StateProps {
   loading: boolean,
@@ -19,6 +20,14 @@ interface StateProps {
     [key: string]: any
   },
   transferInfomation: any;
+  nftBalances: {
+    testnet:{
+      [account:string]: {}
+    },
+    mainnet:{
+      [account:string]: {}
+    }
+  }
 }
 
 const initialState: StateProps = {
@@ -28,7 +37,11 @@ const initialState: StateProps = {
   priceList: {},
   accountBalances: {},
   transferInfomation: {},
-  allAccounts:[]
+  allAccounts:[],
+  nftBalances:{
+    testnet:{},
+    mainnet:{}
+  }
 }
 
 export const near = createSlice({
@@ -101,6 +114,17 @@ export const near = createSlice({
     },
     setTempTransferInfomation(state, {payload}){
       state.transferInfomation = payload;
+    },
+    setNftBalancesForAccount(state, {payload}){
+      const {account, networkId, balances} = payload;
+      if(state.nftBalances[networkId][account]){
+        state.nftBalances[networkId][account] = balances
+      }else{
+        state.nftBalances[networkId] = {
+          ...state.nftBalances[networkId],
+          [account]: balances
+        }
+      }
     }
   },
   extraReducers: (builder) => {
@@ -108,7 +132,9 @@ export const near = createSlice({
   }
 })
 
-export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation, updateAccountBalances} = near.actions;
+
+
+export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation, updateAccountBalances, setNftBalancesForAccount} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
 export const selectAllAccounts = createSelector(selectRootState, state => state.allAccounts);
 export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts);
@@ -130,6 +156,9 @@ export const selectBalanesByAccount = (account:string) => createSelector(selectR
 })
 export const selectNearConfig = createSelector(selectRootState, state => state.priceList['wrap.near'] || {price: '1'})
 export const selectTransferInformation = createSelector(selectRootState, state => state.transferInfomation)
+export const selectNftBalancesByAccount = (account: string) => createSelector(selectRootState, selectNetwork, (state, networkId) => {
+  return state.nftBalances[networkId][account] as NFTMetaProps 
+})
 
 
 

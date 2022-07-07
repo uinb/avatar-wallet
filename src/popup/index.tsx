@@ -18,6 +18,7 @@ import AddToken  from './pages/dashboard/near/add-token'
 import Bridge from './pages/bridge'
 import TotalAssets from './pages/asset-page';
 import Deposit from './pages/deposit';
+import NFTTransfer from './pages/dashboard/near/components/nft-transfer'
 
 
 const Popup = () => {
@@ -37,6 +38,7 @@ const Popup = () => {
                     <Route path="/edit-pwd" element={<EditPwd />} />
                     <Route path="/add-token" element={<AddToken />} />
                     <Route path="/transfer/:symbol" element={<Transfer />} />
+                    <Route path="/nft-transfer/:contract/:tokenId" element={<NFTTransfer />} />
                     <Route path="/appchain-transfer/:chain" element={<AppchainTransfer />} />
                     <Route path="/transfer-success" element={<TransferSuccess />} />
                     <Route path="/bridge/:from/:to" element={<Bridge />} />
