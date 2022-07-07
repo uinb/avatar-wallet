@@ -93,7 +93,6 @@ const AppChainWrapper = (props:any) => {
         }
     }
 
-
     const address = useMemo(() => {
         const accounts = keyring.getPairs()?.map(item => item.address);
         if(!activeAccount && accounts.length){
@@ -138,7 +137,12 @@ const AppChainWrapper = (props:any) => {
                         <Card className="mt2">
                             <ListItem disableGutters dense component={Link} to={"/total-assets/" + networkConfig?.symbol.toLowerCase()}>
                                 <ListItemAvatar>
-                                    <TokenIcon showSymbol={false} icon={appChain.appchain_metadata?.fungible_token_metadata?.icon} symbol={appChain.appchain_metadata?.fungible_token_metadata?.symbol} size={32}/>
+                                    <TokenIcon 
+                                        showSymbol={false} 
+                                        icon={appChain.appchain_metadata?.fungible_token_metadata?.icon} 
+                                        symbol={appChain.appchain_metadata?.fungible_token_metadata?.symbol} 
+                                        size={40}
+                                    />
                                 </ListItemAvatar> 
                                 <ListItemText primary={`${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={`${api ? balance : '--'} $`}/>
                             </ListItem>
@@ -149,7 +153,7 @@ const AppChainWrapper = (props:any) => {
                             <Card className="mt2" key={index}>
                                 <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
                                     <ListItemAvatar>
-                                        <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={32}/>
+                                        <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
                                     </ListItemAvatar>
                                     <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} ${tokens?.symbol}`} secondary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} $`}/>
                                 </ListItem>

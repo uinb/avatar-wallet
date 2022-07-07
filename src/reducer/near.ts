@@ -54,10 +54,10 @@ export const near = createSlice({
     },
     setBalancesForAccount(state, {payload}){
       const {account, balances} = payload;
-      const refactorBalances = balances.reduce((all, current, index) => {
+      const refactorBalances = balances.reduce((all, current) => {
         return {
           ...all,
-          [current.symbol]: {...current, icon: current.symbol === 'wNEAR' ? chains.near.icon : current.icon}
+          [current.symbol]: {...current, icon: ['wNEAR', 'near'].includes(current.symbol.toLowerCase()) ? chains.near.icon : current.icon}
         }
       }, {})
       if(!state.accountBalances[account]){
@@ -105,6 +105,13 @@ export const selectSignerAccount = createSelector(selectRootState, state => stat
 export const selectNearActiveAccountByNetworkId = (networkId:string) => createSelector(selectRootState, state => state.activeAccount[networkId] || '');
 export const selectPriceList = createSelector(selectRootState, state => state.priceList);
 export const selectAccountBlances = (networkId:string) => createSelector(selectRootState, selectNearActiveAccountByNetworkId(networkId), (state,account) => {
+  if(state.accountBalances[account] && Object.keys(state.accountBalances[account])){
+    return Object.entries(state.accountBalances[account]).map(([key, item]: [string, TokenProps]) => item)
+  }else{
+    return [] as Array<TokenProps>
+  }
+})
+export const selectBalanesByAccount = (account:string) => createSelector(selectRootState, (state) => {
   if(state.accountBalances[account] && Object.keys(state.accountBalances[account])){
     return Object.entries(state.accountBalances[account]).map(([key, item]: [string, TokenProps]) => item)
   }else{

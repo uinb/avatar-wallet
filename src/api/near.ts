@@ -92,7 +92,7 @@ class NearCore extends Near {
         }
         return {};
     }
-    async fetchFTMetadata(accountId, contractId){
+    async fetchFTMetadata(contractId){
         const {networkId} = this.near.config;
         const account = await this.near.account(networkId === 'testnet' ? 'testnet': 'near');
         const contract:any = new Contract(
@@ -109,12 +109,12 @@ class NearCore extends Near {
             return {}
         });
     }
-    async fetchFTBalancesContract(accountId:string){
+    async fetchFTBasicMetadata(accountId:string){
         const {ftFetchUrl = ''} = this.near.config;
         const [base, path] = ftFetchUrl?.split('{requestAccount}');
         if(ftFetchUrl){
             return axios.get(`${base}${accountId}${path}`).then(async ({data}) => {
-                const metaRequest = data.map(item => this.fetchFTMetadata(accountId, item))
+                const metaRequest = data.map(item => this.fetchFTMetadata(item))
                 const metaResult = await Promise.all(metaRequest);
                 return data.reduce((all, item, index) => {
                     if(Object.keys(metaResult[index]).length){
@@ -175,7 +175,7 @@ class NearCore extends Near {
         return {...metadata, tokens}
     }
     async fetchFtBalance(accountId){
-        const newTokenBalances = await this.fetchFTBalancesContract(accountId);
+        const newTokenBalances = await this.fetchFTBasicMetadata(accountId);
         const tokens = await this.fetchFTContract();
         const requestTokens = {...newTokenBalances, ...tokens};
         const request = Object.keys(requestTokens).map(address => {
@@ -230,7 +230,8 @@ class NearCore extends Near {
     }
 
     async ftTransfer(payload){
-        const {sender, contractId, receiver, amount} = payload;
+        const {sender, contractId, target, amount} = payload;
+        console.log('ft transfer', sender, contractId, target, amount);
         const account = await this.near.account(sender);
         const contract:any = new Contract(
             account,
@@ -240,17 +241,15 @@ class NearCore extends Near {
                 changeMethods: ["ft_transfer", 'storage_deposit'],
             }
         )
-        const approveResult = await contract.storage_deposit({
+        await contract.storage_deposit({
             args:{
-                account_id: sender, 
+                account_id: target, 
             },
             amount: utils.format.parseNearAmount('0.00125')
         })
-        const viewApproveAmount = await contract.storage_balance_of({account_id: sender});
-        console.log(approveResult, viewApproveAmount)
         return contract.ft_transfer(
             {
-                receiver_id: receiver, 
+                receiver_id: target, 
                 amount
             },
             NEAR_MAX_GAS,
@@ -268,9 +267,9 @@ class NearCore extends Near {
         })
     }
     async transferNear(payload){
-        const {sender, receiver, amount} = payload;
+        const {sender, target, amount} = payload;
         const account = await this.near.account(sender);
-        return account.sendMoney(receiver, amount).then(resp => {
+        return account.sendMoney(target, amount).then(resp => {
             return {
                 ...resp,
                 status: true
@@ -322,7 +321,7 @@ class NearCore extends Near {
             )
             return contract.get_near_fungible_tokens().then(async resp => {
                 const validTokens = resp.filter(token => token.bridging_state === 'Active')
-                const request = validTokens.map((token:any) => this.fetchFTMetadata('', token.contract_account))
+                const request = validTokens.map((token:any) => this.fetchFTMetadata(token.contract_account))
                 const result = await Promise.all(request);
                 return validTokens.map((item, index) => ({
                     ...item,
@@ -398,7 +397,6 @@ class NearCore extends Near {
 
     async bridgeTokenTransfer(payload){
         const {accountId, contractId, amount, bridgeId, appchain, target} = payload;
-        console.log(accountId, contractId, amount, bridgeId, appchain, target);
         const account = await this.near.account(accountId);
         const contract:any = new Contract(
             account,
@@ -418,6 +416,26 @@ class NearCore extends Near {
               1
         );
         return result
+    }
+
+    async fetchAccountBalance(accountId:string){
+        const account = await this.near.account(accountId);
+        const nearBalance = await account.getAccountBalance().then(resp => {
+            return resp
+        }).catch(e => {
+            return {
+                total: 0,
+                available: 0
+            }
+        });
+        const {balances} = await this.fetchFtBalance(accountId);
+        const refactorBalances = [{
+            ...balances.find(item => item.symbol.toLowerCase() === 'wnear'),
+            symbol: 'NEAR', 
+            name: 'NEAR',
+            balance: utils.format.formatNearAmount(nearBalance.available)
+        }].concat(balances)
+        return refactorBalances
     }
 }
 export default NearCore;
