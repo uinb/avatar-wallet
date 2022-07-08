@@ -15,7 +15,6 @@ import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
 import { useNavigate } from 'react-router-dom';
 import {selectConfig} from '../../../../utils';
-import {Link} from 'react-router-dom';
 import TokenIcon from '../../../components/token-icon';
 import { saveAs } from 'file-saver';
 import {isEmpty} from 'lodash'; 
@@ -24,26 +23,25 @@ import {tokenAccountList} from '../../../../reducer/account';
 import { If,Default,For } from 'react-statements'
 const AppChainWrapper = (props:any) => {
     const { api } = props;
+    console.log("api -- ",api)
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
     const config  = appChainsConfig[chain];
     const appChain = useAppSelector(selectAppChain(networkId, chain));
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
-    const {payload:defaultList} = useAppSelector(tokenAccountList);
-    console.log("defa -- ",defaultList)
+    const defaultList = useAppSelector(tokenAccountList);
+    console.log("default  -- ",defaultList)
     const dispatch = useAppDispatch();
     const navigator = useNavigate();
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
-
     const networkConfig = useMemo(() => {
         if(!networkId || !chain){
             return {} as any
         }
         return selectConfig(chain, networkId);
     },[chain, networkId])
-
     let tokens_list = useMemo(()=>{
         if(isEmpty(networkConfig)){
             return []
@@ -60,15 +58,16 @@ const AppChainWrapper = (props:any) => {
     
     const [tokenList,setTokenList] = useState(tokens_list) as any;
     const [balance,setBalance] = useState('--') as any;
-
+    const [balanceSymbol,setBalanceSymbol] = useState() as any;
     useEffect(() => {
         if(!api || !activeAccount || !networkConfig){
             setBalance('--')
             return 
         }
         (async () => {
-            const balance = await api.fetchBalances(activeAccount, networkConfig);
+            const {balance,symbol} = await api.fetchBalances(activeAccount, networkConfig);
             setBalance(balance);
+            setBalanceSymbol(symbol);
         })()
     },[activeAccount, api, networkConfig, chain]);
     useEffect(()=>{
@@ -82,22 +81,32 @@ const AppChainWrapper = (props:any) => {
     },[api,activeAccount,networkConfig,tokens_list])
 
     const nativeTokens = useMemo(()=>{
+        if(isEmpty(networkConfig)){
+            return []
+        }
         return networkConfig['tokens'].filter((token:any,index:any) => {
             return index === 0;
         }).map((item:any) => {
             return {
                 ...item,
-                balance:balance
+                balance:item.symbol.toUpperCase() === balanceSymbol?balance:"--",
+                formattedBalance:item.symbol.toUpperCase() === balanceSymbol?api.inputLimit(balance,4):"--"
             }
         })[0];
-    },[networkConfig,balance]);
-
+    },[networkConfig,balance,balanceSymbol,api]);
     useEffect(()=>{
-        if(nativeTokens.balance === "--")return;
+        if(!tokens_list.length && nativeTokens.balance !== "--"){
+            dispatch(setTokenAccount({
+                chain:chain,
+                list:[nativeTokens]
+            }))
+        }
+        if(!tokens_list.length || nativeTokens.balance === "--" || tokenList.length !== tokens_list.length)return;
         dispatch(setTokenAccount({
-            [chain]:[nativeTokens,...tokenList]
+            chain:chain,
+            list:[nativeTokens,...tokenList]
         }))
-    },[tokenList,dispatch,chain,nativeTokens]);
+    },[tokenList,dispatch,chain,nativeTokens,tokens_list]);
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -112,7 +121,7 @@ const AppChainWrapper = (props:any) => {
     }
     
     const handleBalanceOperation = (symbol:string) => {
-        if(api)navigator(`/total-assets/${symbol.toLowerCase()}`)
+        if(api && symbol === balanceSymbol)navigator(`/total-assets/${symbol.toLowerCase()}`)
     }
 
     const address = useMemo(() => {
@@ -155,7 +164,7 @@ const AppChainWrapper = (props:any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <If when={api?true:false}>
+                    <If when={api && balance !== '--'?true:false}>
                         <>
                         <Card className="mt2">
                             <ListItem disableGutters dense onClick={()=>handleBalanceOperation(networkConfig?.symbol)}>
@@ -179,18 +188,30 @@ const AppChainWrapper = (props:any) => {
                         </For>
                         </>
                         <Default>
-                            {
-                            defaultList[chain].map((tokens:any,index:any)=>(
-                                <Card className="mt2" key={index}>
-                                    <ListItem disableGutters dense component={Link} to={"/total-assets/"+tokens.symbol.toLowerCase()}>
-                                        <ListItemAvatar>
-                                            <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
-                                        </ListItemAvatar>
-                                        <ListItemText primary={`${tokens.balance} ${tokens.symbol}`} secondary={`$ ${tokens.balance}`}/>
-                                    </ListItem>
-                                </Card> 
-                                )) 
-                            }
+                            <If when={defaultList[chain]?true:false}>
+                                <For of={defaultList[chain]}>
+                                    {(tokens:any,index:any)=>(
+                                        <Card className="mt2" key={index}>
+                                            <ListItem disableGutters dense onClick={()=>handleBalanceOperation(tokens.symbol)}>
+                                                <ListItemAvatar>
+                                                    <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
+                                                </ListItemAvatar>
+                                                <ListItemText primary={`${tokens.balance} ${tokens.symbol}`} secondary={`$ ${tokens.balance}`}/>
+                                            </ListItem>
+                                        </Card> 
+                                    )}
+                                </For>
+                                <Default>
+                                    <Card className="mt2">
+                                        <ListItem disableGutters dense>
+                                            <ListItemAvatar>
+                                                <TokenIcon showSymbol={false} icon={nativeTokens.logo} symbol={nativeTokens.symbol} size={40}/>
+                                            </ListItemAvatar> 
+                                            <ListItemText primary={`0 ${nativeTokens.symbol}`} secondary={`$ 0`}/>
+                                        </ListItem>
+                                    </Card>
+                                </Default>
+                            </If>
                         </Default>
                         
                     </If>
