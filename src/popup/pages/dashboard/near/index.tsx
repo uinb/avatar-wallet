@@ -1,6 +1,6 @@
 import {useState, useEffect, useCallback, useMemo} from 'react';
 import Grid from '@material-ui/core/Grid';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useLocation} from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
@@ -14,6 +14,8 @@ import {
     setPriceList,
     selectBalanesByAccount, 
     setBalancesForAccount, 
+    setNftBalancesForAccount,
+    selectNftBalancesByAccount
 } from '../../../../reducer/near';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import {selectNetwork} from '../../../../reducer/network';
@@ -29,7 +31,11 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { useSnackbar } from 'notistack';
 import { darken, makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import TokenItem from '../../../components/token-item'
+import TokenItem from '../../../components/token-item';
+import qs from 'qs';
+import {isEmpty} from 'lodash';
+import {NFTMetaProps} from '../../../../constant/near-types';
+
 
  
 interface BalanceProps {
@@ -42,9 +48,6 @@ interface BalanceProps {
     icon:string;
 }
 
-interface NFTMetadataProps{
-    [key:string] :any
-}
 
 const useStyles = makeStyles((theme) => ({
     styledCard: {
@@ -63,11 +66,13 @@ const NearCoreComponent = (props: any) => {
     const near = useNear(networkId);
     const [accounts, setAccounts] = useState([]);
     const activeAccount = useAppSelector(selectNearActiveAccountByNetworkId(networkId))
-    const [activeTab, setActiveTab] = useState('assets');
-    const [nftBalances, setNftBalances] = useState<NFTMetadataProps>({});
     const classes = useStyles();
     const balances = useAppSelector(selectBalanesByAccount(activeAccount));
     const navigator = useNavigate();
+    const nftBalances = useAppSelector(selectNftBalancesByAccount(activeAccount))
+    const location = useLocation();
+    const query = qs.parse(location.search.replace('?',''));
+    const activeTab = query?.activeTabs || 'assets'
     const fetchAccountBalances = useCallback(async () => {
         if(!near || !activeAccount){
             return ;
@@ -118,11 +123,11 @@ const NearCoreComponent = (props: any) => {
         }
         try{
             const nftMetadata = await near.fetchNFTBalance(activeAccount);
-            setNftBalances(nftMetadata)
+            dispatch(setNftBalancesForAccount({account: activeAccount, networkId, balances: nftMetadata}))
         }catch(e){
             console.log(e)
         }
-    },[activeAccount, near])
+    },[activeAccount, near, dispatch, networkId])
 
     useEffect(() => {
         fetchFTPrice()
@@ -178,7 +183,19 @@ const NearCoreComponent = (props: any) => {
         return balances.find(balance => balance.symbol.toLocaleLowerCase() === 'near') || {} as BalanceProps
     },[balances])
 
-
+    const nftValidBalances = useMemo(() => {
+        if(isEmpty(nftBalances)){
+            return {};
+        }
+        const hasTokensObject = Object.entries(nftBalances).filter(([item, metadata]) => metadata.tokens.length);
+        const refactor = hasTokensObject?.reduce((all, current) => {
+            return {
+                ...all,
+                [current[0]]: current[1]
+            }
+        }, {} as NFTMetaProps)
+        return refactor
+    }, [nftBalances])
    
     return (
         <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
@@ -193,7 +210,7 @@ const NearCoreComponent = (props: any) => {
                         activeAccount={activeAccount}
                     />
                     <Grid style={{height: 'calc(100vh - 100px)',zIndex: 0}}>
-                        <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => setActiveTab(value)}>
+                        <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => navigator(`/dashboard?activeTabs=${value}`)}>
                             <Tab label="Assets" value="assets"/>
                             <Tab label="NFTs" value="nfts"/>
                         </Tabs>
@@ -221,14 +238,14 @@ const NearCoreComponent = (props: any) => {
                                         ) : null}
                                         {activeTab === "nfts" ? (
                                             <Grid className="assetsList mt2">
-                                                {Object.entries(nftBalances).length ? Object.entries(nftBalances).map(([contract, {tokens = [], ...restProps}]) => {
+                                                {!isEmpty(nftValidBalances) ? Object.entries(nftValidBalances)?.map(([contract, tokenMeta]) => {
                                                     return (
-                                                        <Grid container spacing={2}>
+                                                        <Grid container spacing={2} key={contract}>
                                                             <Grid item sm={6} md={6} lg={6}>
-                                                                {tokens.map(token => (
-                                                                    <Grid key={token?.title}>
+                                                                {tokenMeta?.tokens.map(token => (
+                                                                    <Grid key={token?.token_id} onClick={() => navigator(`/nft-transfer/${contract}/${token.token_id}`, {replace: true})}>
                                                                         <Box>
-                                                                            <img src={`${restProps.base_uri}/${token.metadata.media}`} alt="" width="134px" height="134px" style={{borderRadius: 8}}/>
+                                                                            <img src={`${tokenMeta?.base_uri}/${token.metadata.media}`} alt="" width="134px" height="134px" style={{borderRadius: 8}}/>
                                                                         </Box>
                                                                         <Typography variant="caption" color="primary" className="mt1" component='div'>{token.metadata.title}</Typography>
                                                                     </Grid>

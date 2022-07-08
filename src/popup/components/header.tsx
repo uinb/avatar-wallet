@@ -22,6 +22,7 @@ import Button from '@material-ui/core/Button';
 import { useAppSelector,useAppDispatch } from '../../app/hooks';
 import { selectNetworkList,changeNetwork, selectNetwork, selectChain, selectAppChains} from '../../reducer/network';
 import "./header.scss"
+import { grey } from '@material-ui/core/colors';
 
 
 const useStyles = makeStyles(theme => ({
@@ -89,7 +90,7 @@ export const HeaderWithBack  = (props:any) => {
     }
     return (
         <AppBar className={classes.root} {...restProps}>
-            <ArrowBack color="inherit" onClick={handleCallback}/>
+            <ArrowBack color="inherit" onClick={handleCallback} style={{color: grey[500]}}/>
             <Typography variant='body1' align='center'>{title}</Typography>
             <div>
               {action}

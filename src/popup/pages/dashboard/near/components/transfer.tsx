@@ -65,6 +65,8 @@ const Transfer = () => {
     const [accountSide, setAccountSide] = useState('')
     const {enqueueSnackbar} = useSnackbar()
     const accountBalances = useAppSelector(selectBalanesByAccount(formState.sender))
+    const signerAccounts = useAppSelector(selectSignerAccount);
+    const allAccounts = useAppSelector(selectAllAccounts);
 
     const fetchAccountBalances = useCallback(async () => {
         if(!near || !formState.sender){
@@ -142,7 +144,9 @@ const Transfer = () => {
             if(result.status){
                 enqueueSnackbar('send success', {variant:'success'})
                 refreshNearBalance(formState.sender)
-                refreshNearBalance(formState.target)
+                if(allAccounts.includes(formState.target)){
+                    refreshNearBalance(formState.target)
+                }
                 setLoading(false);
                 navigator('/transfer-success');
             }else{
@@ -153,7 +157,9 @@ const Transfer = () => {
             const result = await near.ftTransfer({...formState, amount: parseTokenAmount(formState.amount, selectToken.decimal)});
             if(result.status){
                 refreshFtBalance(formState.sender, formState.contractId)
-                refreshFtBalance(formState.target, formState.contractId)
+                if(allAccounts.includes(formState.target)){
+                    refreshFtBalance(formState.target, formState.contractId)
+                }
                 enqueueSnackbar('send success', {variant:'success'})
                 navigator('/transfer-success');
                 setLoading(false);
@@ -219,9 +225,6 @@ const Transfer = () => {
         }))
         setSelectAccountOpen(false)
     }
-
-    const signerAccounts = useAppSelector(selectSignerAccount);
-    const allAccounts = useAppSelector(selectAllAccounts);
 
     const accounts = useMemo(() => {
         if(!accountSide){

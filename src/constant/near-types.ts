@@ -8,3 +8,10 @@ export interface TokenProps{
     price?: string;
     usdValue: string;
 }
+
+export interface NFTMetaProps {
+    [contract:string]: {
+      tokens: Array<any>,
+      base_uri: string
+    }
+  }
