@@ -87,7 +87,8 @@ const NearCoreComponent = (props: any) => {
         const fetchedBalances = await near.fetchAccountBalance(activeAccount);
         const refactBalances = fetchedBalances.map(item => ({...item, show: balances.find(token => token.name === item.name)?.show || false}))
         dispatch(setBalancesForAccount({account: activeAccount, balances: refactBalances}))
-    },[activeAccount, near, dispatch, balances])
+        // eslint-disable-next-line
+    },[activeAccount, near, dispatch])
 
     useEffect(() => {
         if(!near){
