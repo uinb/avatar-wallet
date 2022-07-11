@@ -22,7 +22,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import nearIcon from '../../../img/near.svg';
-import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts, setPriceList } from '../../../reducer/near';
+import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts, setPriceList, updateAccountBalances } from '../../../reducer/near';
 import { selectActiveAccountByNetworkId as selectAppChainActiveAccount } from '../../../reducer/account';
 import { selectConfig, toDecimals} from '../../../utils';
 import useAppChain from '../../../hooks/useAppChain';
@@ -173,9 +173,17 @@ const Bridge = () => {
             return 
         }
         const result:any = await near.contractBalanceOfAccount(formState.from, selectedToken.tokenContractId || selectedToken.contract_account);
-        const decimalValue = result.balance; 
+        const decimalValue = result.balance;
         setBalance(decimalValue);
     },[near, selectedToken, formState.from])
+
+    const refreshFtBalance = useCallback(async (accountId) => {
+        if(isEmpty(selectedToken) || !accountId || !near) {
+            return 
+        }
+        const result:any = await near.contractBalanceOfAccount(accountId, selectedToken.tokenContractId || selectedToken.contract_account);
+        dispatch(updateAccountBalances({account:accountId, updateItem: result})); 
+    },[near, selectedToken, dispatch])
 
 
     const fetchTokensMetadata = useCallback(() => {
@@ -270,14 +278,19 @@ const Bridge = () => {
             if (res.isFinalized) {
                 enqueueSnackbar('Send transaction Success!', { variant: 'success' });
                 fetchAppChainAccountBalance();
+                if(nearAccounts.includes(formState.target)){
+                    setTimeout(() => {
+                        refreshFtBalance(formState.target)
+                    },2000)
+                }
                 setLoading(false);
             } else if (res.isError) {
-                console.error(res);
             }
         }).catch(err => {
             setLoading(false)
             console.log('error', err);
         });
+        
     }
 
     const onLock = async () => {
@@ -297,7 +310,7 @@ const Bridge = () => {
                 const result = await near.bridgeNativeToken({accountId: nearActiveAccount, contractId: octConfig.bridgeId, receiver: hexAddress, amount: amount, appchain: activeChain.appchain_id, appChainContract: activeChain.appchain_anchor});
                 if(result){
                     enqueueSnackbar('Send transaction Success!', { variant: 'success' });
-                    window.location.reload();
+                    fetchNearAccountBalance()
                 }else{
                     enqueueSnackbar('Send transaction Fail!', { variant: 'error' });
                 }
