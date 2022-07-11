@@ -101,8 +101,8 @@ class AppChains extends ApiPromise {
             return {balance,symbol}
         }).catch((e) => {
             return {
-                balance:"0",
-                symbol
+                balance:'0',
+                symbol,
             }
         });
     }

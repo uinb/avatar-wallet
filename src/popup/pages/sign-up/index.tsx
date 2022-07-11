@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import Input from '@material-ui/core/Input';
 import { HeaderWithBack } from '../../components/header';
 import Grid from '@material-ui/core/Grid';
-import './index.scss';
 import Typography from '@material-ui/core/Typography';
 import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
@@ -58,8 +57,8 @@ const SignUp = () => {
     return (
         <Grid container direction="column" >
             <HeaderWithBack back="/welcome"/>
-            <Content>
-                <Box>
+            <Content style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+                <Box style={{flex: 1}}>
                     <Typography variant="h5" gutterBottom>Set Password</Typography>
                     <Typography variant="caption" color="textSecondary" gutterBottom>The password is used to protect your Enigma seed phrase(s) so that other Chrome extensions can't access them.</Typography>
                     <Box className="mt2">

@@ -42,7 +42,7 @@ li {
 
 .logo {
     margin-bottom: 3rem;
-
+    text-align: center;
     .name {
         font-size: 28px;
         line-height: 1.875rem;
@@ -145,6 +145,10 @@ textarea {
 
 .items-center{
     align-items: center !important;
+}
+
+.flexDirectionCloumn{
+    flex-direction: column !important;
 }
 
 .MuiSwitch-switchBase.Mui-checked{

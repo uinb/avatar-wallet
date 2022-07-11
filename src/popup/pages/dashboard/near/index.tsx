@@ -109,12 +109,12 @@ const NearCoreComponent = (props: any) => {
         if(!activeAccount || !near){
             return ;
         }
-        try{
-            const tokens = await near.fetchFTBasicMetadata(activeAccount);
-            dispatch(setPriceList(tokens))
-        }catch(e){
-            console.log(e);
-        }
+        near.fetchContractTokenMetadata(activeAccount).then(resp => {
+            dispatch(setPriceList(resp))
+        }).catch(e=> {
+            dispatch(setPriceList([]))
+        });
+  
     },[activeAccount, dispatch, near])
 
     const fetchNfts = useCallback(async () => {

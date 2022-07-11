@@ -8,10 +8,10 @@ import { store } from './app/store';
 import { Provider } from 'react-redux';
 import { persistStore } from "reduxjs-toolkit-persist";
 import { PersistGate } from 'reduxjs-toolkit-persist/integration/react';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import keyring from '@polkadot/ui-keyring';
 import {SnackbarProvider} from 'notistack';
 import Notifier from './popup/components/snackbar';
+import Loading from './popup/components/loading';
 
 
 const theme:ThemeOptions  = createTheme({
@@ -28,7 +28,7 @@ const theme:ThemeOptions  = createTheme({
     },
     text:{
       primary: '#282828',
-      secondary: '#666666',
+      secondary: '#8A8C9B',
       hint:'#BEC1D6',
     },
     error:{
@@ -180,14 +180,6 @@ const theme:ThemeOptions  = createTheme({
   }
 })
 
-const Loading = () => {
-  return (
-    <div style={{width: 360, height: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2F64F9'}}>
-      <CircularProgress size={40} color="inherit"/>
-    </div>
-  )
-}
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -218,7 +210,7 @@ const SnackbarProviderComponent = (props:any) => {
       <Fragment>
         <ThemeProvider theme={theme}>
           <Provider store={store}>
-            <PersistGate loading={<Loading />} persistor={persistStore(store)}>
+            <PersistGate loading={<Loading size={45} height="100vh"/>} persistor={persistStore(store)}>
               <SnackbarProviderComponent >
                 <Notifier/>
                 <Popup />
