@@ -13,6 +13,8 @@ import { useEffect, useMemo, useState } from 'react';
 import useAppChain from '../../../hooks/useAppChain';
 import {selectConfig} from '../../../utils';
 import TokenIcon from '../../components/token-icon';
+import Loading from '../../components/loading';
+import Content from '../../components/layout-content';
 
 
 const Dashboard = (props:any) => {
@@ -49,39 +51,45 @@ const Dashboard = (props:any) => {
     return (
         <Grid>
             <DashboardHeader />
-            <Grid className="dashboard-content">
-                <Grid className="chainList">
-                    {Object.entries(chains).map(([key, item]: [string, any]) => {
-                        return (
-                            <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={key} >
-                                <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === key ? 'block' : 'none'}}></span>
-                                <Typography color="primary" variant='caption' className="icon" onClick={() => handleChangeChain(key)} style={{backgroundColor: activeChain === key ? item.background : theme.palette.background.paper}}>
-                                <img src={activeChain === key ? item.logo : item.inactiveLogo} alt="" width="18"/>
-                                </Typography>
-                            </div>
-                        )
-                    })}
-                    {appChains?.map((item) => {
-                        return (
-                            <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
-                                <TokenIcon 
-                                    className="img" 
-                                    icon={item.appchain_metadata.fungible_token_metadata.icon} 
-                                    symbol={item.appchain_id} 
-                                    showSymbol={false}
-                                    size={32}
-                                    bg={true}
-                                />
-                                <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === item.appchain_id ? 'block' : 'none'}}></span>
-                            </div>
-                        )
-                    })}
-                </Grid>
-                <Grid className="chainContent">
-                    {activeChain === 'near' ? <NearCore networkId={networkId} config={chains.near}/> : null}
-                    {activeChain !== 'near' ? <AppChainCore api={appChainApi}/> : null}
-                </Grid>
-            </Grid>
+            <Content className="dashboard-content">
+                {activeChain === 'near' || api ? (
+                    <>
+                        <Grid className="chainList">
+                            {Object.entries(chains).map(([key, item]: [string, any]) => {
+                                return (
+                                    <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={key} >
+                                        <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === key ? 'block' : 'none'}}></span>
+                                        <Typography color="primary" variant='caption' className="icon" onClick={() => handleChangeChain(key)} style={{backgroundColor: activeChain === key ? item.background : theme.palette.background.paper}}>
+                                        <img src={activeChain === key ? item.logo : item.inactiveLogo} alt="" width="18"/>
+                                        </Typography>
+                                    </div>
+                                )
+                            })}
+                            {appChains?.map((item) => {
+                                return (
+                                    <div className={cn('chainItem', activeChain === item.appchain_id ? 'active' :'')} key={item.appchain_id} onClick={() => handleChangeChain(item.appchain_id)} >
+                                        <TokenIcon 
+                                            className="img" 
+                                            icon={item.appchain_metadata.fungible_token_metadata.icon} 
+                                            symbol={item.appchain_id} 
+                                            showSymbol={false}
+                                            size={32}
+                                            bg={true}
+                                        />
+                                        <span className="activeBar" style={{background: theme.palette.primary.main, display: activeChain === item.appchain_id ? 'block' : 'none'}}></span>
+                                    </div>
+                                )
+                            })}
+                        </Grid>
+                        <Grid className="chainContent">
+                            {activeChain === 'near' ? <NearCore networkId={networkId} config={chains.near}/> : null}
+                            {activeChain !== 'near' ? <AppChainCore api={appChainApi}/> : null}
+                        </Grid>
+                    </>
+                ) : (
+                    <Loading /> 
+                )}
+            </Content>
         </Grid>
     )
 }
