@@ -26,11 +26,6 @@ const TokenItem = (props:any) => {
                         </Typography>
                     } 
                     secondary={
-                        showNative?
-                        <Typography variant='caption' component="span" style={{color: grey[500]}}>
-                            {token?.price ? `${token.price} USD` : "--"}
-                        </Typography> 
-                        :
                         <Typography variant='caption' component="span" style={{color: grey[500]}}>
                             {token?.price ? `${toUsd(token.balance, token?.price)} USD` : "--"}
                         </Typography>
