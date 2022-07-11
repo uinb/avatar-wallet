@@ -5,6 +5,7 @@ import { makeStyles, alpha } from '@material-ui/core';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import FileCopy from '@material-ui/icons/FileCopy';
 import Button from "@material-ui/core/Button";
+import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles((theme) => ({
     seedContainer:{
@@ -30,6 +31,7 @@ const useStyles = makeStyles((theme) => ({
 const Seeds = (props:any) => {
     const {seeds, handleContinue} = props;
     const classes = useStyles();
+    const {enqueueSnackbar} = useSnackbar();
     return (
         <Grid>
             <Typography variant="h5" gutterBottom>Your Secure phrase</Typography>
@@ -45,7 +47,7 @@ const Seeds = (props:any) => {
             <br/>
             <CopyToClipboard 
                 text={seeds}
-                onCopy={() => {console.log('copied!')}}
+                onCopy={() => {enqueueSnackbar('copied!', {variant: 'success'})}}
             >
                 <Typography variant="caption" color="primary" className="mt2" component="a">
                     <FileCopy color="inherit" fontSize="inherit"/> &nbsp; Copy to Clipboard

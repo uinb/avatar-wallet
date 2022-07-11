@@ -14,7 +14,6 @@ import CreateSuccess from './components/createSuccess';
 import SetNearAccount from './components/setNearAcccount';
 import keyring from '@polkadot/ui-keyring';
 import useNear from '../../../hooks/useNear';
-
 /* import BN from 'bn.js';
 import axios from 'axios'; */
 
@@ -39,6 +38,8 @@ const CreateAccount = (props:any) => {
         }
         const tempSeeds = near.generateKeyPair();
         setKeypair(tempSeeds)
+        const address = Buffer.from(bs58.decode(tempSeeds.publicKey.split(':')[1])).toString('hex');
+        setTempAddress(address);
         setSeeds(tempSeeds.seedPhrase);
     },[near])
     const navigator = useNavigate();
@@ -67,9 +68,8 @@ const CreateAccount = (props:any) => {
                 try{
                     const PRIVATE_KEY = secretKey.split("ed25519:")[1];
                     const setKeyPair = KeyPair.fromString(PRIVATE_KEY);
-                    const creator = await near.account(singerAccounts[0]);
-                    const targetAccount = await near.account(tempAddress);
-                    console.log(creator, targetAccount);
+                    /* const creator = await near.account(singerAccounts[0]);
+                    const targetAccount = await near.account(tempAddress); */
                     await keyStore.setKey(networkId, tempAddress, setKeyPair);
                     /* await creator.functionCall({
                         contractId: "near",
@@ -106,7 +106,7 @@ const CreateAccount = (props:any) => {
             <HeaderWithBack callback={handleBack} action={step === 'createSuccess' ? <Typography color="primary" component={Link} to="/dashboard">skip</Typography> : null}/>
             <Content>
                 {step === 'setNearAccount' ? (
-                    <SetNearAccount setAccount={setAccount}/>
+                    <SetNearAccount setAccount={setAccount} address={tempAddress}/>
                 ) : null}
                 {step === 'generate' ? (
                     <Seeds 
