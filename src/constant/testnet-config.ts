@@ -74,6 +74,29 @@ const config = {
             {"code":0, decimal: 18, symbol: "BAR", "name":"BAR", "logo":"https://avatars.githubusercontent.com/u/14307069"},
         ]
     },
+    "sopochain":{
+        nodeId:"wss://gateway.testnet.octopus.network/sopochain/2giapbvrd1kbiigpaih6z8upmqvtci7u",
+        tokenModule: 'octopusAssets',
+        tokenMethod: 'account',
+        symbol:"SOTO",
+        tokenViewModules:{
+            balance: {
+                module: 'octopusAssets',
+                method: 'account',
+                params: ''
+            }
+        },
+        tokenChangeModules:{
+            transfer: {
+                module: 'octopusAssets', 
+                method: 'transfer',
+                params: ''
+            }
+        },
+        tokens:[
+            {"code":0, decimal: 18, symbol: "SOTO", "name":"SOTO", "logo":""},
+        ]
+    },
     "barnacle-evm":{
         nodeId:"wss://gateway.testnet.octopus.network/barnacle-evm/wj1hhcverunusc35jifki19otd4od1n5",
         tokenModule: 'octopusAssets',

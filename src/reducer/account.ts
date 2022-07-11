@@ -27,8 +27,9 @@ export const account = createSlice({
   name:'account',
   initialState,
   reducers: {
-    setTokenAccount(state,payload){
-      state.tokenAccount = payload;
+    setTokenAccount(state,{payload}){
+      const {chain,list} = payload;
+      state.tokenAccount[chain] = list;
     },
     setAccount(state, {payload }){
       const {networkId, account} = payload;

@@ -7,7 +7,7 @@ import { HeaderWithBack } from '../../../../components/header';
 import Content from '../../../../components/layout-content';
 import Button from '@material-ui/core/Button';
 import { useAppSelector } from '../../../../../app/hooks';
-import {selectActiveAccountByNetworkId} from '../../../../../reducer/account';
+import {selectActiveAccountByNetworkId,tokenAccountList} from '../../../../../reducer/account';
 import Dialog from '@material-ui/core/Dialog';
 import Avatar from '@material-ui/core/Avatar';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -24,13 +24,18 @@ import useAppChain from '../../../../../hooks/useAppChain';
 import {selectConfig} from '../../../../../utils';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useSnackbar } from 'notistack';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useParams } from 'react-router-dom';
 
 
 
 const Transfer = () => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
+
+    const chainTokens = useAppSelector(tokenAccountList);
+    const tokenList_ = chainTokens[chain];
+    const {symbol = '' } = useParams() as {symbol: string};
+
     const [loading, setLoading] = useState(false);
     const { enqueueSnackbar } = useSnackbar();
     const networkConfig = useMemo(() => {
@@ -39,47 +44,10 @@ const Transfer = () => {
         }
         return selectConfig(chain, networkId);
     },[chain, networkId])
-    const {symbol='', nodeId=''} = networkConfig;
+    const {nodeId=''} = networkConfig;
     const api = useAppChain(nodeId);
-    let tokens_list = useMemo(()=>{
-        return networkConfig['tokens'].filter((token:any,index:any) => {
-            return index !== 0;
-        }).map((item:any) => {
-            return {
-                ...item,
-                balance:"--"
-            }
-        });
-    },[networkConfig]);
-    const [tokenList,setTokenList] = useState(tokens_list) as any;
-    const [balance,setBalance] = useState('--') as any;
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
-    const [allList,setAllList] = useState([]) as any;
-    useEffect(() => {
-        if(!api || !activeAccount || !symbol){
-            return;
-        }
-        //setLoading(true);
-        (async () => {
-            const balance = await api.fetchBalances(activeAccount, symbol);
-            setBalance(api.inputLimit(balance));
-        })()
-    },[activeAccount, api, symbol]);
-    useEffect(()=>{
-        if(!api || !activeAccount || !symbol || !tokens_list.length){
-            return;
-        }
-        (async ()=>{
-            const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig);
-            setTokenList(tokensInfo);
-        })()
-    },[api,symbol,activeAccount,networkConfig,tokens_list])
-    useEffect(()=>{
-        const firstAccount = [networkConfig['tokens'][0]];
-        firstAccount[0].balance = balance;
-        const all = firstAccount.concat(tokenList);
-        setAllList(all);
-    },[balance, networkConfig, tokenList])
+
     const [state, setInputState] = useState({ symbol: '', receiver:'', amount: ''})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     // const dispatch = useAppDispatch();
@@ -92,13 +60,29 @@ const Transfer = () => {
         }))
         setSendError('');
     }
+    const handleInputNumberChange = (e) => {
+        let value = e.target.value;
+        let quantityScale ="18";
+        let re = new RegExp('^(0|[1-9][0-9]*)(\\.[0-9]{0,' + quantityScale + '})?$');
+        if (re.test(value.toString()) || value === '') {
+            setInputState(state => ({
+                ...state,
+                [e.target.name]: value
+            }))
+        }
+        setSendError('');
+    }
     const navigator = useNavigate();
-    // useEffect(() => {
-    //     if(!activeAccount){
-    //         navigator('/dashboard');
-    //     }
-    // }, [activeAccount, navigator])
     const handleSend = async () => {
+        //check
+        if(state.receiver.length !== 48){
+            setSendError('The length of the destination address is incorrect!');
+            return;
+        }
+        if(!api.checkForValidAddresses(state.receiver)){
+            setSendError('Invalid address!');
+            return;
+        }
         setLoading(true);
         if(state.symbol === symbol){
             const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,selectToken.decimal),(response:any)=>{
@@ -130,9 +114,9 @@ const Transfer = () => {
             console.log(resultHash)
         }
     }
-    const selectToken = useMemo(() => allList.find((item:any) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[allList, state.symbol])
-    const filterdTokens = useMemo(() => allList.filter((item: any) => item.symbol.toLowerCase().includes(searchWord)), [allList, searchWord]);
-    console.log("selectToken  -  " ,selectToken)
+    const selectToken = useMemo(() => tokenList_.find((item:any) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[tokenList_, state.symbol])
+    const filterdTokens = useMemo(() => tokenList_.filter((item: any) => item.symbol.toLowerCase().includes(searchWord)), [tokenList_, searchWord]);
+    // console.log("selectToken  -  " ,selectToken)
     useEffect(() => {
         if(!filterdTokens.length){
             //navigator('/dashboard');  
@@ -157,17 +141,16 @@ const Transfer = () => {
         setSearchWord(e.target.value)
     }
 
-
     const handleMax = () => {
         setInputState({
             ...state, 
-            amount: selectToken.balance
+            amount: selectToken.formattedBalance
         })
     }
 
     const sendDisabled = useMemo(() => {
-        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(balance)) || loading
-    },[state, balance,loading])
+        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.formattedBalance)) || loading
+    },[state, selectToken,loading])
     return (
         <Grid>
             <HeaderWithBack back="/dashboard"/>
@@ -190,7 +173,7 @@ const Transfer = () => {
                             endAdornment={<ArrowDropDown color="action" fontSize="small"/>}
                         />
                     </Box>
-                    <Box className="mt4">
+                    {/* <Box className="mt4">
                         <InputLabel className="tl">From</InputLabel>
                         <Input 
                             name="sender"
@@ -198,7 +181,7 @@ const Transfer = () => {
                             value={activeAccount}
                             disabled
                         />
-                    </Box>
+                    </Box> */}
                     <Box className="mt4">
                         <InputLabel className="tl">Send to</InputLabel>
                         <Input 
@@ -214,14 +197,16 @@ const Transfer = () => {
                         <Input 
                             name="amount"
                             fullWidth className="mt2" 
-                            onChange={handleInputChange}
+                            onChange={handleInputNumberChange}
                             placeholder="Amount"
                             value={state.amount}
                             endAdornment={<Button color="primary" variant='text' size="small" onClick={handleMax}  style={{minWidth: 'auto'}}>All</Button>}
                         />
                     </Box>
                 </Grid>
-                <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send&nbsp;{loading ? <CircularProgress size={20} color="inherit"/> : null}</Button>
+                <div className='bottomBtn'>
+                    <Button color="primary" variant="contained" size="large" fullWidth className="mt4" onClick={handleSend} disabled={sendDisabled}>Send&nbsp;{loading ? <CircularProgress size={20} color="inherit"/> : null}</Button>
+                </div>
                 {sendError ? <Typography color="error" variant='body2' className="mt2">{sendError}</Typography> : null}
             </Content>
             <Dialog open={selectTokenOpen} onClose={() => setSelectTokenOpen(false)}>

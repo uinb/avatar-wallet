@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
-import {formatBalance} from '@polkadot/util';
+import {formatBalance, hexToU8a, isHex} from '@polkadot/util';
 import keyring from '@polkadot/ui-keyring';
+import { decodeAddress, encodeAddress } from '@polkadot/keyring';
 import Big from 'big.js';
 Big.PE = 100;
 
@@ -15,6 +16,18 @@ class AppChains extends ApiPromise {
     getAccounts(){
         const accounts = keyring.getPairs()?.map(item => item.address);
         return accounts
+    }
+    checkForValidAddresses = (address) => {
+        try {
+            encodeAddress(
+            isHex(address)
+                ? hexToU8a(address)
+                : decodeAddress(address)
+            );
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
     internationalizationNumbernum (n:any){
         const num = String(n);
@@ -85,7 +98,7 @@ class AppChains extends ApiPromise {
         return this.query.system.account(account).then((resp: any) => {
             const { free } = resp?.data;
             const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
-            return balance
+            return {balance,symbol}
         }).catch((e) => {
             return ''
         });
@@ -94,11 +107,12 @@ class AppChains extends ApiPromise {
         const request = tokens.map(token => {
             return this.fetchFTBalanceByTokenId({params: [token.code, activeAccount], config})
         });
-        const result = await Promise.all(request); 
+        const result = await Promise.all(request),this_ = this; 
         const accountInfo = tokens.map((item:any,index:any)=>{
             return {
                 ...item,
-                balance: result[index]
+                balance: result[index],
+                formattedBalance:this_.inputLimit(result[index],4)
             }
         });
         return accountInfo;
