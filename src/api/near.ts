@@ -148,14 +148,15 @@ class NearCore extends Near {
                 changeMethods: ["ft_transfer"],
             }
         )
-        const ftMetadata = await contract.ft_metadata();
+        const ftMetadata = await contract.ft_metadata().then(resp => resp).catch(e => {
+            return {}
+        });
         return contract.ft_balance_of({account_id: accountId}).then(resp => {
             return {
                 ...ftMetadata, 
                 balance: new Big(resp || 0).div(new Big(10).pow(ftMetadata.decimal || 18)).toNumber()
             }
         }).catch(e => {
-            console.log(e);
             return {
                 ...ftMetadata, 
                 balance:'0'
@@ -468,6 +469,15 @@ class NearCore extends Near {
             ...nearBalance
         }].concat(balances)
         return refactorBalances
+    }
+
+    async fetchContractTokenMetadata(accountId){
+        const newTokenBalances = await this.fetchFTBasicMetadata(accountId);
+        const tokens = await this.fetchFTContract();
+        return {
+            ...newTokenBalances,
+            ...tokens
+        }
     }
 }
 export default NearCore;
