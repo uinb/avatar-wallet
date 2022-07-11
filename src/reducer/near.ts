@@ -27,7 +27,7 @@ interface StateProps {
     mainnet:{
       [account:string]: {}
     }
-  }
+  },
 }
 
 const initialState: StateProps = {
@@ -41,7 +41,7 @@ const initialState: StateProps = {
   nftBalances:{
     testnet:{},
     mainnet:{}
-  }
+  },
 }
 
 export const near = createSlice({
@@ -115,6 +115,16 @@ export const near = createSlice({
     setTempTransferInfomation(state, {payload}){
       state.transferInfomation = payload;
     },
+    updateTokensStatusByAccount(state, {payload}){
+      const {account, tokens} = payload;
+      const refactorBalances = tokens.reduce((all, current: TokenProps) => {
+        return {
+          ...all,
+          [current.symbol]: {...current, icon: ['wNEAR', 'near'].includes(current?.symbol?.toLowerCase()) ? chains.near.icon : current.icon}
+        }
+      }, {})
+      state.accountBalances[account] = refactorBalances
+    },
     setNftBalancesForAccount(state, {payload}){
       const {account, networkId, balances} = payload;
       if(state.nftBalances[networkId][account]){
@@ -125,7 +135,7 @@ export const near = createSlice({
           [account]: balances
         }
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     
@@ -134,7 +144,7 @@ export const near = createSlice({
 
 
 
-export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation, updateAccountBalances, setNftBalancesForAccount} = near.actions;
+export const {setAllAccounts, setSignerAccounts, setActiveAccount, setPriceList, setBalancesForAccount, setNearBalanceForAccount, setTempTransferInfomation, updateAccountBalances, setNftBalancesForAccount, updateTokensStatusByAccount} = near.actions;
 const selectRootState =  (state: RootState)  => state.near;
 export const selectAllAccounts = createSelector(selectRootState, state => state.allAccounts);
 export const selectSignerAccount = createSelector(selectRootState, state => state.signerAccounts);

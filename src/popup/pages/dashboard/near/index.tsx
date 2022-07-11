@@ -35,6 +35,7 @@ import TokenItem from '../../../components/token-item';
 import qs from 'qs';
 import {isEmpty} from 'lodash';
 import {NFTMetaProps} from '../../../../constant/near-types';
+import AddIcon from '@material-ui/icons/Add';
 
 
  
@@ -56,6 +57,12 @@ const useStyles = makeStyles((theme) => ({
         wordBreak: 'break-all',
         color: theme.palette.text.secondary, 
         marginTop: theme.spacing(1.5)
+    },
+    mangeTokens: {
+        background: theme.palette.background.paper,
+        padding: theme.spacing(0.75),
+        borderRadius: '50%',
+        color: theme.palette.text.secondary
     }
 }))
 
@@ -72,14 +79,15 @@ const NearCoreComponent = (props: any) => {
     const nftBalances = useAppSelector(selectNftBalancesByAccount(activeAccount))
     const location = useLocation();
     const query = qs.parse(location.search.replace('?',''));
-    const activeTab = query?.activeTabs || 'assets'
+    const activeTab = query?.activeTabs || 'assets';
     const fetchAccountBalances = useCallback(async () => {
         if(!near || !activeAccount){
             return ;
         }
-        const balances = await near.fetchAccountBalance(activeAccount);
-        dispatch(setBalancesForAccount({account: activeAccount, balances}))
-    },[activeAccount, near, dispatch])
+        const fetchedBalances = await near.fetchAccountBalance(activeAccount);
+        const refactBalances = fetchedBalances.map(item => ({...item, show: balances.find(token => token.name === item.name)?.show || false}))
+        dispatch(setBalancesForAccount({account: activeAccount, balances: refactBalances}))
+    },[activeAccount, near, dispatch, balances])
 
     useEffect(() => {
         if(!near){
@@ -210,21 +218,24 @@ const NearCoreComponent = (props: any) => {
                         activeAccount={activeAccount}
                     />
                     <Grid style={{height: 'calc(100vh - 100px)',zIndex: 0}}>
-                        <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => navigator(`/dashboard?activeTabs=${value}`)}>
-                            <Tab label="Assets" value="assets"/>
-                            <Tab label="NFTs" value="nfts"/>
-                        </Tabs>
+                        <Grid className="flex justify-between items-center">
+                            <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => navigator(`/dashboard?activeTabs=${value}`)}>
+                                <Tab label="Assets" value="assets"/>
+                                <Tab label="NFTs" value="nfts"/>
+                            </Tabs>
+                            <AddIcon color='primary' className={classes.mangeTokens} onClick={() => navigator('/manage-token')}/>
+                        </Grid>
                         <AutoSizer>
                             {({width, height}) => {
                                 return (
-                                    <div style={{overflowY: 'scroll', height: height, width: width}}>
+                                    <div style={{overflowY: 'scroll', height: height - 100, width: width}}>
                                         {activeTab === 'assets' ? (
                                             <Grid className="assetsList mt2">
                                                 <TokenItem 
                                                     token={{icon: nearIcon, symbol: 'NEAR', balance:nearBalance.balance, price: nearBalance.price}}
                                                     handleItemClick={() => navigator(`/total-assets/near`, {replace: true})}
                                                 />
-                                                {balances.length ? balances.filter(item => Number(item.balance) > 0 && item.symbol.toLowerCase() !== 'near').map((item:any) => {
+                                                {balances.length ? balances?.filter(item => item.show).map((item:any) => {
                                                     return (
                                                         <TokenItem
                                                             token={item}

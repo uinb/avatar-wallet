@@ -14,7 +14,7 @@ const TokenItem = (props:any) => {
         <Card onClick={() => handleItemClick(token)} {...restProps}>
             <ListItem disableGutters dense>
                 <ListItemAvatar>
-                    <TokenIcon icon={token?.icon || token?.logo} symbol={token.symbol} size={32} showSymbol={false}/>
+                    <TokenIcon icon={token?.icon || token?.logo} symbol={token?.symbol || ''} size={32} showSymbol={false}/>
                 </ListItemAvatar>
                 <ListItemText 
                     primary={

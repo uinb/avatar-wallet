@@ -7,6 +7,8 @@ export interface TokenProps{
     decimal: number;
     price?: string;
     usdValue: string;
+    name?:string,
+    show?: boolean | false
 }
 
 export interface NFTMetaProps {
