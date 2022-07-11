@@ -36,7 +36,7 @@ const Popup = () => {
                     <Route path="/create-account/:chain" element={<CreateAccount />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/edit-pwd" element={<EditPwd />} />
-                    <Route path="/add-token" element={<AddToken />} />
+                    <Route path="/manage-token" element={<AddToken />} />
                     <Route path="/transfer/:symbol" element={<Transfer />} />
                     <Route path="/nft-transfer/:contract/:tokenId" element={<NFTTransfer />} />
                     <Route path="/appchain-transfer/:chain" element={<AppchainTransfer />} />

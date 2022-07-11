@@ -161,22 +161,6 @@ const theme:ThemeOptions  = createTheme({
         lineHeight:'1.125rem'
       }
     },
-    MuiSwitch:{
-      root:{
-        height:'1.25rem !important',
-        width:'2.25rem',
-        padding:0,
-        backgroundColor:'#EEEEEE !important',
-        borderRadius:'1.625rem !important'
-      },
-      track:{
-        backgroundColor:'#EEEEEE',
-        opacity:1
-      },
-      thumb:{
-        height:'1rem !important',
-      }
-    },
   }
 })
 
