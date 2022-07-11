@@ -100,7 +100,10 @@ class AppChains extends ApiPromise {
             const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
             return {balance,symbol}
         }).catch((e) => {
-            return ''
+            return {
+                balance:'0',
+                symbol,
+            }
         });
     }
     async fetchAccountTonkenBalances(activeAccount:string, tokens:Array<any>, config:any){

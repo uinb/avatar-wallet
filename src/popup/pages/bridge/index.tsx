@@ -14,7 +14,7 @@ import Card from '@material-ui/core/Card';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Typography from '@material-ui/core/Typography';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { selectAppChains, selectNetwork } from '../../../reducer/network';
 import { useMemo } from 'react';
 import SwitchIcon from '@material-ui/icons/ImportExport';
@@ -22,7 +22,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import nearIcon from '../../../img/near.svg';
-import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts } from '../../../reducer/near';
+import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts, setPriceList } from '../../../reducer/near';
 import { selectActiveAccountByNetworkId as selectAppChainActiveAccount } from '../../../reducer/account';
 import { selectConfig, toDecimals} from '../../../utils';
 import useAppChain from '../../../hooks/useAppChain';
@@ -97,6 +97,7 @@ const Bridge = () => {
     const [balance, setBalance] = useState('0')
     const [selectAccountOpen, setSelectAccountOpen] = useState(false);
     const [accountSide, setAccountSide] = useState('')
+    const dispatch = useAppDispatch();
 
     const chainConfig = useMemo(() => {
         if(!networkId || !activeChain){
@@ -122,7 +123,7 @@ const Bridge = () => {
         const allTokens = originToken.concat(result).map(item => ({
             ...item, 
             ...item.metadata,
-            tokenContractId: balancedTokens.find((item:any) => item?.symbol === activeChain?.appchain_metadata?.fungible_token_metadata.symbol)?.contractId,
+            tokenContractId: balancedTokens.find((balancedItem:any) => balancedItem?.symbol === item?.metadata?.symbol)?.contractId,
         }));
         setNearCrossTokens(allTokens);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,10 +162,10 @@ const Bridge = () => {
         }
         if(isNativeToken){
             const balance = await api.fetchBalances(appChainActiveAccount, chainConfig);
-            setBalance(balance);
+            setBalance(isEmpty(balance) ? '--' : balance.balance);
         }else{
             const balance = await api.fetchFTBalanceByTokenId({params:[selectedToken?.code, appChainActiveAccount], config: chainConfig});
-            setBalance(balance);
+            setBalance(isEmpty(balance) ? '--' : balance);
         }
     },[appChainActiveAccount, api, selectedToken, chainConfig, isNativeToken])
     const fetchNearAccountBalance = useCallback(async () => {
@@ -176,6 +177,17 @@ const Bridge = () => {
         setBalance(decimalValue);
     },[near, selectedToken, formState.from])
 
+
+    const fetchTokensMetadata = useCallback(() => {
+        if(!formState.from || !near) {
+            return 
+        }
+        near.fetchContractTokenMetadata(formState.from).then(resp => {
+            dispatch(setPriceList(resp))
+        }).catch(e=> {
+            dispatch(setPriceList({}))
+        });
+    },[near, formState.from, dispatch])
 
     useEffect(() => {
         if(from === 'near'){
@@ -190,7 +202,8 @@ const Bridge = () => {
             return ;
         }
         fetchNearAccountBalance();
-    },[fetchNearAccountBalance, from])
+        fetchTokensMetadata()
+    },[fetchNearAccountBalance, from, fetchTokensMetadata])
 
 
     const handleSearch = (e) => {
@@ -200,7 +213,7 @@ const Bridge = () => {
     const handleChangeChain = (item:any) => {
         setSelectAppChainOpen(false);
         setBalance('--');
-        navigator(`/bridge/${from ==='near' ? 'near' : item.appchain_id}/${to ==='near' ? 'near' : item.appchain_id}`)
+        navigator(`/bridge/${from ==='near' ? 'near' : item.appchain_id}/${to ==='near' ? 'near' : item.appchain_id}`, {replace: true})
         setFormState(state => ({
             ...state, 
             amount: '0'
@@ -348,10 +361,10 @@ const Bridge = () => {
         }
         setFormState(state => ({
             ...state,
-            from: from === 'near' ? nearAccounts[0] : state.from,
-            target: to === 'near' ? nearAccounts[0] : state.target
+            from: from === 'near' ? nearAccounts.includes(nearActiveAccount) ? nearActiveAccount : nearAccounts[0] : state.from,
+            target: to === 'near' ? nearAccounts.includes(nearActiveAccount) ? nearActiveAccount : nearAccounts[0] : state.target
         }))
-    },[nearAccounts, from, to])
+    },[nearAccounts, from, to, nearActiveAccount])
     useEffect(() => {
         if(!appChainAccounts.length){
             return ;
@@ -472,10 +485,10 @@ const Bridge = () => {
                                 <ArrowDropDown color="action" fontSize="small" className="ml1"/>
                             </Box>
                             <Menu open={Boolean(tokenAnchorEl)} anchorEl={tokenAnchorEl} onClose={() => setTokenAnchorEl(null)}>
-                                {nearCrossTokens.map(item => {
+                                {nearCrossTokens.map((item, index) => {
                                     return (
                                         <MenuItem 
-                                            key={item?.symbol} 
+                                            key={index} 
                                             value={item.contract_account} 
                                             classes={{
                                                 root: classes.tokenItem
@@ -502,7 +515,7 @@ const Bridge = () => {
             </Content>
             <Dialog open={selectAppChainOpen} onClose={() => setSelectAppChainOpen(false)}>
                 <DialogTitle>
-                    select appchains
+                    Select Appchain
                 </DialogTitle>
                 <DialogContent>
                     <Grid>
