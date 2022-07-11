@@ -52,7 +52,7 @@ const TotalAssets = (props:any)=>{
   }
   return (
     <Grid>
-        <HeaderWithBack back="/dashboard"/>
+        <HeaderWithBack back="/dashboard" title="Total Assets" />
         <Content>
             <Grid>
               <Card className='center'>

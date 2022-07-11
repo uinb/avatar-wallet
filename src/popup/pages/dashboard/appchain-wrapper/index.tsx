@@ -5,19 +5,20 @@ import { appChainsConfig } from '../../../../constant/chains';
 import { selectChain, selectAppChain, selectNetwork } from '../../../../reducer/network';
 import {  setTokenAccount } from '../../../../reducer/account';
 import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
-import Card from '@material-ui/core/Card';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 import {selectConfig} from '../../../../utils';
-import TokenIcon from '../../../components/token-icon';
 import { saveAs } from 'file-saver';
 import {isEmpty} from 'lodash'; 
+import TokenItem from '../../../components/token-item';
+import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import qs from 'qs';
+import Typography from '@material-ui/core/Typography';
 
 import {tokenAccountList} from '../../../../reducer/account';
 import { If,Default,For } from 'react-statements'
@@ -30,12 +31,14 @@ const AppChainWrapper = (props:any) => {
     const appChain = useAppSelector(selectAppChain(networkId, chain));
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
     const defaultList = useAppSelector(tokenAccountList);
-    console.log("default  -- ",defaultList)
     const dispatch = useAppDispatch();
     const navigator = useNavigate();
     const handleAccountItemClick = (account:string) => {
         dispatch(setActiveAccount({account: account, networkId}))
     }
+    const location = useLocation();
+    const query = qs.parse(location.search.replace('?',''));
+    const activeTab = query?.activeTabs || 'assets'
     const networkConfig = useMemo(() => {
         if(!networkId || !chain){
             return {} as any
@@ -90,7 +93,7 @@ const AppChainWrapper = (props:any) => {
             return {
                 ...item,
                 balance:item.symbol.toUpperCase() === balanceSymbol?balance:"--",
-                formattedBalance:item.symbol.toUpperCase() === balanceSymbol?api.inputLimit(balance,4):"--"
+                formattedBalance:(item.symbol.toUpperCase() === balanceSymbol && api)?api.inputLimit(balance,4):"--"
             }
         })[0];
     },[networkConfig,balance,balanceSymbol,api]);
@@ -121,7 +124,7 @@ const AppChainWrapper = (props:any) => {
     }
     
     const handleBalanceOperation = (symbol:string) => {
-        if(api && symbol === balanceSymbol)navigator(`/total-assets/${symbol.toLowerCase()}`)
+        if(api)navigator(`/total-assets/${symbol.toLowerCase()}`)
     }
 
     const address = useMemo(() => {
@@ -153,7 +156,7 @@ const AppChainWrapper = (props:any) => {
         }
     ]
     return (
-        <Grid component="div" className="px1 mt1">
+        <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
             {address.length ? (
                 <>
                     <AccountCard 
@@ -164,59 +167,89 @@ const AppChainWrapper = (props:any) => {
                         operations={operations}
                         activeAccount={activeAccount}
                     />
-                    <If when={api && balance !== '--'?true:false}>
-                        <>
-                        <Card className="mt2">
-                            <ListItem disableGutters dense onClick={()=>handleBalanceOperation(networkConfig?.symbol)}>
-                                <ListItemAvatar>
-                                    <TokenIcon showSymbol={false} icon={appChain.appchain_metadata?.fungible_token_metadata?.icon} symbol={appChain.appchain_metadata?.fungible_token_metadata?.symbol} size={40}/>
-                                </ListItemAvatar> 
-                                <ListItemText primary={`${api ? balance : '--'} ${appChain.appchain_metadata?.fungible_token_metadata?.symbol}`} secondary={`$ ${api ? balance : '--'}`}/>
-                            </ListItem>
-                        </Card> 
-                        <For of={tokens_list}>
-                            {(tokens:any,index:any) => (
-                                <Card className="mt2" key={index}>
-                                    <ListItem disableGutters dense onClick={()=>handleBalanceOperation(tokens.symbol)}>
-                                        <ListItemAvatar>
-                                            <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
-                                        </ListItemAvatar>
-                                        <ListItemText primary={`${tokenList[index]?.balance ? tokenList[index]?.balance : '--'} ${tokens?.symbol}`} secondary={`$ ${tokenList[index]?.balance ? tokenList[index]?.balance : '--'}`}/>
-                                    </ListItem>
-                                </Card> 
-                            )}
-                        </For>
-                        </>
-                        <Default>
-                            <If when={defaultList[chain]?true:false}>
-                                <For of={defaultList[chain]}>
-                                    {(tokens:any,index:any)=>(
-                                        <Card className="mt2" key={index}>
-                                            <ListItem disableGutters dense onClick={()=>handleBalanceOperation(tokens.symbol)}>
-                                                <ListItemAvatar>
-                                                    <TokenIcon showSymbol={false} icon={tokens.logo} symbol={tokens?.symbol} size={40}/>
-                                                </ListItemAvatar>
-                                                <ListItemText primary={`${tokens.balance} ${tokens.symbol}`} secondary={`$ ${tokens.balance}`}/>
-                                            </ListItem>
-                                        </Card> 
-                                    )}
-                                </For>
-                                <Default>
-                                    <Card className="mt2">
-                                        <ListItem disableGutters dense>
-                                            <ListItemAvatar>
-                                                <TokenIcon showSymbol={false} icon={nativeTokens.logo} symbol={nativeTokens.symbol} size={40}/>
-                                            </ListItemAvatar> 
-                                            <ListItemText primary={`0 ${nativeTokens.symbol}`} secondary={`$ 0`}/>
-                                        </ListItem>
-                                    </Card>
-                                </Default>
-                            </If>
-                        </Default>
-                        
-                    </If>
-                    
-                    
+                    <Grid style={{height: 'calc(100vh - 100px)',zIndex: 0}}>
+                        <Tabs indicatorColor="primary" textColor="primary" value={activeTab} onChange={(e, value) => navigator(`/dashboard?activeTabs=${value}`)}>
+                            <Tab label="Assets" value="assets"/>
+                            <Tab label="NFTs" value="nfts"/>
+                        </Tabs>
+                        <AutoSizer>
+                            {({width,height}) => {
+                                return (
+                                    <div style={{overflowY: 'scroll', height: height, width: width}}>
+                                        {
+                                            activeTab === 'assets' ?(
+                                                <If when={api && balance !== '--'?true:false}>
+                                                    <>
+                                                    <TokenItem
+                                                        token={{
+                                                            logo:appChain.appchain_metadata?.fungible_token_metadata?.icon,
+                                                            symbol:appChain.appchain_metadata?.fungible_token_metadata?.symbol,
+                                                            balance:balance,
+                                                            price:balance
+                                                        }}
+                                                        showNative
+                                                        key={appChain.appchain_metadata?.fungible_token_metadata?.symbol}
+                                                        className="mt2"
+                                                        handleItemClick={() =>handleBalanceOperation(networkConfig?.symbol)}
+                                                    />
+                                                    <For of={tokens_list}>
+                                                        {(tokens:any,index:any) => (
+                                                            <TokenItem
+                                                                token={{
+                                                                    ...tokens,
+                                                                    balance:tokenList[index]?.balance,
+                                                                    price:tokenList[index]?.balance,
+                                                                }}
+                                                                showNative
+                                                                key={index}
+                                                                className="mt2"
+                                                                handleItemClick={() => handleBalanceOperation(tokens.symbol)}
+                                                            />
+                                                        )}
+                                                    </For>
+                                                    </>
+                                                    <Default>
+                                                        <If when={defaultList[chain]?true:false}>
+                                                            <For of={defaultList[chain]}>
+                                                                {(tokens:any,index:any)=>(
+                                                                    <TokenItem
+                                                                        token={tokens}
+                                                                        showNative
+                                                                        key={index}
+                                                                        className="mt2"
+                                                                        handleItemClick={() => handleBalanceOperation(tokens.symbol)}
+                                                                    />
+                                                                )}
+                                                            </For>
+                                                            <Default>
+                                                                <TokenItem
+                                                                    token={{
+                                                                        logo:nativeTokens.logo,
+                                                                        symbol:nativeTokens.symbol,
+                                                                        balance:0,
+                                                                        price:0
+                                                                    }}
+                                                                    showNative
+                                                                    key={nativeTokens.symbol}
+                                                                    className="mt2"
+                                                                />
+                                                            </Default>
+                                                        </If>
+                                                    </Default>
+                                                </If>
+                                            ):null
+                                        }
+                                        {
+                                            activeTab === "nfts"?(
+                                                <Typography variant="caption" color="primary" className="mt1" component='div' align="left">No Collections</Typography>
+                                            ):null
+                                        }
+                                    </div>
+                                )
+                            }}
+                        </AutoSizer>
+
+                    </Grid>
                 </>
             ) : (
                 <NullAccountWrapper chain="appchains"/>
