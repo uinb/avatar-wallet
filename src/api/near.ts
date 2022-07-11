@@ -154,7 +154,7 @@ class NearCore extends Near {
         return contract.ft_balance_of({account_id: accountId}).then(resp => {
             return {
                 ...ftMetadata, 
-                balance: new Big(resp || 0).div(new Big(10).pow(ftMetadata.decimal || 18)).toNumber()
+                balance: new Big(resp || 0).div(new Big(10).pow(ftMetadata.decimal || ftMetadata.decimals || 18)).toNumber()
             }
         }).catch(e => {
             return {
