@@ -63,7 +63,7 @@ const TotalAssets = (props:any)=>{
                   {chain === 'near' ? new Big(selectToken?.balance || 0).toFixed(4) : selectToken?.balance} {symbol.toUpperCase()}
                 </Typography>
                 <Typography variant="subtitle1" gutterBottom color="textSecondary">
-                  {selectToken?.balance} USD
+                  {selectToken?.price?selectToken?.price:"--"} USD
                 </Typography>
               </Card>
             </Grid>
