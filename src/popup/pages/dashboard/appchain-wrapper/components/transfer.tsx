@@ -14,10 +14,6 @@ import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import SearchIcon from '@material-ui/icons/Search';
-import Card from '@material-ui/core/Card';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItem from '@material-ui/core/ListItem';
 import { Typography } from '@material-ui/core';
 import { selectNetwork,selectChain } from '../../../../../reducer/network';
 import useAppChain from '../../../../../hooks/useAppChain';
@@ -25,6 +21,7 @@ import {selectConfig} from '../../../../../utils';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useSnackbar } from 'notistack';
 import { useNavigate,useParams } from 'react-router-dom';
+import TokenItem from '../../../../components/token-item';
 
 
 
@@ -153,7 +150,7 @@ const Transfer = () => {
     },[state, selectToken,loading])
     return (
         <Grid>
-            <HeaderWithBack back="/dashboard"/>
+            <HeaderWithBack back="/dashboard" title="Send"/>
             <Content>
                 <Grid>
                     <Box className="mt2" onClick={() => setSelectTokenOpen(true)}>
@@ -226,21 +223,13 @@ const Transfer = () => {
                     <Grid className="mt2" style={{maxHeight: '300px', overflow: 'scroll', paddingBottom: 16}}>
                         {
                            filterdTokens.length ? filterdTokens.map((item:any) => (
-                            <Card className="mt2" key={item.symbol} onClick={() => handleChangeToken(item)}>
-                                <ListItem disableGutters dense>
-                                    <ListItemAvatar>
-                                        <Avatar style={{height: 32, width:32}}>
-                                            {item?.logo ? (
-                                                <img src={item?.logo} alt="" width="100%"/>
-                                            ): (
-                                                item.symbol.slice(0,1)
-                                            )}
-                                            
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${item?.balance || 0} ${item?.symbol}`} secondary={`$${item?.balance || 0}`} />
-                                </ListItem>
-                            </Card> 
+                            <TokenItem
+                                token={item}
+                                showNative
+                                key={item.symbol}
+                                className="mt2"
+                                handleItemClick={() => handleChangeToken(item)}
+                            />
                            )) : <Typography color="primary" align="center">No Result</Typography>
                         }
                     </Grid>
