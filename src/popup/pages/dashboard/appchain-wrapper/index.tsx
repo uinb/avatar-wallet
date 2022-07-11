@@ -184,8 +184,7 @@ const AppChainWrapper = (props:any) => {
                                                         token={{
                                                             logo:appChain.appchain_metadata?.fungible_token_metadata?.icon,
                                                             symbol:appChain.appchain_metadata?.fungible_token_metadata?.symbol,
-                                                            balance:balance,
-                                                            price:balance
+                                                            balance:balance
                                                         }}
                                                         showNative
                                                         key={appChain.appchain_metadata?.fungible_token_metadata?.symbol}
@@ -197,8 +196,7 @@ const AppChainWrapper = (props:any) => {
                                                             <TokenItem
                                                                 token={{
                                                                     ...tokens,
-                                                                    balance:tokenList[index]?.balance,
-                                                                    price:tokenList[index]?.balance,
+                                                                    balance:tokenList[index]?.balance
                                                                 }}
                                                                 showNative
                                                                 key={index}
@@ -226,8 +224,7 @@ const AppChainWrapper = (props:any) => {
                                                                     token={{
                                                                         logo:nativeTokens.logo,
                                                                         symbol:nativeTokens.symbol,
-                                                                        balance:0,
-                                                                        price:0
+                                                                        balance:0
                                                                     }}
                                                                     showNative
                                                                     key={nativeTokens.symbol}
