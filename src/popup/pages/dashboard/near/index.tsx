@@ -110,7 +110,7 @@ const NearCoreComponent = (props: any) => {
             return ;
         }
         try{
-            const tokens = await near.fetchFTBasicMetadata(activeAccount);
+            const tokens = await near.fetchFTContract();
             dispatch(setPriceList(tokens))
         }catch(e){
             console.log(e);
