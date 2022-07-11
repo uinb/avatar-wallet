@@ -24,7 +24,7 @@ import IconButton from '@material-ui/core/IconButton';
 import nearIcon from '../../../img/near.svg';
 import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts } from '../../../reducer/near';
 import { selectActiveAccountByNetworkId as selectAppChainActiveAccount } from '../../../reducer/account';
-import { selectConfig, toDecimals, decimalTokenAmount} from '../../../utils';
+import { selectConfig, toDecimals} from '../../../utils';
 import useAppChain from '../../../hooks/useAppChain';
 import useNear from '../../../hooks/useNear';
 import { stringToHex, u8aToHex} from '@polkadot/util';
@@ -168,11 +168,11 @@ const Bridge = () => {
         }
     },[appChainActiveAccount, api, selectedToken, chainConfig, isNativeToken])
     const fetchNearAccountBalance = useCallback(async () => {
-        if(isEmpty(selectedToken) || !formState.from) {
+        if(isEmpty(selectedToken) || !formState.from || !near) {
             return 
         }
-        const result:any = await near.contractBalanceOf(formState.from, selectedToken.tokenContractId);
-        const decimalValue = decimalTokenAmount(result.balance, result.decimals, 4); 
+        const result:any = await near.contractBalanceOfAccount(formState.from, selectedToken.tokenContractId || selectedToken.contract_account);
+        const decimalValue = result.balance; 
         setBalance(decimalValue);
     },[near, selectedToken, formState.from])
 
