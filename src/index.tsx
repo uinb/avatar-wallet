@@ -28,7 +28,7 @@ const theme:ThemeOptions  = createTheme({
     },
     text:{
       primary: '#282828',
-      secondary: '#666666',
+      secondary: '#8A8C9B',
       hint:'#BEC1D6',
     },
     error:{
