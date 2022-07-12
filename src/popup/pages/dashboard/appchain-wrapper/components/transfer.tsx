@@ -81,7 +81,7 @@ const Transfer = () => {
             return;
         }
         setLoading(true);
-        if(state.symbol === symbol){
+        if(state.symbol.toLocaleUpperCase() === symbol.toLocaleUpperCase()){
             const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,selectToken.decimal),(response:any)=>{
                 setLoading(false);
                 if(response.status === 1){
