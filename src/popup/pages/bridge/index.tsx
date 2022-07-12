@@ -102,22 +102,29 @@ const Bridge = () => {
         if(!networkId || !activeChain){
             return;
         }
-        const config  = selectConfig(activeChain.appchain_id, networkId);
+        const config = selectConfig(activeChain.appchain_id, networkId);
         return config
     },[activeChain, networkId])
     const api = useAppChain(chainConfig.nodeId);
+    const {tokens: appChainTokens} = chainConfig;
 
     const fetchCrossTokens = useCallback(async() => {
         if(!near || !activeChain){
             return;
         }
         const result = await near.fetchContractTokens(activeChain.appchain_anchor);
-        const allTokens = result.map(item => ({
-            ...item, 
-            ...item.metadata,
-        }));
+        const allTokens = result.map(item => {
+            const localTokenConfig = appChainTokens.find(token => token.symbol.toLowerCase() === item.metadata.symbol.toLowerCase());
+            return {
+                ...item, 
+                ...item.metadata,
+                icon: localTokenConfig?.logo,
+                code: localTokenConfig?.code,
+                decimal: localTokenConfig?.decimal
+            }
+        });
         setNearCrossTokens(allTokens);
-    }, [near, activeChain])
+    }, [near, activeChain, appChainTokens])
     useEffect(() => {
         fetchCrossTokens();
     },[fetchCrossTokens])
@@ -154,7 +161,7 @@ const Bridge = () => {
             const balance = await api.fetchBalances(appChainActiveAccount, chainConfig);
             setBalance(isEmpty(balance) ? '--' : balance.balance);
         }else{
-            const balance = await api.fetchFTBalanceByTokenId({params:[selectedToken?.code, appChainActiveAccount], config: chainConfig});
+            const balance = await api.fetchFTBalanceByTokenId({params:{code: selectedToken.code, account:appChainActiveAccount, symbol: selectedToken.symbol, decimal: selectedToken.decimal}, config: chainConfig});
             setBalance(isEmpty(balance) ? '--' : balance);
         }
     },[appChainActiveAccount, api, selectedToken, chainConfig, isNativeToken])
