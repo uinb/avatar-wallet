@@ -39,12 +39,14 @@ const theme:ThemeOptions  = createTheme({
       disabledBackground: alpha('#2F64F9', 0.2)
     }
   },
+  typography:{
+    fontFamily: 'Poppins !important'
+  },
   overrides:{
     MuiTypography:{
       caption:{
         fontSize: '0.75rem',
         lineHeight: 1.75,
-        fontWeight: 200
       }
     },
     MuiMenu:{
@@ -78,6 +80,7 @@ const theme:ThemeOptions  = createTheme({
       root: {
         background: '#F5F5F5',
         padding: '8px',
+        fontFamily: 'Poppins !important',
         "&:after":{
           border: '1px solid transparent'
         },
@@ -141,7 +144,6 @@ const theme:ThemeOptions  = createTheme({
     MuiInputLabel:{
       root: {
         fontSize: '0.875rem',
-        fontWeight: 300
       }
     },
     MuiListItemAvatar:{
@@ -152,12 +154,10 @@ const theme:ThemeOptions  = createTheme({
     MuiListItemText:{
       root:{
         fontSize:'1rem',
-        fontWeight:500,
         lineHeight:'1.333rem'
       },
       secondary:{
         fontSize:'0.75rem',
-        fontWeight:400,
         lineHeight:'1.125rem'
       }
     },

@@ -22,7 +22,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import nearIcon from '../../../img/near.svg';
-import {selectNearActiveAccountByNetworkId, selectAccountBlances, selectSignerAccount, selectAllAccounts, setPriceList, updateAccountBalances } from '../../../reducer/near';
+import {selectNearActiveAccountByNetworkId, selectSignerAccount, selectAllAccounts, setPriceList, updateAccountBalances } from '../../../reducer/near';
 import { selectActiveAccountByNetworkId as selectAppChainActiveAccount } from '../../../reducer/account';
 import { selectConfig, toDecimals} from '../../../utils';
 import useAppChain from '../../../hooks/useAppChain';
@@ -91,7 +91,6 @@ const Bridge = () => {
     const [loading, setLoading] = useState(false);
     const octConfig = selectConfig('oct', networkId);
     const navigator = useNavigate();
-    const balancedTokens = useAppSelector(selectAccountBlances(networkId));
     const [selectedToken, setSelectedToken] = useState({}) as any;
     const [tokenAnchorEl, setTokenAnchorEl] = useState(null);
     const [balance, setBalance] = useState('0')
@@ -116,10 +115,8 @@ const Bridge = () => {
         const allTokens = result.map(item => ({
             ...item, 
             ...item.metadata,
-            tokenContractId: balancedTokens.find((balancedItem:any) => balancedItem?.symbol === item?.metadata?.symbol)?.contractId,
         }));
         setNearCrossTokens(allTokens);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [near, activeChain])
     useEffect(() => {
         fetchCrossTokens();
@@ -133,7 +130,7 @@ const Bridge = () => {
     },[appChains, from, to])
 
     useEffect(() => {
-        if(!nearCrossTokens.length){
+        if(isEmpty(nearCrossTokens)){
             return ;
         }
         setSelectedToken(nearCrossTokens[0]);
@@ -174,7 +171,7 @@ const Bridge = () => {
         if(isEmpty(selectedToken) || !accountId || !near) {
             return 
         }
-        const result:any = await near.contractBalanceOfAccount(accountId, selectedToken.tokenContractId || selectedToken.contract_account);
+        const result:any = await near.contractBalanceOfAccount(accountId, selectedToken.contract_account);
         dispatch(updateAccountBalances({account:accountId, updateItem: result})); 
     },[near, selectedToken, dispatch])
 
@@ -311,7 +308,7 @@ const Bridge = () => {
                 await near.bridgeTokenTransfer({
                     target: hexAddress,
                     accountId: formState.from, 
-                    contractId: selectedToken.contract_account || selectedToken.tokenContractId,
+                    contractId: selectedToken.contract_account,
                     amount: amount,
                     bridgeId: activeChain.appchain_anchor,
                     appchain: activeChain.appchain_id
@@ -324,9 +321,9 @@ const Bridge = () => {
                     setLoading(false)
                 }).catch(e => {
                     enqueueSnackbar('Send transaction Fail!', { variant: 'error' });
-                    setLoading(false)
                 })
             }
+            setLoading(false)
         } catch(err) {
             enqueueSnackbar(err.message, { variant: 'error' });
             setLoading(false)
@@ -343,7 +340,7 @@ const Bridge = () => {
     }
 
     const actionDisabled = useMemo(() => {
-        if(!Object.keys(selectedToken).length){
+        if(isEmpty(selectedToken)){
             return true;
         }
         return Object.entries(formState).some(([key, value]) => key === 'amount' ? !Boolean(Number(value) > 0) : !value) || (Number(formState.amount) > Number(balance) || loading)
@@ -366,7 +363,7 @@ const Bridge = () => {
 
     
     useEffect(() => {
-        if(!nearAccounts.length){
+        if(isEmpty(nearAccounts)){
             return ;
         }
         setFormState(state => ({
@@ -376,7 +373,7 @@ const Bridge = () => {
         }))
     },[nearAccounts, from, to, nearActiveAccount])
     useEffect(() => {
-        if(!appChainAccounts.length){
+        if(isEmpty(appChainAccounts)){
             return ;
         }
         setFormState(state => ({
