@@ -9,6 +9,7 @@ import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import {useEffect, useMemo, useState} from 'react';
 import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
+
 import { useNavigate,useLocation } from 'react-router-dom';
 import {selectConfig} from '../../../../utils';
 import { saveAs } from 'file-saver';
@@ -24,6 +25,7 @@ import {tokenAccountList} from '../../../../reducer/account';
 import { If,Default,For } from 'react-statements'
 const AppChainWrapper = (props:any) => {
     const { api } = props;
+    // console.log("api -- ",api)
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
     const config  = appChainsConfig[chain];
@@ -61,25 +63,60 @@ const AppChainWrapper = (props:any) => {
     const [tokenList,setTokenList] = useState(tokens_list) as any;
     const [balance,setBalance] = useState('--') as any;
     const [balanceSymbol,setBalanceSymbol] = useState() as any;
+
     useEffect(() => {
+        let unsubscribe = null;
         if(!api || !activeAccount || !networkConfig){
             setBalance('--')
             return 
         }
         (async () => {
             const {balance,symbol} = await api.fetchBalances(activeAccount, networkConfig);
+            unsubscribe = await api.setSubscribe(activeAccount, networkConfig, ({balance,symbol})=>{
+                setBalance(balance);
+                setBalanceSymbol(symbol);
+            })
             setBalance(balance);
             setBalanceSymbol(symbol);
-        })()
+        })();
+        return ()=>{
+            if(!unsubscribe)return;
+            unsubscribe();
+        }
     },[activeAccount, api, networkConfig, chain]);
+    
     useEffect(()=>{
+        let unsubscribeList = [];
         if(!api || !activeAccount || !tokens_list.length){
             return;
         }
         (async ()=>{
             const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig)
+            tokens_list.forEach(async (token:any,index:any)=>{
+               let unsubscribe = await api.setSubscribeToken({params: {code: token.code, account:activeAccount, symbol: token.symbol, decimal: token.decimal}, config:networkConfig},({balance,formattedBalance})=>{
+                const accountInfo = tokens_list.map((item:any,index:any)=>{
+                    let cover_balance = (item?.balance ==='--'?"0":item?.balance) || "0",cover_formattedBalance = item?.formattedBalance || "0";
+                    if(item.symbol === token.symbol){
+                        cover_balance = balance;
+                        cover_formattedBalance = formattedBalance;
+                    }
+                    return {
+                        ...item,
+                        balance: cover_balance,
+                        formattedBalance:cover_formattedBalance
+                    }
+                });
+                setTokenList(accountInfo);
+               });
+               unsubscribeList.push(unsubscribe);
+            })
             setTokenList(tokensInfo);
         })()
+        return ()=>{
+            unsubscribeList.forEach(fn => {
+                fn();
+            })
+        }
     },[api,activeAccount,networkConfig,tokens_list])
 
     const nativeTokens = useMemo(()=>{

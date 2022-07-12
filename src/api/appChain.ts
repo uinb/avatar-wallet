@@ -91,6 +91,29 @@ class AppChains extends ApiPromise {
         let x = n.pow(decimals||18),y = new Big(number);
         return y.times(x).toString();
     }
+
+
+    async setSubscribe(account:string, config:any, subscribeCallBack:any){
+        const {symbol} = config;
+        const tokenMeta = config.tokens.find(item => item.symbol === symbol);
+        const {decimal = 18} = tokenMeta;
+
+        return await this.query.system.account(account,({ data: { free,reserved }}) => {
+            const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
+            subscribeCallBack({balance,symbol});
+        });
+    }
+    
+    async setSubscribeToken({params, config},subscribeCallBack:any){
+        const {tokenViewModules} = config,this_ = this;
+        const refactorParams = tokenViewModules.balance.params === 'array' ? [[params.code, params.account]] : [params.code, params.account];
+        return await this.query[tokenViewModules.balance.module][tokenViewModules.balance.method](...refactorParams,({free ,reserved })=>{
+            const balance = formatBalance(free, { forceUnit: params.symbol, withSi: true, withUnit: false }, params.decimal);
+            const formattedBalance = this_.inputLimit(balance,4);
+            subscribeCallBack({balance,formattedBalance})
+        });
+    }
+
     async fetchBalances(account:string, config: any){
         const {symbol} = config;
         const tokenMeta = config.tokens.find(item => item.symbol === symbol);
