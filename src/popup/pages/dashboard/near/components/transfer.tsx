@@ -206,7 +206,7 @@ const Transfer = () => {
     }
 
     const sendDisabled = useMemo(() => {
-        if(!Object.keys(selectToken).length){
+        if(isEmpty(selectToken)){
             return true;
         }
         return Object.entries(formState).some(([key, value]) => !value) || Boolean(Number(formState.amount) > Number(selectToken?.balance)) || loading
@@ -231,11 +231,11 @@ const Transfer = () => {
             return [];
         }
         if(accountSide === 'from') {
-            return signerAccounts;
+            return signerAccounts.filter(account => account !== formState.target);
         }else{
-            return allAccounts;
+            return allAccounts.filter(account => account !== formState.sender);
         }
-    }, [accountSide, signerAccounts, allAccounts])
+    }, [accountSide, signerAccounts, allAccounts, formState.sender, formState.target])
 
     const handleAccountSelectClose = () => {
         setAccountSide('');
@@ -255,7 +255,7 @@ const Transfer = () => {
                             onChange={handleInputChange}
                             startAdornment={
                                 <Grid style={{marginRight: 8}}>
-                                    <TokenIcon icon={selectToken?.symbol?.toLowerCase() === 'near' ? nearIcon : selectToken?.icon} size={28} symbol={selectToken.symbol} showSymbol={false}/>
+                                    <TokenIcon icon={isNativeToken ? nearIcon : selectToken?.icon} size={28} symbol={selectToken.symbol} showSymbol={false}/>
                                 </Grid>
                             }
                             endAdornment={<ArrowDropDown color="action" fontSize="small"/>}
@@ -267,11 +267,14 @@ const Transfer = () => {
                             name="sender"
                             fullWidth className="mt2" 
                             value={formState.sender}
+                            placeholder="Sender address"
                             disabled
                             endAdornment={
-                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('from')}>
-                                    change
-                                </Button>
+                                signerAccounts.length ? (
+                                    <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('from')}>
+                                        change
+                                    </Button>
+                                ) : null
                             }
                         />
                     </Box>
@@ -281,12 +284,14 @@ const Transfer = () => {
                             name="target"
                             fullWidth className="mt2" 
                             value={formState.target}
-                            placeholder="target address"
+                            placeholder="Target address"
                             onChange={handleInputChange}
                             endAdornment={
-                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('target')}>
-                                    change
-                                </Button>
+                                allAccounts.length ? (
+                                    <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('target')}>
+                                        change
+                                    </Button>
+                                ) : null
                             }
                         />
                     </Box>
