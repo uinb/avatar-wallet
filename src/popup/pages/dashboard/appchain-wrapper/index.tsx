@@ -73,7 +73,6 @@ const AppChainWrapper = (props:any) => {
         (async () => {
             const {balance,symbol} = await api.fetchBalances(activeAccount, networkConfig);
             unsubscribe = await api.setSubscribe(activeAccount, networkConfig, ({balance,symbol})=>{
-                console.log("balance -- > ",balance)
                 setBalance(balance);
                 setBalanceSymbol(symbol);
             })
@@ -95,8 +94,6 @@ const AppChainWrapper = (props:any) => {
             const tokensInfo = await api.fetchAccountTonkenBalances(activeAccount, tokens_list, networkConfig)
             tokens_list.forEach(async (token:any,index:any)=>{
                let unsubscribe = await api.setSubscribeToken({params: {code: token.code, account:activeAccount, symbol: token.symbol, decimal: token.decimal}, config:networkConfig},({balance,formattedBalance})=>{
-                console.log("balance -token- > ",balance)
-
                 const accountInfo = tokens_list.map((item:any,index:any)=>{
                     let cover_balance = (item?.balance ==='--'?"0":item?.balance) || "0",cover_formattedBalance = item?.formattedBalance || "0";
                     if(item.symbol === token.symbol){
