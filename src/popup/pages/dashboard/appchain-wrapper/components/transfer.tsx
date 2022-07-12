@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect} from 'react';
+import React, {useState, useMemo} from 'react';
 import Grid from "@material-ui/core/Grid";
 import Box from '@material-ui/core/Box';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -45,7 +45,7 @@ const Transfer = () => {
     const api = useAppChain(nodeId);
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
 
-    const [state, setInputState] = useState({ symbol: '', receiver:'', amount: ''})
+    const [state, setInputState] = useState({ symbol: symbol, receiver:'', amount: ''})
     const [selectTokenOpen, setSelectTokenOpen] = useState(false);
     // const dispatch = useAppDispatch();
     const [searchWord, setSearchWord] = useState('');
@@ -81,8 +81,8 @@ const Transfer = () => {
             return;
         }
         setLoading(true);
-        if(state.symbol.toLocaleUpperCase() === symbol.toLocaleUpperCase()){
-            const resultTxHash = await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,selectToken.decimal),(response:any)=>{
+        if(state.symbol.toUpperCase() === tokenList_[0].symbol.toUpperCase()){
+            await api.transfer(activeAccount,state.receiver,api.addPrecision(state.amount,selectToken.decimal),(response:any)=>{
                 setLoading(false);
                 if(response.status === 1){
                     enqueueSnackbar('Send transaction Success!', { variant: 'success' });
@@ -91,9 +91,8 @@ const Transfer = () => {
                     enqueueSnackbar(response.error, { variant: 'error' });
                 }
             });
-            console.log(resultTxHash)
         }else{
-            const resultHash = await api.transferToken(activeAccount,
+            await api.transferToken(activeAccount,
                 [
                     Number(selectToken.code),
                     state.receiver,
@@ -108,22 +107,21 @@ const Transfer = () => {
                         enqueueSnackbar(response.error, { variant: 'error' });
                     }
             })
-            console.log(resultHash)
         }
     }
     const selectToken = useMemo(() => tokenList_.find((item:any) => item?.symbol.toLowerCase() === state.symbol.toLowerCase()) ,[tokenList_, state.symbol])
     const filterdTokens = useMemo(() => tokenList_.filter((item: any) => item.symbol.toLowerCase().includes(searchWord)), [tokenList_, searchWord]);
     // console.log("selectToken  -  " ,selectToken)
-    useEffect(() => {
-        if(!filterdTokens.length){
-            //navigator('/dashboard');  
-            return  
-        }
-        setInputState(state => ({
-            ...state,
-            symbol: filterdTokens[0].symbol
-        }))
-    },[filterdTokens])
+    // useEffect(() => {
+    //     if(!filterdTokens.length){
+    //         //navigator('/dashboard');  
+    //         return  
+    //     }
+    //     setInputState(state => ({
+    //         ...state,
+    //         symbol: filterdTokens[0].symbol
+    //     }))
+    // },[filterdTokens])
 
     const handleChangeToken = (item :any) => {
         setInputState(state => ({
@@ -146,7 +144,7 @@ const Transfer = () => {
     }
 
     const sendDisabled = useMemo(() => {
-        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.formattedBalance)) || loading
+        return Object.entries(state).some(([key, value]) => !value) || Boolean(Number(state.amount) > Number(selectToken?.formattedBalance) || Number(state.amount) === 0) || loading
     },[state, selectToken,loading])
     return (
         <Grid>
