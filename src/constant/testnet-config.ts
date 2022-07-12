@@ -46,9 +46,10 @@ const config = {
         },
         tokens:[
             {"code":0, decimal: 18, symbol: "TAO", "name":"TAO", "logo":"https://www.fusotao.org/share/tao.svg"},
-            {"code":1, decimal: 18, symbol: "USDT", "name":"USDT", "logo":"https://www.fusotao.org/share/usdt.svg"},
+            /* {"code":1, decimal: 18, symbol: "USDT", "name":"USDT", "logo":"https://www.fusotao.org/share/usdt.svg"}, */
             {"code":2, decimal: 18, symbol: "WETH", "name":"WETH", "logo":"https://www.fusotao.org/share/weth.svg"},
-            {"code":3, decimal: 18, symbol: "wNEAR", "name":"wNEAR", "logo":"https://www.fusotao.org/share/wnear.svg"}
+            /* {"code":3, decimal: 18, symbol: "wNEAR", "name":"wNEAR", "logo":"https://www.fusotao.org/share/wnear.svg"} */
+            {"code":3, decimal: 18, symbol: "fUSDT", "name":"fake fusotao usdt", "logo":"https://www.fusotao.org/share/usdt.svg"}
         ]
     },
     "barnacle0918":{
