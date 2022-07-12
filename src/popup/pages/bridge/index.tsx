@@ -113,14 +113,7 @@ const Bridge = () => {
             return;
         }
         const result = await near.fetchContractTokens(activeChain.appchain_anchor);
-        const originToken = [
-            {
-                metadata: activeChain?.appchain_metadata?.fungible_token_metadata,
-                contract_account: activeChain.appchain_owner,
-                bridging_state: 'Active',
-            }
-        ]
-        const allTokens = originToken.concat(result).map(item => ({
+        const allTokens = result.map(item => ({
             ...item, 
             ...item.metadata,
             tokenContractId: balancedTokens.find((balancedItem:any) => balancedItem?.symbol === item?.metadata?.symbol)?.contractId,
@@ -172,7 +165,7 @@ const Bridge = () => {
         if(isEmpty(selectedToken) || !formState.from || !near) {
             return 
         }
-        const result:any = await near.contractBalanceOfAccount(formState.from, selectedToken.tokenContractId || selectedToken.contract_account);
+        const result:any = await near.contractBalanceOfAccount(formState.from, selectedToken.contract_account);
         const decimalValue = result.balance;
         setBalance(decimalValue);
     },[near, selectedToken, formState.from])
@@ -315,25 +308,29 @@ const Bridge = () => {
                     enqueueSnackbar('Send transaction Fail!', { variant: 'error' });
                 }
             } else {
-                const transferToken = await near.bridgeTokenTransfer({
+                await near.bridgeTokenTransfer({
                     target: hexAddress,
                     accountId: formState.from, 
-                    contractId: selectedToken.contract_account,
+                    contractId: selectedToken.contract_account || selectedToken.tokenContractId,
                     amount: amount,
-                    bridgeId: 'dev.dev_oct_relay.testnet',
-                    //bridgeId: activeChain.appchain_anchor,
+                    bridgeId: activeChain.appchain_anchor,
                     appchain: activeChain.appchain_id
-                })
-                if(!transferToken){
+                }).then(resp => {
                     enqueueSnackbar('Transfer success', { variant: 'success' });
                     fetchNearAccountBalance()
-                }
+                    setTimeout(() => {
+                        refreshFtBalance(formState.from)
+                    },2000)
+                    setLoading(false)
+                }).catch(e => {
+                    enqueueSnackbar('Send transaction Fail!', { variant: 'error' });
+                    setLoading(false)
+                })
             }
         } catch(err) {
-            console.log(err);
             enqueueSnackbar(err.message, { variant: 'error' });
+            setLoading(false)
         }
-        setLoading(false)
     }
 
     const handleTransfer = async () => {
