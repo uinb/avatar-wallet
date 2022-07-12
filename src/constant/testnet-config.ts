@@ -189,7 +189,7 @@ const config = {
         symbol:"DBIO",
         tokens:[
             {"code":0, decimal: 18, symbol: "DBIO", "name":"DBIO", "logo":"http://debio.dev/debiologo.png"},
-            {"code":1, decimal: 18, symbol: "USDC", "name":"USDC", "logo":"https://www.fusotao.org/share/usdc.svg"},
+            {"code":0, decimal: 6, symbol: "USDC", "name":"USDC", "logo":"https://www.fusotao.org/share/usdc.svg"},
         ]
     },
     "deip-test":{

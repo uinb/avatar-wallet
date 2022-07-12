@@ -108,7 +108,7 @@ class AppChains extends ApiPromise {
     }
     async fetchAccountTonkenBalances(activeAccount:string, tokens:Array<any>, config:any){
         const request = tokens.map(token => {
-            return this.fetchFTBalanceByTokenId({params: [token.code, activeAccount], config})
+            return this.fetchFTBalanceByTokenId({params: {code: token.code, account:activeAccount, symbol: token.symbol, decimal: token.decimal}, config})
         });
         const result = await Promise.all(request),this_ = this; 
         const accountInfo = tokens.map((item:any,index:any)=>{
@@ -159,12 +159,10 @@ class AppChains extends ApiPromise {
     }
 
     async fetchFTBalanceByTokenId({params, config}){
-        const {tokenViewModules, symbol, tokens} = config;
-        const tokenMeta = tokens.find(item => item.symbol === symbol);
-        const {decimal = 18} = tokenMeta;
-        const refactorParams = tokenViewModules.balance.params === 'array' ? [params] : params;
+        const {tokenViewModules} = config;
+        const refactorParams = tokenViewModules.balance.params === 'array' ? [[params.code, params.account]] : [params.code, params.account];
         const result:any = await this.query[tokenViewModules.balance.module][tokenViewModules.balance.method](...refactorParams);
-        const balance = formatBalance(result?.free || result?.balance, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
+        const balance = formatBalance(result?.free || result?.balance, { forceUnit: params.symbol, withSi: true, withUnit: false }, params.decimal);
         return balance;
     }
 
