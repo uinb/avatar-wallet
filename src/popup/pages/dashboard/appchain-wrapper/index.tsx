@@ -24,7 +24,6 @@ import {tokenAccountList} from '../../../../reducer/account';
 import { If,Default,For } from 'react-statements'
 const AppChainWrapper = (props:any) => {
     const { api } = props;
-    console.log("api -- ",api)
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
     const config  = appChainsConfig[chain];
