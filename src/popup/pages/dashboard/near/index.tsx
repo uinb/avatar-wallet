@@ -205,6 +205,11 @@ const NearCoreComponent = (props: any) => {
         }, {} as NFTMetaProps)
         return refactor
     }, [nftBalances])
+
+    const handleSwapNear = async () => {
+        const result = await near.swapWnear({accountId: activeAccount});
+        console.log(result)
+    }
    
     return (
         <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
@@ -224,6 +229,7 @@ const NearCoreComponent = (props: any) => {
                                 <Tab label="Assets" value="assets"/>
                                 <Tab label="NFTs" value="nfts"/>
                             </Tabs>
+                            <Button color="primary" variant='text' onClick={handleSwapNear}>swap near</Button>
                             <AddIcon color='primary' className={classes.mangeTokens} onClick={() => navigator('/manage-token')}/>
                         </Grid>
                         <AutoSizer>

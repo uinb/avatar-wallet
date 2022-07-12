@@ -479,6 +479,34 @@ class NearCore extends Near {
             ...tokens
         }
     }
+
+    async swapWnear(payload){
+        const {networkId} = this.near.config;
+        const {accountId, contractId = networkId === 'testnet' ? 'wrap.testnet' : 'wrap.near'} = payload;
+        const account = await this.near.account(accountId);
+        const contract:any = new Contract(
+            account,
+            contractId,
+            {
+              viewMethods: [''],
+              changeMethods: ['near_deposit']
+            }
+        )
+        return contract.near_deposit({
+            args:{},
+            amount: utils.format.parseNearAmount('1')
+        }).then(resp => {
+            return {
+                ...resp,
+                status: true
+            }
+        }).catch(e => {
+            return {
+                status: false,
+                msg: e.message
+            }
+        })
+    }
 }
 export default NearCore;
 
