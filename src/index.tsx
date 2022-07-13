@@ -171,7 +171,7 @@ const root = ReactDOM.createRoot(
 const SnackbarProviderComponent = (props:any) => {
   return (
     <SnackbarProvider 
-      autoHideDuration={3000} 
+      autoHideDuration={1000} 
       preventDuplicate={true} 
       hideIconVariant={true}
       dense={true}

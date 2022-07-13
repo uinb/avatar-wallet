@@ -42,6 +42,10 @@ const Dashboard = (props:any) => {
     }
 
     useEffect(() => {
+        setAppChainApi(null)
+    },[networkId])
+
+    useEffect(() => {
         if(!networkId) {
             return;
         }
@@ -52,7 +56,7 @@ const Dashboard = (props:any) => {
         <Grid>
             <DashboardHeader />
             <Content className="dashboard-content">
-                {activeChain === 'near' || api ? (
+                {activeChain === 'near' || appChainApi ? (
                     <>
                         <Grid className="chainList">
                             {Object.entries(chains).map(([key, item]: [string, any]) => {
