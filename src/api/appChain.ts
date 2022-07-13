@@ -120,8 +120,6 @@ class AppChains extends ApiPromise {
         return this.query.system.account(account).then((resp: any) => {
             const { free } = resp?.data;
             const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
-            console.log("balance - ",balance,"symbol --- ",symbol)
-
             return {balance,symbol}
         }).catch((e) => {
             return {
