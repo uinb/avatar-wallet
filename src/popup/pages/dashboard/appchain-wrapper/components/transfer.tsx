@@ -29,7 +29,7 @@ const Transfer = () => {
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
 
-    const chainTokens = useAppSelector(tokenAccountList);
+    const chainTokens = useAppSelector(tokenAccountList(networkId));
     const tokenList_ = chainTokens[chain];
     const {symbol = '' } = useParams() as {symbol: string};
 
