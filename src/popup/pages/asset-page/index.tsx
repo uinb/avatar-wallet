@@ -21,7 +21,7 @@ const TotalAssets = (props:any)=>{
   const networkId = useAppSelector(selectNetwork);
   const chain = useAppSelector(selectChain(networkId));
   const balancedTokens = useAppSelector(selectAccountBlances(networkId));
-  const chainTokens = useAppSelector(tokenAccountList);
+  const chainTokens = useAppSelector(tokenAccountList(networkId));
   const tokenList = chainTokens[chain];
   const {symbol = '' } = useParams() as {symbol: string};
   const selectToken = useMemo(() => {

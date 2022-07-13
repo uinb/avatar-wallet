@@ -25,13 +25,12 @@ import {tokenAccountList} from '../../../../reducer/account';
 import { If,Default,For } from 'react-statements'
 const AppChainWrapper = (props:any) => {
     const { api } = props;
-    // console.log("api -- ",api)
     const networkId = useAppSelector(selectNetwork);
     const chain = useAppSelector(selectChain(networkId));
     const config  = appChainsConfig[chain];
     const appChain = useAppSelector(selectAppChain(networkId, chain));
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(networkId));
-    const defaultList = useAppSelector(tokenAccountList);
+    const defaultList = useAppSelector(tokenAccountList(networkId));
     const dispatch = useAppDispatch();
     const navigator = useNavigate();
     const handleAccountItemClick = (account:string) => {
@@ -72,12 +71,12 @@ const AppChainWrapper = (props:any) => {
         }
         (async () => {
             const {balance,symbol} = await api.fetchBalances(activeAccount, networkConfig);
+            setBalance(balance);
+            setBalanceSymbol(symbol);
             unsubscribe = await api.setSubscribe(activeAccount, networkConfig, ({balance,symbol})=>{
                 setBalance(balance);
                 setBalanceSymbol(symbol);
             })
-            setBalance(balance);
-            setBalanceSymbol(symbol);
         })();
         return ()=>{
             if(!unsubscribe)return;
@@ -137,15 +136,17 @@ const AppChainWrapper = (props:any) => {
         if(!tokens_list.length && nativeTokens.balance !== "--"){
             dispatch(setTokenAccount({
                 chain:chain,
+                networkId,
                 list:[nativeTokens]
             }))
         }
         if(!tokens_list.length || nativeTokens.balance === "--" || tokenList.length !== tokens_list.length)return;
         dispatch(setTokenAccount({
             chain:chain,
+            networkId,
             list:[nativeTokens,...tokenList]
         }))
-    },[tokenList,dispatch,chain,nativeTokens,tokens_list]);
+    },[tokenList,dispatch,networkId,chain,nativeTokens,tokens_list]);
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
@@ -243,8 +244,8 @@ const AppChainWrapper = (props:any) => {
                                                     </For>
                                                     </>
                                                     <Default>
-                                                        <If when={defaultList[chain]?true:false}>
-                                                            <For of={defaultList[chain]}>
+                                                        <If when={(defaultList?defaultList[chain]:false)?true:false}>
+                                                            <For of={defaultList?defaultList[chain]:[]}>
                                                                 {(tokens:any,index:any)=>(
                                                                     <TokenItem
                                                                         token={tokens}

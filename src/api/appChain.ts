@@ -97,7 +97,6 @@ class AppChains extends ApiPromise {
         const {symbol} = config;
         const tokenMeta = config.tokens.find(item => item.symbol === symbol);
         const {decimal = 18} = tokenMeta;
-
         return await this.query.system.account(account,({ data: { free,reserved }}) => {
             const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
             subscribeCallBack({balance,symbol});
@@ -121,6 +120,8 @@ class AppChains extends ApiPromise {
         return this.query.system.account(account).then((resp: any) => {
             const { free } = resp?.data;
             const balance = formatBalance(free, { forceUnit: symbol, withSi: true, withUnit: false }, decimal);
+            console.log("balance - ",balance,"symbol --- ",symbol)
+
             return {balance,symbol}
         }).catch((e) => {
             return {

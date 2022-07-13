@@ -28,8 +28,8 @@ export const account = createSlice({
   initialState,
   reducers: {
     setTokenAccount(state,{payload}){
-      const {chain,list} = payload;
-      state.tokenAccount[chain] = list;
+      const {chain, networkId, list} = payload;
+      state.tokenAccount[networkId] = {[chain]:list};
     },
     setAccount(state, {payload }){
       const {networkId, account} = payload;
@@ -47,7 +47,7 @@ export const account = createSlice({
 
 export const {setAccount, setActiveAccount, setTokenAccount} = account.actions;
 const selectRootState =  (state: RootState)  => state.account;
-export const tokenAccountList = createSelector(selectRootState, state => state.tokenAccount); 
+export const tokenAccountList = (networkId:string) => createSelector(selectRootState, state => state.tokenAccount[networkId]); 
 export const selectAccountsByNetworkId = (networkId:string) =>  createSelector(selectRootState, state => state.accounts[networkId])
 export const selectActiveAccountByNetworkId = (networkId:string) =>  createSelector(selectRootState, state => state.activeAccount[networkId] || '')
 
