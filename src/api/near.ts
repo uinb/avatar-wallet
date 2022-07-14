@@ -518,6 +518,19 @@ class NearCore extends Near {
             }
         })
     }
+
+    async fetchHistory(accountId:string){
+        const {historyUrl = ''} = this.near.config;
+        const [base, path] = historyUrl?.split('{requestAccount}');
+        if(historyUrl){
+            return axios.get(`${base}${accountId}${path}`).then(resp => {
+                return resp.data || []
+            }).catch(e => {
+                return [];
+            });
+        }
+        return []
+    }
 }
 export default NearCore;
 

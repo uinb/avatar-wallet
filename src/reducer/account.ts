@@ -47,7 +47,7 @@ export const account = createSlice({
 
 export const {setAccount, setActiveAccount, setTokenAccount} = account.actions;
 const selectRootState =  (state: RootState)  => state.account;
-export const tokenAccountList = (networkId:string) => createSelector(selectRootState, state => state.tokenAccount[networkId]); 
+export const tokenAccountList = (networkId:string) => createSelector(selectRootState, state => state.tokenAccount[networkId] || {}); 
 export const selectAccountsByNetworkId = (networkId:string) =>  createSelector(selectRootState, state => state.accounts[networkId])
 export const selectActiveAccountByNetworkId = (networkId:string) =>  createSelector(selectRootState, state => state.activeAccount[networkId] || '')
 

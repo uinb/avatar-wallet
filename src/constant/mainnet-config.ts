@@ -8,7 +8,8 @@ const config = {
         headers: {},
         ftPriceUrl:'https://indexer.ref-finance.net/list-token-price',
         nftFetchUrl:'https://api.kitwallet.app/account/{requestAccount}/likelyNFTs',
-        ftFetchUrl: 'https://api.kitwallet.app/account/{requestAccount}/likelyTokens'
+        ftFetchUrl: 'https://api.kitwallet.app/account/{requestAccount}/likelyTokens',
+        historyUrl:'https://api.kitwallet.app/account/{requestAccount}/activity'
     },
     oct:{
         explorerUrl: "https://explorer.mainnet.oct.network",
