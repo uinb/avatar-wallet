@@ -102,29 +102,31 @@ const Settings = () => {
           aria-labelledby="alert-dialog-slide-title"
           aria-describedby="alert-dialog-slide-description"
         >
-          <DialogTitle id="customized-dialog-title" onClose={handlePwdClose}>
-            Safety Verification
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-slide-description" component="div">
-              <Grid container direction="column" >
-                <Box>
-                  <Box className="mt2">
-                    <InputLabel className="tl">Enter Password</InputLabel>
-                    <Input
-                      value={inputPwd}
-                      fullWidth className="mt2"
-                      type={pwdVisible ? "text" : "password"}
-                      onChange={handlePwdChange}
-                      endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small" onClick={() => setPwdVisible(false)} /> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)} />}
-                    />
-                    {inputError && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError}</Typography>}
+          <div className='dialogPwdBox'>
+            <DialogTitle id="customized-dialog-title" onClose={handlePwdClose}>
+              Safety Verification
+            </DialogTitle>
+            <DialogContent className='pdzero'>
+              <DialogContentText id="alert-dialog-slide-description" component="div">
+                <Grid container direction="column" >
+                  <Box>
+                    <Box className="mt2">
+                      <InputLabel className="tl">Enter Password</InputLabel>
+                      <Input
+                        value={inputPwd}
+                        fullWidth className="mt2"
+                        type={pwdVisible ? "text" : "password"}
+                        onChange={handlePwdChange}
+                        endAdornment={pwdVisible ? <VisibilityOff color="action" fontSize="small" onClick={() => setPwdVisible(false)} /> : <Visibility color="action" fontSize="small" onClick={() => setPwdVisible(true)} />}
+                      />
+                      {inputError && <Typography component="div" color="primary" className="tl mt1" variant="caption">{inputError}</Typography>}
+                    </Box>
+                    <Button fullWidth color="primary" variant='contained' size="large" className="mt2" onClick={handleNext}>Next</Button><br /><br />
                   </Box>
-                  <Button fullWidth color="primary" variant='contained' size="large" className="mt2" onClick={handleNext}>Next</Button><br /><br />
-                </Box>
-              </Grid>
-            </DialogContentText>
-          </DialogContent>
+                </Grid>
+              </DialogContentText>
+            </DialogContent>
+          </div>
         </Dialog>
       </Content>
     </Grid>
