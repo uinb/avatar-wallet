@@ -8,7 +8,7 @@ const styles: any = (theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
-    width: 332
+    width: '100%'
   },
   closeButton: {
     position: 'absolute',
