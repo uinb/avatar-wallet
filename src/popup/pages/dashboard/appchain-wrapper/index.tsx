@@ -151,7 +151,7 @@ const AppChainWrapper = (props:any) => {
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
             keyring.forgetAccount(activeAccount);
-            navigator('/dashboard', {replace: true})
+            dispatch(setActiveAccount({account: address.filter(account => account !== activeAccount)[0], networkId}))
         }else if(type === 'exportAccount'){
             const account = keyring.getPairs().find(item => item.address === activeAccount);
             const result = keyring.backupAccount(account, '')
