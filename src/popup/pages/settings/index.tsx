@@ -105,7 +105,7 @@ const Settings = () => {
           <DialogTitle id="customized-dialog-title" onClose={handlePwdClose}>
             Safety Verification
           </DialogTitle>
-          <DialogContent>
+          <DialogContent className='pdzero'>
             <DialogContentText id="alert-dialog-slide-description" component="div">
               <Grid container direction="column" >
                 <Box>
