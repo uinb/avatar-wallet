@@ -1,7 +1,7 @@
 import React from 'react';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import AppBar from '@material-ui/core/AppBar';
-import { makeStyles, Typography } from '@material-ui/core';
+import { DialogContent, makeStyles, Typography } from '@material-ui/core';
 import { Link, useNavigate} from 'react-router-dom';
 import dashboardLogo from '../../img/dashboard-logo.svg';
 import cn from 'classnames';
@@ -23,6 +23,8 @@ import { useAppSelector,useAppDispatch } from '../../app/hooks';
 import { selectNetworkList,changeNetwork, selectNetwork, selectChain, selectAppChains} from '../../reducer/network';
 import "./header.scss"
 import { grey } from '@material-ui/core/colors';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
+import {useSnackbar} from 'notistack';
 
 
 const useStyles = makeStyles(theme => ({
@@ -73,7 +75,18 @@ const useStyles = makeStyles(theme => ({
       color: theme.palette.grey[500],
     },
     label:{
-      textTransform: 'capitalize'
+      textTransform: 'capitalize',
+      paddingRight: theme.spacing(1),
+      wordBreak:'break-all'
+    },
+    netlist:{
+      overflow:'hidden',
+      width: '100%',
+      maxHeight: 300,
+      overflowY:'scroll'
+    },
+    content:{
+      overflow:'hidden'
     }
 }))
 
@@ -116,25 +129,42 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
       onClose(selectedValue)
     }
     const classes = useStyles();
+    const {enqueueSnackbar} = useSnackbar();
     return (
       <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" fullWidth open={open}>
         <DialogTitle id="simple-dialog-title">Network</DialogTitle>
         <IconButton aria-label="close" className={cn(classes.closeButton, 'ml1')} onClick={closeDialog}>
           <CloseIcon />
         </IconButton>
-        <FormControl component="fieldset">
-          <div className='box'>
-            <RadioGroup aria-label="gender" name={selectedValue} value={selectedValue} onChange={handleChange}>
+        <DialogContent className={classes.content}>
+          <FormControl className={classes.netlist}>
+            <RadioGroup name={selectedValue} value={selectedValue} onChange={handleChange}>
               {
                 networkList.map((network, index) => (
-                  <FormControlLabel key={index} value={network.name} classes={{root: classes.label}} control={<Radio />} label={network.name} />
+                  <FormControlLabel 
+                    key={index} 
+                    value={network.name} 
+                    control={<Radio />} 
+                    label={(
+                      <CopyToClipboard onCopy={() => enqueueSnackbar('copied !', {variant: 'success'}) } text={network.name}>
+                        <Typography variant="body2" className={classes.label} title={network.name}>{network.name}</Typography>
+                      </CopyToClipboard>
+                    )} 
+                  />
                 ))
               }
             </RadioGroup>
-            <Button variant="outlined" color="primary" size="large" fullWidth component={Link} to="/addcustom">+Add Custom</Button>
-          </div>
-        
-      </FormControl>
+          </FormControl>
+          <Button 
+            className="mt2" 
+            variant="outlined" 
+            color="primary" 
+            size="large" 
+            fullWidth 
+            component={Link} 
+            to="/addcustom"
+          >+Add Custom</Button>
+        </DialogContent>
       </Dialog>
     );
 }
