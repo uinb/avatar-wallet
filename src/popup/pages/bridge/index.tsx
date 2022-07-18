@@ -31,7 +31,7 @@ import { stringToHex, u8aToHex} from '@polkadot/util';
 import keyring from '@polkadot/ui-keyring';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { useSnackbar } from 'notistack';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
@@ -420,6 +420,14 @@ const Bridge = () => {
         setSelectAccountOpen(false)
     }
 
+    const fromSideAccounts = useMemo(() => {
+        return from === 'near' ?  nearAccounts : appChainAccounts
+    },[nearAccounts, appChainAccounts, from]);
+
+    const targetSideAccounts = useMemo(() => {
+        return from !== 'near' ?  nearAccounts : appChainAccounts
+    },[nearAccounts, appChainAccounts,from]);
+
     return (
         <Grid>
             <HeaderWithBack back="/dashboard" title="Bridge"/>
@@ -448,9 +456,15 @@ const Bridge = () => {
                                 </Grid>
                             }
                             endAdornment={
-                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('from')}>
-                                    change
-                                </Button>
+                                fromSideAccounts.length ? (
+                                    <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('from')}>
+                                        change
+                                    </Button>
+                                ) : (
+                                    <Button color="primary" variant='text' size="small" component={Link} to={`/import-account/${from === 'near' ? 'near' : 'appchains'}`}>
+                                        Import
+                                    </Button>
+                                )
                             }
                         />
                     </Box>
@@ -469,9 +483,15 @@ const Bridge = () => {
                                 </Grid>
                             }
                             endAdornment={
-                                <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('target')}>
-                                    change
-                                </Button>
+                                targetSideAccounts.length ? (
+                                    <Button color="primary" variant='text' size="small" onClick={() => handleSetAccountSide('target')}>
+                                        change
+                                    </Button>
+                                    ) : (
+                                        <Button color="primary" variant='text' size="small" component={Link} to={`/import-account/${to === 'near' ? 'near' : 'appchains'}`}>
+                                            Import
+                                        </Button>
+                                    )
                             }
                         />
                     </Box>
