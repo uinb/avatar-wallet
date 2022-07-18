@@ -23,6 +23,12 @@ export const selectConfig = (chain:string, networkId:string) => {
     return networkConfig[networkIdKey][chain] || {} as any
 }
 
+export const selectConfigByNetwork = (networkId:string) => {
+    const networkConfig = {mainnetConfig,testnetConfig};
+    const networkIdKey = networkId+"Config";
+    return networkConfig[networkIdKey]
+}
+
 export function fromDecimals(numStr, decimals = 18) {
     return new Big(numStr).div(Math.pow(10, decimals)).toNumber();
   }
