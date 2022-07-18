@@ -1,6 +1,7 @@
 import { createSlice, createSelector, createAsyncThunk} from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 import {newNear} from '../api';
+import {selectConfigByNetwork} from '../utils';
 
 
 interface StateProps {
@@ -71,7 +72,8 @@ export const network = createSlice({
     },
     setAppChains(state, {payload}){
       const {networkId, chains} = payload;
-      state.appChains[networkId] = chains;
+      const configedChain = selectConfigByNetwork(networkId);
+      state.appChains[networkId] = chains.filter(item => configedChain.hasOwnProperty(item.appchain_id));
     }
   },
   extraReducers: (builder) => {
@@ -79,12 +81,13 @@ export const network = createSlice({
       state.loading = true;
     }).addCase(fetchAppChains.fulfilled, (state, {payload}) => {
       const {networkId, chains} = payload;
+      const configedChain = selectConfigByNetwork(networkId);
       if(state.appChains[networkId]){
-        state.appChains[networkId] = chains;
+        state.appChains[networkId] = chains.filter(item => configedChain.hasOwnProperty(item.appchain_id));
       }else{
         state.appChains = {
           ...state.appChains, 
-          [networkId]: chains
+          [networkId]: chains.filter(item => configedChain.hasOwnProperty(item.appchain_id))
         }
       }
       state.loading = false;
