@@ -74,6 +74,9 @@ export const network = createSlice({
       const {networkId, chains} = payload;
       const configedChain = selectConfigByNetwork(networkId);
       state.appChains[networkId] = chains.filter(item => configedChain.hasOwnProperty(item.appchain_id));
+    },
+    updateNetworkOptions:(state, {payload}) => {
+      state.networkOption = state.networkOption.filter(item => item.name !== payload)
     }
   },
   extraReducers: (builder) => {
@@ -95,7 +98,7 @@ export const network = createSlice({
   }
 })
 
-export const {setChain, addNetwork, setNetwork, changeNetwork, setAppChains}  = network.actions;
+export const {setChain, addNetwork, setNetwork, changeNetwork, setAppChains, updateNetworkOptions}  = network.actions;
 const selectRootState =  (state: RootState)  => state.network;
 export const selectNetwork = createSelector(selectRootState, state => state.networkId); 
 export const selectNetworkList = createSelector(selectRootState, state => state.networkOption); 
@@ -109,6 +112,10 @@ export const selectAppChain = (networkId:string,  name: string) => createSelecto
   }else{
     return state.find(item => item.appchain_id === name) 
   }
+})
+
+export const selectNetworkById = (networkId :string) => createSelector(selectRootState,  state => {
+  return state.networkOption.find(item => item.name === networkId) || {}
 })
 
 

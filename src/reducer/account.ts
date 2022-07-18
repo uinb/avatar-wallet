@@ -6,7 +6,8 @@ interface StateProps {
   accounts: Array<string>,
   activeAccount: '',
   balacne: string,
-  tokenAccount:any
+  tokenAccount:any,
+  allAccounts: Array<string>,
 }
 
 const initialState: StateProps = {
@@ -14,7 +15,8 @@ const initialState: StateProps = {
   accounts: [],
   activeAccount: '',
   balacne:'--',
-  tokenAccount:{}
+  tokenAccount:{},
+  allAccounts: []
 }
 
 export const account = createSlice({

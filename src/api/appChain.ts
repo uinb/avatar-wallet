@@ -86,7 +86,7 @@ class AppChains extends ApiPromise {
         };
         return priceVal;
     }
-    addPrecision(number:string,decimals:number){
+    addPrecision(number:string,decimals:number|string){
         let n = new Big("10");
         let x = n.pow(decimals||18),y = new Big(number);
         return y.times(x).toString();

@@ -6,21 +6,27 @@ import {Link, useNavigate} from 'react-router-dom';
 import Logo from '../../components/logo';
 import { useAppSelector } from '../../../app/hooks';
 import {selectPwd, selectExpiredTime} from '../../../reducer/auth';
+import { selectNetwork } from '../../../reducer/network';
 
 const Welcome = () => {
     const hasPwd = Boolean(useAppSelector(selectPwd));
     const expiredTime = useAppSelector(selectExpiredTime);
+    const networkId = useAppSelector(selectNetwork)
     const navigate = useNavigate();
     useEffect(() => {
         if(!hasPwd){
             return ;
         }
         if(expiredTime > Date.now()){
-            navigate('/dashboard');
+            if(['mainnet', 'testnet'].includes(networkId)){
+                navigate('/dashboard');
+            }else{
+                navigate('/custom');
+            }
         }else{
             navigate('/sign-in');
         }
-    },[hasPwd, navigate, expiredTime])
+    },[hasPwd, navigate, expiredTime, networkId])
     return (
         <Grid className="welcome">
             <Logo />

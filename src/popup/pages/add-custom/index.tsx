@@ -63,12 +63,11 @@ const AddNetwork = () => {
     }, [name, url])
 
     const handleAddNetwork = async () => {
-
       
       // //check URL
       // let api = await connectToBlockchain(url);
       // console.log(api.genesisHash.toHex());
-      navigate('/dashboard')
+      navigate('/')
       dispatch(addNetwork({name,networkUrl:url,active:false}));
     }
     return (

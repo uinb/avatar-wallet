@@ -71,6 +71,7 @@ const AppChainWrapper = (props:any) => {
         }
         (async () => {
             const {balance,symbol} = await api.fetchBalances(activeAccount, networkConfig);
+            console.log(balance);
             setBalance(balance);
             setBalanceSymbol(symbol);
             unsubscribe = await api.setSubscribe(activeAccount, networkConfig, ({balance,symbol})=>{

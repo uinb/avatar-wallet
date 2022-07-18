@@ -48,7 +48,7 @@ const CreateAccount = (props:any) => {
         if(step === 'confirmSeeds'){
             setStep('generate');
         }else{
-            navigator('/dashboard');
+            navigator('/');
         }   
     }
 
@@ -93,7 +93,7 @@ const CreateAccount = (props:any) => {
         }else{
            const result = keyring.addUri(seeds, '', {}, 'sr25519');
            console.log(result);
-           navigator('/dashboard');
+           navigator('/');
         }
     }
 
@@ -103,7 +103,7 @@ const CreateAccount = (props:any) => {
     }
     return (
         <Grid>
-            <HeaderWithBack callback={handleBack} action={step === 'createSuccess' ? <Typography color="primary" component={Link} to="/dashboard">skip</Typography> : null}/>
+            <HeaderWithBack callback={handleBack} action={step === 'createSuccess' ? <Typography color="primary" component={Link} to="/">skip</Typography> : null}/>
             <Content>
                 {step === 'setNearAccount' ? (
                     <SetNearAccount setAccount={setAccount} address={tempAddress}/>

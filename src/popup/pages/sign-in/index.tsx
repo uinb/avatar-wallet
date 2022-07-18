@@ -32,7 +32,7 @@ const SignIn = () => {
                 }
 
             }))
-            navigate('/dashboard')
+            navigate('/')
         }
         setInputError('invalid password !!')
     }

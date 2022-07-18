@@ -18,7 +18,8 @@ import AddToken  from './pages/dashboard/near/add-token'
 import Bridge from './pages/bridge'
 import TotalAssets from './pages/asset-page';
 import Deposit from './pages/deposit';
-import NFTTransfer from './pages/dashboard/near/components/nft-transfer'
+import NFTTransfer from './pages/dashboard/near/components/nft-transfer';
+import CustomPage from './pages/custom-dashboard';
 
 
 const Popup = () => {
@@ -44,6 +45,11 @@ const Popup = () => {
                     <Route path="/bridge/:from/:to" element={<Bridge />} />
                     <Route path="/total-assets/:symbol" element={<TotalAssets />} />
                     <Route path="/deposit/:chain/:symbol" element={<Deposit />} />
+                    <Route path="/custom" element={<CustomPage />} >
+                        <Route path="asset/:symbol" element={<CustomPage />}></Route>
+                        <Route path="transfer/:symbol" element={<CustomPage />}></Route>
+                        <Route path="deposit/:symbol" element={<CustomPage />}></Route>
+                    </Route>
                 </Routes>
             </HashRouter>
         </Grid>
