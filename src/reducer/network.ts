@@ -32,7 +32,7 @@ const initialState: StateProps = {
   ],
   networkId: localStorage.getItem('networkId') || 'mainnet',
   chain:{},
-  appChains: {}
+  appChains: selectConfigByNetwork(['mainnet', 'testnet'].includes(localStorage.getItem('networkId')) ? localStorage.getItem('networkId') : 'mainnet')
 }
 
 
