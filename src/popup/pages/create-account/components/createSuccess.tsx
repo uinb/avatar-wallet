@@ -5,10 +5,12 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import FileCopy from '@material-ui/icons/FileCopy';
 import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
+import {useSnackbar} from 'notistack';
 
 
 const Seeds = (props:any) => {
     const {tempAddress} = props;
+    const {enqueueSnackbar} = useSnackbar();
     return (
         <Grid>
             <Typography variant="h6" gutterBottom>Almost there! To get started, send at least 0.1 NEAR to your wallet address.</Typography>
@@ -21,7 +23,7 @@ const Seeds = (props:any) => {
             />
             <CopyToClipboard 
                 text={tempAddress}
-                onCopy={() => {console.log('copied!')}}
+                onCopy={() => { enqueueSnackbar('copied!', {variant: 'success'}) }}
             >
                 <Typography variant="caption" component="div" color="primary" className="mt4" align="center">
                     <FileCopy color="inherit" fontSize="inherit"/> &nbsp; Copy to Clipboard

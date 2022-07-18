@@ -11,11 +11,13 @@ import keyring from '@polkadot/ui-keyring';
 import useNear from '../../../hooks/useNear';
 import { useAppSelector } from '../../../app/hooks';
 import { selectNetwork } from '../../../reducer/network';
+import {mnemonicValidate} from '@polkadot/util-crypto/mnemonic';
+import classNames from 'classnames';
 
 
 const ImportAccount = (props:any) => {
     const [seeds, setSeeds] = useState('');
-    const [errorText] = useState('');
+    const [errorText, setErrorText] = useState('');
     const navigator = useNavigate()
     const {chain = 'near'} = useParams() as {chain: string};
     const networkId = useAppSelector(selectNetwork)
@@ -31,6 +33,11 @@ const ImportAccount = (props:any) => {
     }
     const handleSetSeeds = (e:any) => {
         setSeeds(e.target.value);
+        if(!mnemonicValidate(e.target.value)){
+            setErrorText('Invalid seeds')
+        }else{
+            setErrorText('')
+        }
     }
     return (
         <Grid>
@@ -43,9 +50,9 @@ const ImportAccount = (props:any) => {
                         style={{width: '100%'}} 
                         onChange={(e) => handleSetSeeds(e)}
                         value={seeds}
-                        className="textarea mt2"
+                        className={classNames('textarea mt2', errorText ? 'error' : '')}
                     />
-                    {errorText ? <Typography color="primary" variant="caption">{errorText}</Typography> : null }
+                    {errorText ? <Typography color="error" variant="caption">{errorText}</Typography> : null }
                     <Button color="primary" className="mt3" size="large" variant="contained" fullWidth onClick={handleImport}>continue</Button>
                 </div>
             </Content>

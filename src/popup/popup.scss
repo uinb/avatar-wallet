@@ -132,8 +132,11 @@ textarea {
     border-color: transparent;
     padding: 16px;
     box-sizing: border-box;
-    margin: 16px 0;
+    margin-top: 8px;
     resize: none;
+    &.error{
+        border: 2px solid #F23E5F !important;
+    }
 }
 .text-center {
     text-align: center;
