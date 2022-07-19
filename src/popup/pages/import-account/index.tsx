@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
-import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import { HeaderWithBack } from '../../components/header';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +12,7 @@ import { useAppSelector } from '../../../app/hooks';
 import { selectNetwork } from '../../../reducer/network';
 import {mnemonicValidate} from '@polkadot/util-crypto/mnemonic';
 import classNames from 'classnames';
+import ButtonWithLoading from '../../components/loading-button';
 
 
 const ImportAccount = (props:any) => {
@@ -22,13 +22,16 @@ const ImportAccount = (props:any) => {
     const {chain = 'near'} = useParams() as {chain: string};
     const networkId = useAppSelector(selectNetwork)
     const near = useNear(networkId);
+    const [loading, setLoading] = useState(false);
     const handleImport = async () => {
+        setLoading(true)
         if(chain === 'near'){
             await near.importAccount(seeds);
         }
         if(chain === 'appchains'){
             keyring.addUri(seeds);
         }
+        setLoading(false)
         navigator('/dashboard');
     }
     const handleSetSeeds = (e:any) => {
@@ -53,7 +56,11 @@ const ImportAccount = (props:any) => {
                         className={classNames('textarea mt2', errorText ? 'error' : '')}
                     />
                     {errorText ? <Typography color="error" variant="caption">{errorText}</Typography> : null }
-                    <Button color="primary" className="mt3" size="large" variant="contained" fullWidth onClick={handleImport}>continue</Button>
+                    <ButtonWithLoading 
+                        className="mt3" 
+                        onClick={handleImport}
+                        loading={loading}
+                    >continue</ButtonWithLoading>
                 </div>
             </Content>
         </Grid>
