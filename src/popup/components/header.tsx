@@ -146,7 +146,7 @@ export const NetworkDialog = (props: SimpleDialogProps) => {
                     value={network.name} 
                     control={<Radio />} 
                     label={(
-                      <CopyToClipboard onCopy={() => enqueueSnackbar('copied !', {variant: 'success'}) } text={network.name}>
+                      <CopyToClipboard onCopy={() => !['mainnet', 'testnet'].includes(network.name) && enqueueSnackbar('copied !', {variant: 'success'})} text={network.name}>
                         <Typography variant="body2" className={classes.label} title={network.name}>{network.name}</Typography>
                       </CopyToClipboard>
                     )} 
