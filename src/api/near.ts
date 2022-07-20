@@ -37,7 +37,7 @@ class NearCore extends Near {
             const PRIVATE_KEY = secretKey.split("ed25519:")[1];
             const keyPair = KeyPair.fromString(PRIVATE_KEY);
             if(data.length){
-                await keyStore.setKey(networkId, data[0], keyPair);
+                await  data.map(async item => await  keyStore.setKey(networkId, item, keyPair))
             }else{
                 await keyStore.setKey(networkId, address, keyPair);
             }

@@ -176,10 +176,10 @@ const TotalAssets = (props:any)=>{
                                 } 
                                 secondary={
                                   <Box className="flex itemss-center justify-between"  component="span">
-                                      <Typography variant="caption" color="textSecondary" component="span">
+                                      <Typography variant="caption" color="textSecondary" component="span" className="overflow-text" style={{flex: '1 1 auto'}} title={displayOptions.subTitle}>
                                         {displayOptions.subTitle}
                                       </Typography>
-                                      <Typography variant="caption" color="textSecondary" component="span">
+                                      <Typography variant="caption" color="textSecondary" component="span" className="overflow-text" style={{flex: `0 0 80px`, marginLeft: 8}} align="right">
                                           {moment(Number(item.block_timestamp.slice(0,13))).fromNow()}
                                       </Typography>
                                   </Box>
@@ -188,7 +188,7 @@ const TotalAssets = (props:any)=>{
                         </ListItem>
                         )
                       })}
-                      <Typography align="center" className="mt2" variant="caption" display="block" color="primary" component="a" href={`https://explorer.${networkId === 'testnet' ? 'testnet.' : 'mainnet.'}near.org/accounts/${nearActiveAccount}}`} target="_blank">View More</Typography>
+                      <Typography align="center" className="mt2" variant="caption" display="block" color="primary" component="a" href={`https://explorer.${networkId === 'testnet' ? 'testnet.' : 'mainnet.'}near.org/accounts/${nearActiveAccount}`} target="_blank">View More</Typography>
                     </>
                   ) : (
                     <Typography className="nodata">No transactions yet.</Typography>
