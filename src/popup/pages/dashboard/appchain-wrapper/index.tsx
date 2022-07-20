@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from '../../../../app/hooks';
 import keyring from '@polkadot/ui-keyring';
 import NullAccountWrapper from '../../../components/null-account-wrapper';
 import {useEffect, useMemo, useState} from 'react';
-import {selectActiveAccountByNetworkId, setActiveAccount} from '../../../../reducer/account';
+import {selectActiveAccountByNetworkId, setActiveAccount, setAccount} from '../../../../reducer/account';
 
 import { useNavigate,useLocation } from 'react-router-dom';
 import {selectConfig} from '../../../../utils';
@@ -166,6 +166,7 @@ const AppChainWrapper = (props:any) => {
 
     const address = useMemo(() => {
         const accounts = keyring.getPairs()?.map(item => item.address);
+        dispatch(setAccount({account: accounts, networkId}))
         if(!activeAccount && accounts.length){
             dispatch(setActiveAccount({account: accounts[0], networkId}))
         }
