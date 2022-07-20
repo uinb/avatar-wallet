@@ -62,7 +62,7 @@ const Settings = () => {
 
   return (
     <Grid>
-      <HeaderWithBack back="/dashboard" />
+      <HeaderWithBack back="/" />
       <Content>
         {/* <div className='set-options' onClick={handleLanguageOpen}>
           <img src={IconLanguage} height="20" alt="" />

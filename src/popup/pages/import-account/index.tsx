@@ -44,7 +44,7 @@ const ImportAccount = (props:any) => {
     }
     return (
         <Grid>
-            <HeaderWithBack back="/dashboard"/>
+            <HeaderWithBack back="/"/>
             <Content>
                 <div>
                     <Typography>Import Phrase</Typography>

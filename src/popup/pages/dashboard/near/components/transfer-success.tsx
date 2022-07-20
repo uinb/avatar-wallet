@@ -16,11 +16,11 @@ const TransferSuccess = () => {
     const dispatch = useAppDispatch();
     const handleBack = () => {
         dispatch(setTempTransferInfomation({}));
-        navigator('/dashboard')
+        navigator('/')
     }
     return (
         <Grid>
-            <HeaderWithBack back="/dashboard"/>
+            <HeaderWithBack back="/"/>
             <Content>
                 <Grid>
                     <Grid className="tc" container direction="column" justifyContent='center'>

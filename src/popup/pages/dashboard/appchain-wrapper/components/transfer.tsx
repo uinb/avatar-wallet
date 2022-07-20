@@ -148,7 +148,7 @@ const Transfer = () => {
     },[state, selectToken,loading])
     return (
         <Grid>
-            <HeaderWithBack back="/dashboard" title="Send"/>
+            <HeaderWithBack back="/" title="Send"/>
             <Content>
                 <Grid>
                     <Box className="mt2" onClick={() => setSelectTokenOpen(true)}>
