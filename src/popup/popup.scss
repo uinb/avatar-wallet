@@ -176,3 +176,10 @@ textarea {
     width: 360px;
      
 }
+
+.overflow-text{
+    overflow: hidden;
+    word-break: keep-all;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
