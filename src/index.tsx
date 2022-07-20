@@ -12,6 +12,7 @@ import keyring from '@polkadot/ui-keyring';
 import {SnackbarProvider} from 'notistack';
 import Notifier from './popup/components/snackbar';
 import Loading from './popup/components/loading';
+import './index.css';
 
 
 const theme:ThemeOptions  = createTheme({
