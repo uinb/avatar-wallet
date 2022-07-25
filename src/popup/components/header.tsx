@@ -128,7 +128,6 @@ export interface SimpleDialogProps {
 }
 export const NetworkDialog = (props: SimpleDialogProps) => {
     const { networkList, onClose, selectedValue, open } = props;
-    console.log(selectedValue); 
     const dispatch = useAppDispatch();
     const handleClose = () => {
       onClose(selectedValue);

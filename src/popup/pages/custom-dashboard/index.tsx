@@ -1,13 +1,13 @@
-import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import Grid from '@material-ui/core/Grid';
-import { useAppSelector } from '../../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { selectNetwork, selectNetworkById } from '../../../reducer/network';
 import useAppChain from '../../../hooks/useAppChain';
-import { selectActiveAccountByNetworkId} from '../../../reducer/account';
+import { selectActiveAccountByNetworkId, setActiveAccount} from '../../../reducer/account';
 import keyring from '@polkadot/ui-keyring';
 import { formatBalance } from '@polkadot/util';
 import {isEmpty} from 'lodash';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Index from './components/index';
 import AssetPage from './components/asset';
 import TranferPage from './components/transfer';
@@ -21,11 +21,18 @@ const CustomPage = () => {
     const activeAccount = useAppSelector(selectActiveAccountByNetworkId(''))
     const api = useAppChain(customConfig.networkUrl);
     const [chainMeta, setChainMeta] = useState({}) as any;
+    const [allAccounts, setAllAccounts] = useState([]);
+    const dispatch = useAppDispatch();
 
-    const allAccounts = useMemo(() => {
+    const handleRefreshAccounts = useCallback(() => {
         const accounts = keyring.getPairs()?.map(item => item.address);
-        return accounts;
-    },[])
+        dispatch(setActiveAccount({account: accounts[0]}))
+        setAllAccounts(accounts)
+    },[dispatch])
+
+    useEffect(() => {
+        handleRefreshAccounts();
+    },[handleRefreshAccounts])
 
     const fetchMetatdata = useCallback(async () => {
         if(!appChainApi){
@@ -72,6 +79,14 @@ const CustomPage = () => {
     },[fetchBalances])
 
     const location = useLocation();
+    const navigator = useNavigate();
+
+    useEffect(() => {
+        if(!['mainnet', 'testnet'].includes(networkId)){
+            return ;
+        }
+        navigator('/dashboard');
+    },[networkId, navigator])
 
     return (
         <Grid>
@@ -80,6 +95,7 @@ const CustomPage = () => {
                 chainMeta={chainMeta}
                 activeAccount={activeAccount}
                 balance={balance}
+                accountOperateCallback={handleRefreshAccounts}
             />) : null}
             {location.pathname.startsWith('/custom/asset') ? (
                 <AssetPage 

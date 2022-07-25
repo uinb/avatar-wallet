@@ -32,7 +32,7 @@ const ImportAccount = (props:any) => {
             keyring.addUri(seeds);
         }
         setLoading(false)
-        navigator('/dashboard');
+        navigator('/');
     }
     const handleSetSeeds = (e:any) => {
         setSeeds(e.target.value);
