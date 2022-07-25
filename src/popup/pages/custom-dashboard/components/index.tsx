@@ -14,15 +14,17 @@ import AccountCard from '../../../components/chains-account-card';
 import TokenItem from '../../../components/token-item';
 import Loading from '../../../components/loading';
 import { useNavigate } from 'react-router-dom';
+import NullAccountWrapper from '../../../components/null-account-wrapper';
 
 const Index = (props:any) => {
-    const {chainMeta, allAccounts, activeAccount, balance} = props;
+    const {chainMeta, allAccounts, activeAccount, balance, accountOperateCallback} = props;
     const theme = useTheme();
     const dispatch = useAppDispatch()
 
     const handleOperateClick = (type:string) => {
         if(type === 'forgetAccount'){
             keyring.forgetAccount(activeAccount);
+            accountOperateCallback();
             dispatch(setActiveAccount({account: allAccounts.filter(account => account !== activeAccount)[0], networkId:''}))
         }
     }
@@ -74,29 +76,33 @@ const Index = (props:any) => {
                         </div>
                     </Grid>
                     <Grid className="chainContent">
-                        <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
-                            <AccountCard 
-                                accounts={allAccounts}
-                                handleAccountItemClick={handleAccountItemClick}
-                                handleOperateClick={handleOperateClick}
-                                config={{primary: theme.palette.primary.main}}
-                                operations={operations}
-                                activeAccount={activeAccount}
-                            />
-                            <Grid>
-                                <TokenItem
-                                    token={{
-                                        logo:'',
-                                        symbol:chainMeta.symbol,
-                                        balance: balance
-                                    }}
-                                    showNative
-                                    key={chainMeta.symbol}
-                                    className="mt2"
-                                    handleItemClick={handleAssetClick}
+                        {allAccounts.length ? (
+                            <Grid component="div" className="px1 mt1" style={{height: '100%'}}>
+                                <AccountCard 
+                                    accounts={allAccounts}
+                                    handleAccountItemClick={handleAccountItemClick}
+                                    handleOperateClick={handleOperateClick}
+                                    config={{primary: theme.palette.primary.main}}
+                                    operations={operations}
+                                    activeAccount={activeAccount}
                                 />
+                                <Grid>
+                                    <TokenItem
+                                        token={{
+                                            logo:'',
+                                            symbol:chainMeta.symbol,
+                                            balance: balance
+                                        }}
+                                        showNative
+                                        key={chainMeta.symbol}
+                                        className="mt2"
+                                        handleItemClick={handleAssetClick}
+                                    />
+                                </Grid>
                             </Grid>
-                        </Grid>
+                        ) : (
+                            <NullAccountWrapper chain="appchains"/>
+                        )}
                     </Grid>
                 </> 
                 )}

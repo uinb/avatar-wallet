@@ -82,6 +82,7 @@ const theme:ThemeOptions  = createTheme({
         background: '#F5F5F5',
         padding: '8px',
         fontFamily: 'Poppins !important',
+        borderWidth: 1, 
         "&:after":{
           border: '1px solid transparent'
         },
