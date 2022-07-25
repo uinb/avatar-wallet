@@ -123,7 +123,7 @@ const Transfer = () => {
         if(isEmpty(selectToken)){
             return false
         }
-        return selectToken.symbol.toLowerCase() === 'near'
+        return selectToken?.symbol?.toLowerCase() === 'near'
     },[selectToken])
 
     const refreshNearBalance = async (accountId) => {
@@ -177,8 +177,8 @@ const Transfer = () => {
         }
         setFormState(state => ({
             ...state,
-            contractId: selectToken.contractId, 
-            symbol: selectToken.symbol
+            contractId: selectToken?.contractId, 
+            symbol: selectToken?.symbol
         }))
     },[selectToken])
 
@@ -201,7 +201,7 @@ const Transfer = () => {
     const handleMax = () => {
         setFormState(state => ({
             ...state, 
-            amount: selectToken.balance
+            amount: selectToken?.balance
         }))
     }
 
@@ -255,7 +255,7 @@ const Transfer = () => {
                             onChange={handleInputChange}
                             startAdornment={
                                 <Grid style={{marginRight: 8}}>
-                                    <TokenIcon icon={isNativeToken ? nearIcon : selectToken?.icon} size={28} symbol={selectToken.symbol} showSymbol={false}/>
+                                    <TokenIcon icon={isNativeToken ? nearIcon : selectToken?.icon} size={28} symbol={selectToken?.symbol} showSymbol={false}/>
                                 </Grid>
                             }
                             endAdornment={<ArrowDropDown color="action" fontSize="small"/>}
