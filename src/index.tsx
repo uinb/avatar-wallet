@@ -187,7 +187,6 @@ const SnackbarProviderComponent = (props:any) => {
   )
 }
 
-
 (async () => {
   const result = await cryptoWaitReady();
   await keyring.loadAll({type: 'sr25519', ss58Format:  42})

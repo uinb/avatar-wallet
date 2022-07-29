@@ -15,7 +15,8 @@ import {selectConfig} from '../../../utils';
 import TokenIcon from '../../components/token-icon';
 import Loading from '../../components/loading';
 import Content from '../../components/layout-content';
-
+import { useNavigate } from 'react-router-dom';
+const extension = require('extensionizer');
 
 const Dashboard = (props:any) => {
     const {theme} = props;
@@ -24,6 +25,20 @@ const Dashboard = (props:any) => {
     const activeChain = useAppSelector(selectChain(networkId));
     const appChains = useAppSelector(selectAppChains(networkId));
     const [appChainApi, setAppChainApi] = useState(null);
+    const [expiredTime, setExpiredTime] = useState(0);
+    const navigator = useNavigate();
+    extension.storage.local.get(['password', 'expiredTime'], function(result) {
+        setExpiredTime(result.expiredTime)
+    });
+
+    useEffect(() => {
+        if(!expiredTime){
+            return
+        }
+        if(!(expiredTime > Date.now())){
+            navigator('/sign-in')
+        }
+    },[expiredTime, navigator])
 
     const networkConfig = useMemo(() => {
         if(!networkId || !activeChain || activeChain === 'near'){

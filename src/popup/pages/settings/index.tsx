@@ -18,9 +18,9 @@ import Button from '@material-ui/core/Button';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../../app/hooks';
-import { selectPwd } from '../../../reducer/auth';
 import DialogTitle from './components/dialogTitle'
+const extension = require('extensionizer');
+
 
 const Settings = () => {
   const [languageOpen, setLangugeOpen] = useState(false);
@@ -29,8 +29,11 @@ const Settings = () => {
   const [pwdVisible, setPwdVisible] = useState(false);
   const [inputPwd, setInputPwd] = useState('');
   const [inputError, setInputError] = useState('');
-  const pwd = useAppSelector(selectPwd);
+  const [pwd, setPwd] = useState('');
   const navigate = useNavigate();
+  extension.storage.local.get(['password'], (result) => {
+    setPwd(result.password)
+});
 
  /*  const handleLanguageOpen = () => {
     setLangugeOpen(true);

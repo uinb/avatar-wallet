@@ -10,20 +10,19 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
-import { useAppDispatch } from '../../../app/hooks';
-import { setUserPwd } from '../../../reducer/auth';
 import { password } from '../../../utils/validate';
 import Content from '../../components/layout-content';
+import moment from 'moment';
+const extension = require('extensionizer');
+
 
 const EditPwsd = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
-    const dispatch = useAppDispatch();
     const [pwd, setPwd] = useState<string>('');
     const [confirmPwd, setConfirmPwd] = useState<string>('');
     const [inputError, setInputError] = useState({ passowrd: '', confirmPassword: '' });
     const [verifyStatus, setVerifyStatus] = useState(false);
     const navigate = useNavigate()
-
     /**
      * verify password
      */
@@ -50,8 +49,9 @@ const EditPwsd = () => {
     }, [pwd, confirmPwd])
 
     const handleEditPwsd = () => {
-        dispatch(setUserPwd(pwd))
-        navigate('/dashboard')
+        extension.storage.local.set({password: pwd, expiredTime:  moment().add(1, 'Q').valueOf()}, () => {
+            navigate('/')
+        });
     }
 
 

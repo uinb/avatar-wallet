@@ -8,31 +8,36 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
-import { useAppSelector, useAppDispatch} from '../../../app/hooks';
-import {selectPwd, updateExpiredTime} from '../../../reducer/auth';
+import { useAppDispatch } from '../../../app/hooks';
 import Logo from '../../components/logo';
 import {enqueueSnackbar} from '../../../reducer/snackbar';
 import Content from '../../components/layout-content';
+import moment from 'moment';
+const extension = require('extensionizer');
 
 const SignIn = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
     const [inputPwd, setInputPwd] = useState('');
     const [inputError, setInputError] = useState('');
     const navigate = useNavigate();
-    const pwd = useAppSelector(selectPwd);
+    const [pwd, setPwd] = useState('');
     const dispatch = useAppDispatch();
+    extension.storage.local.get(['password'], (result) => {
+        setPwd(result.password)
+    });
     const handleSignIn = () => {
         if(inputPwd === pwd){
-            dispatch(updateExpiredTime())
-            dispatch(enqueueSnackbar({
-                message: 'Login Success',
-                options:{
-                    key:'loginSuccess',
-                    variant: 'success'
-                }
-
-            }))
-            navigate('/')
+            extension.storage.local.set({expiredTime:  moment().add(1, 'Q').valueOf()}, () => {
+                dispatch(enqueueSnackbar({
+                    message: 'Login Success',
+                    options:{
+                        key:'loginSuccess',
+                        variant: 'success'
+                    }
+    
+                }))
+                navigate('/')
+            });
         }
         setInputError('invalid password !!')
     }

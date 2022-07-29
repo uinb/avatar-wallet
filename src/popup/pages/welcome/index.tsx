@@ -1,18 +1,23 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import './index.scss';
 import {Link, useNavigate} from 'react-router-dom';
 import Logo from '../../components/logo';
 import { useAppSelector } from '../../../app/hooks';
-import {selectPwd, selectExpiredTime} from '../../../reducer/auth';
 import { selectNetwork } from '../../../reducer/network';
+const extension = require('extensionizer');
+
 
 const Welcome = () => {
-    const hasPwd = Boolean(useAppSelector(selectPwd));
-    const expiredTime = useAppSelector(selectExpiredTime);
+    const [hasPwd, setHasPwd] = useState(false);
+    const [expiredTime, setExpiredTime] = useState(0);
     const networkId = useAppSelector(selectNetwork)
     const navigate = useNavigate();
+    extension.storage.local.get(['password', 'expiredTime'], (result) => {
+        setHasPwd(Boolean(result.password))
+        setExpiredTime(result.expiredTime)
+    });
     useEffect(() => {
         if(!hasPwd){
             return ;

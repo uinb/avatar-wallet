@@ -2,7 +2,6 @@ import { combineReducers, configureStore, ThunkAction, Action, AnyAction} from '
 import { persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'reduxjs-toolkit-persist';
 import autoMergeLevel2 from 'reduxjs-toolkit-persist/lib/stateReconciler/autoMergeLevel2';
 import storage from 'reduxjs-toolkit-persist/lib/storage';
-import authReducer from '../reducer/auth';
 import networkReducer from '../reducer/network';
 import nearReducer from '../reducer/near';
 import accountReducer from '../reducer/account';
@@ -16,7 +15,6 @@ const persistConfig = {
 };
 
 const rootReducers = combineReducers({
-  auth: authReducer,
   network: networkReducer,
   near: nearReducer,
   account: accountReducer,
