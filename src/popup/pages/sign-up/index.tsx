@@ -9,23 +9,19 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Box from '@material-ui/core/Box';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Visibility from '@material-ui/icons/Visibility';
-import { useAppDispatch } from '../../../app/hooks';
-import { setUserPwd } from '../../../reducer/auth';
 import { password } from '../../../utils/validate';
 import Content from '../../components/layout-content';
+import moment from 'moment';
+const extension = require('extensionizer');
 
 const SignUp = () => {
     const [pwdVisible, setPwdVisible] = useState(false);
-    const dispatch = useAppDispatch();
     const [pwd, setPwd] = useState<string>('');
     const [confirmPwd, setConfirmPwd] = useState<string>('');
     const [inputError, setInputError] = useState({ passowrd: '', confirmPassword: '' });
     const [verifyStatus, setVerifyStatus] = useState(false);
     const navigate = useNavigate()
 
-    /**
-     * verify password
-     */
     const verifyPwd = () => {
         if (!password(pwd) && pwd) {
             setInputError({ ...inputError, passowrd: 'Password at least 8 characters, including numbers and letters !!' })
@@ -49,11 +45,11 @@ const SignUp = () => {
     }, [pwd, confirmPwd])
 
     const handleSignUp = () => {
-        dispatch(setUserPwd(pwd))
-        navigate('/dashboard')
+        extension.storage.local.set({password: pwd, expiredTime:  moment().add(1, 'Q').valueOf()}, () => {
+            navigate('/dashboard')
+        });
     }
     
-
     return (
         <Grid container direction="column" >
             <HeaderWithBack back="/welcome"/>

@@ -21,12 +21,12 @@ const initialState: StateProps = {
   networkOption: [
     {
       name:"mainnet",
-      networkUrl:"wss://binnode.brandy.fusotao.org",
+      networkUrl:"",
       active:true
     },
     {
       name:"testnet",
-      networkUrl:"wss://binnode.brandy.fusotao.org",
+      networkUrl:"",
       active:false
     }
   ],
