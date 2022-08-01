@@ -29,7 +29,12 @@
     }
   ],
   "permissions": [
-    "storage"
+    "notifications",
+    "storage",
+    "tabs",
+    "management",
+    "activeTab",
+    "bookmarks"
   ],
   "host_permissions":[
     "https://*/*",

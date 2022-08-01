@@ -25,7 +25,7 @@ const ForkTsCheckerWebpackPlugin =
     ? require('react-dev-utils/ForkTsCheckerWarningWebpackPlugin')
     : require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash');
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
@@ -601,6 +601,11 @@ module.exports = function (webpackEnv) {
       // Generates an `index.html` file with the <script> injected.
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
+      }),
+      new CopyWebpackPlugin({
+        patterns: [{
+          from: 'node_modules/webextension-polyfill/dist/browser-polyfill.js',
+        }],
       }),
       /* new webpack.ProvidePlugin({
           process: 'process/browser',
