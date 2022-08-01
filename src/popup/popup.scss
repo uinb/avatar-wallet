@@ -78,7 +78,6 @@ div{
 .mt4 {
     margin-top: 32px !important;
 }
-
 .pt4 {
     padding-top: 32px;
 }
@@ -117,11 +116,12 @@ div{
 
 .container {
     height: 100vh;
-    padding: 48px 16px 0;
+    padding: 48px 16px 16px;
     width: 100%;
     box-sizing: border-box;
     margin: 0 auto;
-}
+    overflow-y: scroll;
+ }
 .bottomBtn{width: 100%;padding:0 16px;position: fixed;bottom: 24px;left: 0;}
 .ml1{
     margin-left: 8px !important;
