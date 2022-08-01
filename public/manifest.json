@@ -28,12 +28,7 @@
     }
   ],
   "permissions": [
-    "notifications",
-    "storage",
-    "tabs",
-    "management",
-    "activeTab",
-    "bookmarks"
+    "storage"
   ],
   "host_permissions":[
     "https://*/*",
