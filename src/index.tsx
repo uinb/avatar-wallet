@@ -14,7 +14,6 @@ import Notifier from './popup/components/snackbar';
 import Loading from './popup/components/loading';
 import './index.css';
 
-
 const theme:ThemeOptions  = createTheme({
   palette:{
     primary:{
@@ -190,6 +189,8 @@ const SnackbarProviderComponent = (props:any) => {
 (async () => {
   const result = await cryptoWaitReady();
   await keyring.loadAll({type: 'sr25519', ss58Format:  42})
+  const accounts = keyring.getAccounts();
+  console.log(accounts);
   if(result){
     root.render(
       <Fragment>

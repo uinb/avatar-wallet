@@ -3,7 +3,6 @@ import mainnetConfig from '../constant/mainnet-config';
 import testnetConfig from '../constant/testnet-config';
 
 
-
 export const formatLongAddress = (value: string  = '') => {
     const values = value.split('.');
     return values.length > 1 ? `${[values.slice(0,-1).map(item => `${item.substr(0,3)}...${item.substr(-3)}`).join('.'), values.slice(-1)].join('.')}` : `${value.substr(0,5)}...${value.substr(-5)}`

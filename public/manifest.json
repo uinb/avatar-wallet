@@ -9,8 +9,9 @@
     "128": "images/logo.png"
   },
   "background": {
-    "service_worker": "static/js/background.js"
+    "service_worker": "background.js"
   },
+  "options_page": "index.html",
   "action": {
     "default_icon": "images/logo.png",
     "default_title": "Avatar Wallet",
@@ -22,18 +23,33 @@
         "<all_urls>"
       ],
       "js": [
-        "static/js/content.js"
+        "content.js"
       ],
       "run_at": "document_start"
     }
   ],
   "permissions": [
-    "storage"
+    "notifications",
+    "storage",
+    "tabs",
+    "management",
+    "activeTab",
+    "bookmarks"
   ],
   "host_permissions":[
     "https://*/*",
     "http://*/*",
     "wss://*/*",
     "ws://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "inPageScript.js"],
+      "matches": [ "<all_urls>"]
+    },
+    {
+      "resources": [ "index.html"],
+      "matches": [ "<all_urls>"]
+    }
   ]
 }

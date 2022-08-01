@@ -1,18 +1,8 @@
-/* global chrome */
+import browser from 'webextension-polyfill';
 
-/* chrome.runtime.onInstalled.addListener(function() {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function(){
-        chrome.declarativeContent.onPageChanged.addRules([{
-            conditions: [
-                new chrome.declarativeContent.PageStateMatcher({pageUrl: {}}),
-            ],
-            actions: [
-                new window.chrome.declarativeContent.showPageAction()
-            ]
-        }])
-    })
-}) */
-
-chrome?.runtime?.onInstalled?.addListener(function () {
+browser.runtime.onInstalled?.addListener(function (tab) {
+    console.log('show tab',tab);
+    /* browser.tabs.executeScript({target: {tabId: tab.id}, file: "browser-polyfill.js"}); */
+    console.log('background extension',browser);
     console.log("插件已被安装");
 });
