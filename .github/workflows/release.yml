@@ -28,11 +28,9 @@ jobs:
         run: |
           yarn 
           yarn build
-      - run: |
-          mv build avatar-wallet
       - uses: montudor/action-zip@v1
         with:
-          args: zip -r avatar-wallet.zip avatar-wallet/ LICENSE
+          args: zip -r avatar-wallet.zip build/ LICENSE
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
